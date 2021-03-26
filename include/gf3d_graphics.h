@@ -1,34 +1,72 @@
-#ifndef __GF3D__GRAPHICS_H__
-#define __GF3D__GRAPHICS_H__
+#pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-struct gf3d_window {
-	GLFWwindow* glfw_window;
-	int width;
-	int height;
-};
+#include <cassert>
+#include <unordered_map>
+#include "gf3d_swapchain.h"
+#include "gf3d_window.h"
+#include "gf3d_pipeline.h"
 
 class Gf3dGraphics
 {
-
+public:
+	Gf3dGraphics();
+	~Gf3dGraphics();
+	void cleanup();
+	inline bool DidWindowClosed() { return window.windowClosed(); }
+	void draw();
 private:
 	//Vulkan Specifics
+
 	VkInstance instance;
+	VkDebugUtilsMessengerEXT callback;
+	VkPhysicalDevice physicalDevice;
+	VkPhysicalDeviceFeatures deviceFeatures;
+	VkPhysicalDeviceProperties deviceProperties;
+	VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
+	VkDevice device;
+	VkQueue graphicsQueue;
+	VkQueue presentQueue;
+	Swapchain swapchain;
+	VkCommandPool commandPool;
+	std::vector<VkCommandBuffer> commandBuffers;
+	std::vector<VkSemaphore> imageAvailableSemaphores;
+	std::vector<VkSemaphore> renderCompleteSemaphores;
+	std::vector<VkFence> imagesInFlight;
+	std::vector<VkFence> inFlightFences;
+	std::unordered_map<std::string, Material> materials;
+	struct {
+		uint32_t graphics;
+		uint32_t compute;
+		uint32_t transfer;
+	} queueIndices;
+
+	bool isDiscreteGpu = false;
+
+	const uint32_t MAX_FRAMES_INFLIGHT = 2;
 	
 	//GLFW Window Specifics
+
 	gf3d_window window;
 
-	//Class Functions
-	void initVulkan();
-	void initWindow();
+	size_t currentFrame = 0;
 
 public:
-	Gf3dGraphics(int width, int height);
-	~Gf3dGraphics();
-	GLFWwindow* getWindow();
-	
-};
+	void createMaterial(const std::string& vertPath, const std::string& fragPath);
+private:
+	void initVulkan();
+	void initWindow();
+	void cleanWindow();
+	void cleanMaterials();
 
-#endif // !__GF3D__GRAPHICS_H__
+	//Vulkan Specifics
+
+	void createInstance();
+	void setupDebugCallback();
+	void findPhysicalDevice();
+	void createLogicalDevice();
+	uint32_t findQueueFamilyIndex(VkQueueFlags queueFlag);
+	void createCommandPool();
+	void createCommandBuffers();
+	void createSyncObjects();
+
+};
