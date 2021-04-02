@@ -16,6 +16,7 @@ void Application::run()
 void Application::init()
 {
 	glfwInit();
+	renderer.init();
 	renderer.createMaterial("D:/Programming/gf3d++/gf3d++/shaders/vert.spv", "D:/Programming/gf3d++/gf3d++/shaders/frag.spv");
 	renderer.createMaterial("D:/Programming/gf3d++/gf3d++/shaders/vert.spv", "D:/Programming/gf3d++/gf3d++/shaders/frag.spv");
 }

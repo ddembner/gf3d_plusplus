@@ -6,14 +6,10 @@
 using std::cout;
 using std::endl;
 
-Gf3dGraphics::Gf3dGraphics() 
+void Gf3dGraphics::init()
 {
 	initWindow();
 	initVulkan();
-}
-
-Gf3dGraphics::~Gf3dGraphics() 
-{
 }
 
 void Gf3dGraphics::cleanup()
@@ -41,7 +37,12 @@ void Gf3dGraphics::draw()
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	vkAcquireNextImageKHR(device, swapchain.getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(device, swapchain.getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		recreateSwapChain();
+		return;
+	}
 
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -65,9 +66,9 @@ void Gf3dGraphics::draw()
 
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
-		throw std::runtime_error("failed to submit draw command buffer");
-	}
+	recordCommandBuffer(imageIndex);
+
+	VK_CHECK(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]));
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -209,9 +210,9 @@ void Gf3dGraphics::createLogicalDevice()
 	queueIndices.compute = findQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
 	if (queueIndices.graphics != queueIndices.compute) {
 		VkDeviceQueueCreateInfo computeInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
-		graphicsInfo.queueCount = 1;
-		graphicsInfo.pQueuePriorities = &queuePriority;
-		graphicsInfo.queueFamilyIndex = queueIndices.compute;
+		computeInfo.queueCount = 1;
+		computeInfo.pQueuePriorities = &queuePriority;
+		computeInfo.queueFamilyIndex = queueIndices.compute;
 		queueInfos.push_back(computeInfo);
 	}
 
@@ -241,7 +242,8 @@ uint32_t Gf3dGraphics::findQueueFamilyIndex(VkQueueFlags flag) {
 		uint32_t queueIndex = 0;
 		for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilyProperties.size()); i++) {
 
-			if (queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT) { 
+			if (queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT && 
+				!(queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
 				VkBool32 presentSupport;
 				vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, window.getWindowSurface(), &presentSupport);
 				if (presentSupport) {
@@ -282,6 +284,7 @@ void Gf3dGraphics::createCommandPool()
 {
 	VkCommandPoolCreateInfo createInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
 	createInfo.queueFamilyIndex = queueIndices.graphics;
+	createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	VK_CHECK(vkCreateCommandPool(device, &createInfo, nullptr, &commandPool));
 }
 
@@ -314,6 +317,64 @@ void Gf3dGraphics::createSyncObjects()
 		VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderCompleteSemaphores[i]));
 		VK_CHECK(vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]));
 	}
+}
+
+void Gf3dGraphics::recordCommandBuffer(uint32_t imageIndex)
+{
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = 0;
+	beginInfo.pInheritanceInfo = nullptr;
+
+	VK_CHECK(vkBeginCommandBuffer(commandBuffers[imageIndex], &beginInfo));
+
+	VkRenderPassBeginInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = swapchain.getRenderPass();
+	renderPassInfo.framebuffer = swapchain.getFrameBuffer(imageIndex);
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = swapchain.getExtent();
+
+	VkClearValue clearColor = { 0.13f, 0.12f, 0.23f, 1.0f };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	
+	VkViewport viewport = {};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(swapchain.getExtent().width);
+	viewport.height = static_cast<float>(swapchain.getExtent().height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	VkRect2D scissor = {};
+	scissor.offset = { 0, 0 };
+	scissor.extent = swapchain.getExtent();
+	vkCmdSetViewport(commandBuffers[imageIndex], 0, 1, &viewport);
+	vkCmdSetScissor(commandBuffers[imageIndex], 0, 1, &scissor);
+
+	vkCmdBindPipeline(commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getGraphicsPipeline());
+
+	vkCmdDraw(commandBuffers[imageIndex], 3, 1, 0, 0);
+
+	vkCmdEndRenderPass(commandBuffers[imageIndex]);
+
+	VK_CHECK(vkEndCommandBuffer(commandBuffers[imageIndex]));
+}
+
+void Gf3dGraphics::recreateSwapChain()
+{
+	VkExtent2D extent = window.getExtent();
+	while (extent.width == 0 || extent.height == 0) {
+		extent = window.getExtent();
+		glfwWaitEvents();
+	}
+
+	vkDeviceWaitIdle(device);
+
+	swapchain.recreate(physicalDevice, device, window.getWindowSurface());
 }
 
 void Gf3dGraphics::createMaterial(const std::string& vertPath, const std::string& fragPath)
@@ -349,7 +410,7 @@ void Gf3dGraphics::initVulkan()
 
 	createLogicalDevice();
 
-	swapchain.init(instance, physicalDevice, device, window.getWindowSurface());
+	swapchain.init(physicalDevice, device, window.getWindowSurface());
 	
 	createCommandPool();
 

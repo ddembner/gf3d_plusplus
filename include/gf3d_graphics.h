@@ -9,8 +9,9 @@
 class Gf3dGraphics
 {
 public:
-	Gf3dGraphics();
-	~Gf3dGraphics();
+	Gf3dGraphics() {}
+	~Gf3dGraphics() {}
+	void init();
 	void cleanup();
 	inline bool DidWindowClosed() { return window.windowClosed(); }
 	void draw();
@@ -41,14 +42,15 @@ private:
 	} queueIndices;
 
 	bool isDiscreteGpu = false;
-
 	const uint32_t MAX_FRAMES_INFLIGHT = 2;
+	size_t currentFrame = 0;
+
+	
 	
 	//GLFW Window Specifics
 
 	gf3d_window window;
 
-	size_t currentFrame = 0;
 
 public:
 	void createMaterial(const std::string& vertPath, const std::string& fragPath);
@@ -68,5 +70,6 @@ private:
 	void createCommandPool();
 	void createCommandBuffers();
 	void createSyncObjects();
-
+	void recordCommandBuffer(uint32_t imageIndex);
+	void recreateSwapChain();
 };

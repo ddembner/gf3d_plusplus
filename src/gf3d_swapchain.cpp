@@ -1,5 +1,6 @@
 #include <iostream>
 #include "gf3d_swapchain.h"
+#include "vulkan_functions.h"
 
 Swapchain::Swapchain()
 {
@@ -9,14 +10,10 @@ Swapchain::~Swapchain()
 {
 }
 
-void Swapchain::init(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface)
+void Swapchain::init(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface)
 {
 	VkSurfaceCapabilitiesKHR surfaceCapabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
-
-	/*if (!findSuitableQueueIndex(physicalDevice, surface)) {
-		return;
-	}*/
 
 	extent = surfaceCapabilities.currentExtent;
 
@@ -49,9 +46,6 @@ void Swapchain::init(VkInstance instance, VkPhysicalDevice physicalDevice, VkDev
 	}
 
 	if (oldSwapchain != VK_NULL_HANDLE) {
-		for (auto& buffer : buffers) {
-			vkDestroyImageView(device, buffer.view, nullptr);
-		}
 		vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
 	}
 
@@ -82,13 +76,23 @@ void Swapchain::init(VkInstance instance, VkPhysicalDevice physicalDevice, VkDev
 			return;
 		}
 	}
+
+	createRenderPass(device);
+
+	createFrameBuffers(device);
 }
 
 void Swapchain::cleanup(VkDevice device)
 {
+	for (int i = 0; i < frameBuffers.size(); i++) {
+		vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+	}
+
 	for (int i = 0; i < buffers.size(); i++) {
 		vkDestroyImageView(device, buffers[i].view, nullptr);
 	}
+
+	vkDestroyRenderPass(device, renderPass, nullptr);
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
 }
 
@@ -110,6 +114,31 @@ VkExtent2D Swapchain::getExtent() const
 VkSwapchainKHR Swapchain::getSwapchain() const
 {
 	return swapchain;
+}
+
+VkRenderPass Swapchain::getRenderPass() const
+{
+	return renderPass;
+}
+
+VkFramebuffer Swapchain::getFrameBuffer(uint32_t index)
+{
+	return frameBuffers[index];
+}
+
+void Swapchain::recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface)
+{
+	for (int i = 0; i < frameBuffers.size(); i++) {
+		vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+	}
+
+	for (int i = 0; i < buffers.size(); i++) {
+		vkDestroyImageView(device, buffers[i].view, nullptr);
+	}
+
+	vkDestroyRenderPass(device, renderPass, nullptr);
+
+	init(physicalDevice, device, surface);
 }
 
 void Swapchain::selectPresentMode(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
@@ -181,10 +210,65 @@ VkSurfaceFormatKHR Swapchain::getSurfaceFormat(VkPhysicalDevice physicalDevice, 
 
 	for (auto& surfaceFormat : surfaceFormats) {
 
-		if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM) {
+		if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_SRGB) {
 			return surfaceFormat;
 		}
 	}
 
 	return surfaceFormats[0];
+}
+
+void Swapchain::createRenderPass(VkDevice device)
+{
+	VkAttachmentDescription colorAttachment = {};
+	colorAttachment.format = colorFormat;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference colorAttachmentRef = {};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpassDescription = {};
+	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpassDescription.colorAttachmentCount = 1;
+	subpassDescription.pColorAttachments = &colorAttachmentRef;
+
+	VkSubpassDependency dependacy = {};
+	dependacy.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependacy.dstSubpass = 0;
+	dependacy.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependacy.srcAccessMask = 0;
+	dependacy.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependacy.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	VkRenderPassCreateInfo createInfo = { VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO };
+	createInfo.attachmentCount = 1;
+	createInfo.pAttachments = &colorAttachment;
+	createInfo.subpassCount = 1;
+	createInfo.pSubpasses = &subpassDescription;
+	createInfo.dependencyCount = 1;
+	createInfo.pDependencies = &dependacy;
+
+	VK_CHECK(vkCreateRenderPass(device, &createInfo, nullptr, &renderPass));
+}
+
+void Swapchain::createFrameBuffers(VkDevice device)
+{
+	frameBuffers.resize(bufferImageCount);
+	VkFramebufferCreateInfo framebufferInfo = { VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO };
+	framebufferInfo.width = extent.width;
+	framebufferInfo.height = extent.height;
+	framebufferInfo.renderPass = renderPass;
+	framebufferInfo.attachmentCount = 1;
+	framebufferInfo.layers = 1;
+	for (size_t i = 0; i < frameBuffers.size(); i++) {
+		framebufferInfo.pAttachments = &buffers[i].view;
+		VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &frameBuffers[i]));
+	}
 }
