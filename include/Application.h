@@ -1,5 +1,7 @@
 #pragma once
+#include "gf3d_device.h"
 #include "gf3d_graphics.h"
+#include <memory>
 
 class Application 
 {
@@ -17,4 +19,5 @@ private:
 private:
 	bool isDonePlaying = false;
 	Gf3dGraphics renderer;
+	std::unique_ptr<Gf3dWindow> window;
 };

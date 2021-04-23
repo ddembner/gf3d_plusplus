@@ -1,34 +1,44 @@
 #include "gf3d_window.h"
+#include <iostream>
 
-gf3d_window::gf3d_window() : width(800), height(600), title("gf3d vulkan"), glfw_window(nullptr), surface(nullptr)
+void Gf3dWindow::init()
 {
-}
-
-void gf3d_window::init()
-{
+	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	glfw_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+	glfw_window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+	if (!glfw_window) {
+		std::cout << "Failed to create window" << std::endl;
+		exit(-1);
+	}
 	glfwSetWindowSizeLimits(glfw_window, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
 	glfwSetWindowUserPointer(glfw_window, this);
 	glfwSetFramebufferSizeCallback(glfw_window, windowResizeCallback);
 }
 
-void gf3d_window::cleanup(VkInstance instance)
+std::unique_ptr<Gf3dWindow> Gf3dWindow::Create(const int width, const int height, const std::string& title)
 {
-	vkDestroySurfaceKHR(instance, surface, nullptr);
+	auto newWindow = std::make_unique<Gf3dWindow>(width, height, title);
+	newWindow->init();
+	return newWindow;
+}
+
+void Gf3dWindow::cleanup()
+{
 	glfwDestroyWindow(glfw_window);
 	glfwTerminate();
 }
 
-void gf3d_window::createWindowSurface(VkInstance instance)
+VkSurfaceKHR Gf3dWindow::createWindowSurface(VkInstance instance)
 {
-	glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface);
+	VkSurfaceKHR newSurface;
+	glfwCreateWindowSurface(instance, glfw_window, nullptr, &newSurface);
+	return newSurface;
 }
 
-void gf3d_window::windowResizeCallback(GLFWwindow* window, int width, int height)
+void Gf3dWindow::windowResizeCallback(GLFWwindow* window, int width, int height)
 {
-	auto appWindow = reinterpret_cast<gf3d_window*>(glfwGetWindowUserPointer(window));
+	auto appWindow = reinterpret_cast<Gf3dWindow*>(glfwGetWindowUserPointer(window));
 	appWindow->width = width;
 	appWindow->height = height;
 	appWindow->framebufferResized = true;

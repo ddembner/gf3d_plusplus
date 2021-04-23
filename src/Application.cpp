@@ -1,5 +1,5 @@
 #include "Application.h"
-
+#include <iostream>
 void Application::run()
 {
 	init();
@@ -15,15 +15,14 @@ void Application::run()
 
 void Application::init()
 {
-	glfwInit();
-	renderer.init();
-	renderer.createMaterial("D:/Programming/gf3d++/gf3d++/shaders/vert.spv", "D:/Programming/gf3d++/gf3d++/shaders/frag.spv");
-	renderer.createMaterial("D:/Programming/gf3d++/gf3d++/shaders/vert.spv", "D:/Programming/gf3d++/gf3d++/shaders/frag.spv");
+	window = Gf3dWindow::Create();
+	renderer.init(window.get());
+	renderer.loadModel();
 }
 
 void Application::update()
 {
-	isDonePlaying = renderer.DidWindowClosed();
+	isDonePlaying = window->windowClosed() || glfwGetKey(window->getWindow(), GLFW_KEY_ESCAPE);
 }
 
 void Application::render()
@@ -34,4 +33,5 @@ void Application::render()
 void Application::cleanup()
 {
 	renderer.cleanup();
+	window->cleanup();
 }

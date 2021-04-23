@@ -9,7 +9,8 @@ public:
 	~Pipeline();
 	void loadPipeline(const Swapchain& swapchain, VkDevice device, const std::string& vertPath, const std::string& fragPath);
 	void destroyPipeline(VkDevice device);
-	VkPipeline getGraphicsPipeline() const;
+	VkPipeline getGraphicsPipeline() const { return pipeline; }
+	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
 private:
 	VkShaderModule loadShaderModule(VkDevice device, const std::string& shaderPath);
 	void createPipelineLayout(VkDevice device);
@@ -30,7 +31,8 @@ public:
 	Material(const Swapchain& swapchain, VkDevice device, const std::string& vertPath, const std::string& fragPath);
 	~Material();
 	void freeMaterial(VkDevice device);
-	VkPipeline getGraphicsPipeline() const;
+	VkPipeline getGraphicsPipeline() const { return pipeline.getGraphicsPipeline(); }
+	VkPipelineLayout getPipelineLayout() const { return pipeline.getPipelineLayout(); }
 private:
 	Pipeline pipeline;
 };

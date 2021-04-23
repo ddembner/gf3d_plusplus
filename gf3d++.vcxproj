@@ -101,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;$(ProjectDir)external/vma/src;$(ProjectDir)external/glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -118,7 +118,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;$(ProjectDir)external/vma/src;$(ProjectDir)external/glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -137,7 +137,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;$(ProjectDir)external/vma/src;$(ProjectDir)external/glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -158,7 +158,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;D:\GLM\glm\;D:\Libraries\GLFW\glfw-3.3.2.bin.WIN64\glfw-3.3.2.bin.WIN64\include;D:\VulkanSDK\1.2.154.1\Include;$(ProjectDir)external/vma/src;$(ProjectDir)external/glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -172,9 +172,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\gf3d_camera.cpp" />
+    <ClCompile Include="src\gf3d_device.cpp" />
     <ClCompile Include="src\gf3d_graphics.cpp" />
     <ClCompile Include="src\Debug.cpp" />
     <ClCompile Include="src\gf3d_math.cpp" />
+    <ClCompile Include="src\gf3d_mesh.cpp" />
     <ClCompile Include="src\gf3d_pipeline.cpp" />
     <ClCompile Include="src\gf3d_swapchain.cpp" />
     <ClCompile Include="src\gf3d_validations.cpp" />
@@ -182,6 +185,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\vector2.cpp" />
     <ClCompile Include="src\vector3.cpp" />
+    <ClCompile Include="src\vulkan_functions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\shader.frag" />
@@ -189,17 +193,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Application.h" />
+    <ClInclude Include="include\gf3d_camera.h" />
     <ClInclude Include="include\gf3d_graphics.h" />
     <ClInclude Include="include\Debug.h" />
     <ClInclude Include="include\gf3d_math.h" />
+    <ClInclude Include="include\gf3d_mesh.h" />
     <ClInclude Include="include\gf3d_pipeline.h" />
     <ClInclude Include="include\gf3d_swapchain.h" />
     <ClInclude Include="include\gf3d_validations.h" />
+    <ClInclude Include="include\gf3d_device.h" />
     <ClInclude Include="include\gf3d_window.h" />
     <ClInclude Include="include\hello_triangle.h" />
+    <ClInclude Include="include\NonCopyable.h" />
+    <ClInclude Include="include\transform.h" />
     <ClInclude Include="include\vector2.h" />
     <ClInclude Include="include\vector3.h" />
     <ClInclude Include="include\vulkan_functions.h" />
+    <ClInclude Include="include\vulkan_types.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

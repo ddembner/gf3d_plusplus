@@ -3,21 +3,22 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <vector>
+#include "gf3d_device.h"
 
 class Swapchain
 {
 public:
-	Swapchain();
-	~Swapchain();
-	void init(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface);
+	Swapchain() {}
+	~Swapchain() {}
+	void init(Gf3dDevice& gf3dDevice);
 	void cleanup(VkDevice device);
-	uint32_t imageCount() const;
-	VkFormat getColorFormat() const;
-	VkExtent2D getExtent() const;
-	VkSwapchainKHR getSwapchain() const;
-	VkRenderPass getRenderPass() const;
-	VkFramebuffer getFrameBuffer(uint32_t index);
-	void recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface);
+	uint32_t imageCount() const { return bufferImageCount; }
+	VkFormat getColorFormat() const { return colorFormat; }
+	VkExtent2D getExtent() const { return extent; }
+	VkSwapchainKHR getSwapchain() const { return swapchain; }
+	VkRenderPass getRenderPass() const { return renderPass; }
+	VkFramebuffer getFrameBuffer(uint32_t index) { return frameBuffers[index]; }
+	void recreate(Gf3dDevice& gf3dDevice);
 private:
 	void selectPresentMode(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface);
 	VkCompositeAlphaFlagBitsKHR selectCompositeAlphaFlags(VkSurfaceCapabilitiesKHR surfaceCapabilities);

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include "vulkan_functions.h"
+#include "gf3d_mesh.h"
 
 Pipeline::Pipeline()
 {
@@ -28,11 +29,6 @@ void Pipeline::destroyPipeline(VkDevice device)
 	vkDestroyShaderModule(device, fragModule, nullptr);
 	vkDestroyPipeline(device, pipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-}
-
-VkPipeline Pipeline::getGraphicsPipeline() const
-{
-	return pipeline;
 }
 
 VkShaderModule Pipeline::loadShaderModule(VkDevice device, const std::string& shaderPath)
@@ -114,7 +110,14 @@ void Pipeline::createGraphicsPipeline(VkDevice device, Swapchain swapchain)
 	blendInfo.pAttachments = &colorBlendAttachment;
 	blendInfo.logicOp = VK_LOGIC_OP_COPY;
 
+	std::vector<VkVertexInputBindingDescription> bindings = Mesh::Vertex::getBindingDescription();
+	std::vector<VkVertexInputAttributeDescription> attributes = Mesh::Vertex::getAttributeDescription();
+	
 	VkPipelineVertexInputStateCreateInfo vertexInput = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
+	vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(bindings.size());
+	vertexInput.pVertexBindingDescriptions = bindings.data();
+	vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
+	vertexInput.pVertexAttributeDescriptions = attributes.data();
 
 	VkDynamicState dynamicState[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	VkPipelineDynamicStateCreateInfo dynamicStateInfo = { VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
@@ -152,9 +155,4 @@ Material::~Material()
 void Material::freeMaterial(VkDevice device)
 {
 	pipeline.destroyPipeline(device);
-}
-
-VkPipeline Material::getGraphicsPipeline() const
-{
-	return pipeline.getGraphicsPipeline();
 }

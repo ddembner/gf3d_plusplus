@@ -1,17 +1,14 @@
 #include <iostream>
 #include "gf3d_swapchain.h"
 #include "vulkan_functions.h"
+#include "gf3d_device.h"
 
-Swapchain::Swapchain()
+void Swapchain::init(Gf3dDevice& gf3dDevice)
 {
-}
+	auto device = gf3dDevice.GetDevice();
+	auto physicalDevice = gf3dDevice.GetPhysicalDevice();
+	auto surface = gf3dDevice.GetSurface();
 
-Swapchain::~Swapchain()
-{
-}
-
-void Swapchain::init(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface)
-{
 	VkSurfaceCapabilitiesKHR surfaceCapabilities;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &surfaceCapabilities);
 
@@ -96,38 +93,12 @@ void Swapchain::cleanup(VkDevice device)
 	vkDestroySwapchainKHR(device, swapchain, nullptr);
 }
 
-uint32_t Swapchain::imageCount() const
+void Swapchain::recreate(Gf3dDevice& gf3dDevice)
 {
-	return bufferImageCount;
-}
+	auto device = gf3dDevice.GetDevice();
+	auto physicalDevice = gf3dDevice.GetPhysicalDevice();
+	auto surface = gf3dDevice.GetSurface();
 
-VkFormat Swapchain::getColorFormat() const
-{
-	return colorFormat;
-}
-
-VkExtent2D Swapchain::getExtent() const
-{
-	return extent;
-}
-
-VkSwapchainKHR Swapchain::getSwapchain() const
-{
-	return swapchain;
-}
-
-VkRenderPass Swapchain::getRenderPass() const
-{
-	return renderPass;
-}
-
-VkFramebuffer Swapchain::getFrameBuffer(uint32_t index)
-{
-	return frameBuffers[index];
-}
-
-void Swapchain::recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface)
-{
 	for (int i = 0; i < frameBuffers.size(); i++) {
 		vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
 	}
@@ -138,7 +109,7 @@ void Swapchain::recreate(VkPhysicalDevice physicalDevice, VkDevice device, VkSur
 
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
-	init(physicalDevice, device, surface);
+	init(gf3dDevice);
 }
 
 void Swapchain::selectPresentMode(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface)
