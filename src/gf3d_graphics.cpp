@@ -22,7 +22,7 @@ void Gf3dGraphics::cleanup()
 	vkDeviceWaitIdle(device);
 	cleanMaterials();
 	sampleMesh.destroy(allocator);
-	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+	//vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	for (uint32_t i = 0; i < MAX_FRAMES_INFLIGHT; i++) {
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 		vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);

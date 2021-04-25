@@ -31,7 +31,7 @@ private:
 	VkExtent2D extent;
 	VkPresentModeKHR presentMode;
 	VkSwapchainKHR swapchain;
-	VkSwapchainKHR oldSwapchain;
+	VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE;
 	uint32_t bufferImageCount;
 	VkFormat colorFormat;
 	VkFormat depthFormat;
