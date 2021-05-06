@@ -22,6 +22,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_camera.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_device.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_graphics.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_logger.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_math.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_mesh.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_pipeline.cpp
@@ -39,6 +40,7 @@ set(INCLUDE_PATHS
 	${CMAKE_CURRENT_SOURCE_DIR}/external/glfw/include
 	${CMAKE_CURRENT_SOURCE_DIR}/external/glm
 	${CMAKE_CURRENT_SOURCE_DIR}/external/vma/src
+	${CMAKE_CURRENT_SOURCE_DIR}/external/spdlog/include
 )
 
 add_executable("${PROJECT_NAME}" "${SOURCE_FILES}")

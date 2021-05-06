@@ -1,5 +1,5 @@
+#include "gf3d_logger.h"
 #include "Application.h"
-
 void Application::run()
 {
 	init();
@@ -14,9 +14,12 @@ void Application::run()
 
 void Application::init()
 {
+	Logger::init();
+	window.init();
 	gf3dDevice.init(&window);
 	renderer.init(&window, &gf3dDevice);
 	renderer.loadModel();
+	LOGGER_INFO("Initialized engine successfully");
 }
 
 void Application::update()

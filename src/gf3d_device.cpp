@@ -1,5 +1,5 @@
 #include <vector>
-#include <iostream>
+#include "gf3d_logger.h"
 #include "gf3d_device.h"
 #include "gf3d_validations.h"
 #include "vulkan_functions.h"
@@ -11,7 +11,7 @@ void Gf3dDevice::init(Gf3dWindow* window)
 	createInstance();
 	if (isValidationLayersEnabled()) {
 		setupDebugCallback();
-		std::cout << "Validation layers are on" << std::endl;
+		LOGGER_DEBUG("Validation layers are enabled");
 	}
 	surface = window->createWindowSurface(instance);
 	findPhysicalDevice();
@@ -30,8 +30,8 @@ void Gf3dDevice::cleanup()
 	vkDestroyCommandPool(device, commandPool, nullptr);
 	vmaDestroyAllocator(allocator);
 	vkDestroyDevice(device, nullptr);
-	DestroyDebugUtilsMessengerEXT(instance, callback, nullptr);
 	vkDestroySurfaceKHR(instance, surface, nullptr);
+	DestroyDebugUtilsMessengerEXT(instance, callback, nullptr);
 	vkDestroyInstance(instance, nullptr);
 }
 
@@ -90,7 +90,9 @@ void Gf3dDevice::createInstance()
 
 	VK_CHECK(vkCreateInstance(&instanceInfo, nullptr, &instance));
 
-	std::cout << "successfully created vulkan instance" << std::endl;
+	if (!instance) {
+		LOGGER_ERROR("Failed to create vulkan insatnce");
+	}
 }
 
 void Gf3dDevice::setupDebugCallback()
@@ -99,9 +101,13 @@ void Gf3dDevice::setupDebugCallback()
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	createInfo.pfnUserCallback = debugCallback;
+	createInfo.pfnUserCallback = gf3dVkValidationDebugCallback;
 
 	VK_CHECK(CreateDebugUtilsMessengerEXT(instance, reinterpret_cast<const VkDebugUtilsMessengerCreateInfoEXT*>(&createInfo), nullptr, &callback));
+
+	if (!callback) {
+		LOGGER_ERROR("Failed to create vulkan debug callbacks");
+	}
 }
 
 void Gf3dDevice::findPhysicalDevice()
@@ -120,7 +126,7 @@ void Gf3dDevice::findPhysicalDevice()
 			physicalDevice = devices[i];
 			vkGetPhysicalDeviceFeatures(devices[i], &physicalDeviceInfo.deviceFeatures);
 			vkGetPhysicalDeviceMemoryProperties(devices[i], &physicalDeviceInfo.deviceMemoryProperties);
-			std::cout << "Picking discrete gpu: " << physicalDeviceInfo.deviceProperties.deviceName << std::endl;
+			LOGGER_DEBUG("Picking discrete gpu: {}", physicalDeviceInfo.deviceProperties.deviceName);
 			return;
 		}
 
@@ -131,7 +137,7 @@ void Gf3dDevice::findPhysicalDevice()
 	vkGetPhysicalDeviceProperties(devices[0], &physicalDeviceInfo.deviceProperties);
 	vkGetPhysicalDeviceFeatures(devices[0], &physicalDeviceInfo.deviceFeatures);
 	vkGetPhysicalDeviceMemoryProperties(devices[0], &physicalDeviceInfo.deviceMemoryProperties);
-	std::cout << "Using fallback gpu: " << physicalDeviceInfo.deviceProperties.deviceName << std::endl;
+	LOGGER_DEBUG("Using fallback gpu: {}", physicalDeviceInfo.deviceProperties.deviceName);
 }
 
 void Gf3dDevice::createLogicalDevice()
@@ -166,6 +172,10 @@ void Gf3dDevice::createLogicalDevice()
 		queueInfos.push_back(transferInfo);
 	}
 
+	LOGGER_DEBUG("Graphics queue index: {}", queueIndices.graphics);
+	LOGGER_DEBUG("Compute queue index: {}", queueIndices.compute);
+	LOGGER_DEBUG("Transfer queue index: {}", queueIndices.transfer);
+
 	VkDeviceCreateInfo deviceInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
 	deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
 	deviceInfo.pQueueCreateInfos = queueInfos.data();
@@ -175,8 +185,12 @@ void Gf3dDevice::createLogicalDevice()
 
 	VK_CHECK(vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &device));
 
+	if (!physicalDevice) {
+		LOGGER_ERROR("Failed to find suitable gpu");
+	}
+
 	vkGetDeviceQueue(device, queueIndices.graphics, 0, &graphicsQueue);
-	vkGetDeviceQueue(device, queueIndices.compute, 0, &presentQueue);
+	vkGetDeviceQueue(device, queueIndices.compute, 0, &computeQueue);
 	vkGetDeviceQueue(device, queueIndices.transfer, 0, &transferQueue);
 }
 
@@ -189,6 +203,10 @@ void Gf3dDevice::createMemoryAllocator()
 	createInfo.vulkanApiVersion = VK_API_VERSION_1_2;
 
 	vmaCreateAllocator(&createInfo, &allocator);
+
+	if (!allocator) {
+		LOGGER_ERROR("Failed to create allocator");
+	}
 }
 
 void Gf3dDevice::createCommandPool()
@@ -197,6 +215,10 @@ void Gf3dDevice::createCommandPool()
 	createInfo.queueFamilyIndex = queueIndices.graphics;
 	createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	VK_CHECK(vkCreateCommandPool(device, &createInfo, nullptr, &commandPool));
+
+	if (!allocator) {
+		LOGGER_ERROR("Failed to create command pool");
+	}
 }
 
 uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
@@ -211,15 +233,13 @@ uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 
 		uint32_t queueIndex = 0;
 		for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilyProperties.size()); i++) {
-
-			if (queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT &&
-				!(queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
-				VkBool32 presentSupport;
-				vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
-				if (presentSupport) {
-					return i;
+			VkBool32 presentSupport;
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
+			if (presentSupport) {
+				if (queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT &&
+					!(queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+						return i;
 				}
-
 				queueIndex = i;
 			}
 		}
@@ -246,6 +266,7 @@ uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 		}
 	}
 
-	std::cout << "Could not find a matching family index for the queue" << std::endl;
+	LOGGER_ERROR("Could not find a matching family index for the queue");
+
 	return UINT32_MAX;
 }

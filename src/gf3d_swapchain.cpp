@@ -1,4 +1,4 @@
-#include <iostream>
+#include "gf3d_logger.h"
 #include "gf3d_swapchain.h"
 #include "vulkan_functions.h"
 #include "gf3d_device.h"
@@ -38,9 +38,7 @@ void Swapchain::init(Gf3dDevice& gf3dDevice)
 	swapchainInfo.imageColorSpace = surfaceFormat.colorSpace;
 	swapchainInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-	if (vkCreateSwapchainKHR(device, &swapchainInfo, nullptr, &swapchain) != VK_SUCCESS) {
-		std::cout << "Failed to create swapchain" << std::endl;
-	}
+	VK_CHECK(vkCreateSwapchainKHR(device, &swapchainInfo, nullptr, &swapchain));
 
 	if (oldSwapchain != VK_NULL_HANDLE) {
 		vkDestroySwapchainKHR(device, oldSwapchain, nullptr);
@@ -68,10 +66,7 @@ void Swapchain::init(Gf3dDevice& gf3dDevice)
 		viewInfo.subresourceRange.baseMipLevel = 0;
 		viewInfo.subresourceRange.levelCount = 1;
 
-		if (vkCreateImageView(device, &viewInfo, nullptr, &buffers[i].view) != VK_SUCCESS) {
-			std::cout << "Failed to create image view for framebuffer" << std::endl;
-			return;
-		}
+		VK_CHECK(vkCreateImageView(device, &viewInfo, nullptr, &buffers[i].view));
 	}
 
 	createRenderPass(device);
@@ -119,8 +114,16 @@ void Swapchain::selectPresentMode(VkPhysicalDevice physicalDevice, VkSurfaceKHR 
 	std::vector<VkPresentModeKHR> presentModes(presentCount);
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentCount, presentModes.data());
 
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+
 	//This is the only mode to be guaranteed under the standard
 	presentMode = VK_PRESENT_MODE_FIFO_KHR;
+	
+	//Use fifo as it is more battery efficient for devices with integrated gpus
+	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
+		return;
+	}
 
 	for (auto& mode : presentModes) {
 		//prefer to use mailbox if available
