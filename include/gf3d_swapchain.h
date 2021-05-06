@@ -28,13 +28,13 @@ private:
 	void createRenderPass(VkDevice device);
 	void createFrameBuffers(VkDevice device);
 private:
-	VkExtent2D extent;
+	VkExtent2D extent = { 0 };
 	VkPresentModeKHR presentMode;
 	VkSwapchainKHR swapchain;
 	VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE;
-	uint32_t bufferImageCount;
-	VkFormat colorFormat;
-	VkFormat depthFormat;
+	uint32_t bufferImageCount = 0;
+	VkFormat colorFormat = VK_FORMAT_UNDEFINED;
+	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 	VkRenderPass renderPass;
 	std::vector<VkFramebuffer> frameBuffers;
 

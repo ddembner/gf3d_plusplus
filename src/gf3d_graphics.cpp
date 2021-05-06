@@ -6,9 +6,10 @@
 using std::cout;
 using std::endl;
 
-void Gf3dGraphics::init(Gf3dWindow* window)
+void Gf3dGraphics::init(Gf3dWindow* window, Gf3dDevice* device)
 {
-	this->window = window;
+	gf3dWindow = window;
+	gf3dDevice = device;
 	initVulkan();
 	camera.position = glm::vec3(0.f, 0.f, -2.f);
 	camera.OnUpdate();
@@ -16,31 +17,36 @@ void Gf3dGraphics::init(Gf3dWindow* window)
 
 void Gf3dGraphics::cleanup()
 {
-	auto device = gf3dDevice.GetDevice();
-	auto allocator = gf3dDevice.GetAllocator();
+	auto device = gf3dDevice->GetDevice();
+	auto allocator = gf3dDevice->GetAllocator();
 
 	vkDeviceWaitIdle(device);
 	cleanMaterials();
 	sampleMesh.destroy(allocator);
-	//vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+	for (int i = 0; i < frameData.size(); i++) {
+		vmaDestroyBuffer(gf3dDevice->GetAllocator(), frameData[i].cameraBuffer.buffer, frameData[i].cameraBuffer.allocation);
+		vkFreeDescriptorSets(device, descriptorPool, 1, &frameData[i].globalSet);
+	}
+
+	vkDestroyDescriptorSetLayout(device, globalLayout, nullptr);
+	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
 	for (uint32_t i = 0; i < MAX_FRAMES_INFLIGHT; i++) {
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 		vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);
 		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
-	vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-	vkDestroyCommandPool(device, commandPool, nullptr);
-	vkDestroyCommandPool(device, transferCommandPool, nullptr);
-	swapchain.cleanup(device);
 
-	gf3dDevice.cleanup();
+	vkFreeCommandBuffers(device, gf3dDevice->GetCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	swapchain.cleanup(device);
 
 	cout << "Successfully cleaned graphics" << endl;
 }
 
 void Gf3dGraphics::draw()
 {
-	auto device = gf3dDevice.GetDevice();
+	auto device = gf3dDevice->GetDevice();
 	
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -49,7 +55,6 @@ void Gf3dGraphics::draw()
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
-		return;
 	}
 	
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -66,7 +71,7 @@ void Gf3dGraphics::draw()
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
 	VkSemaphore signalSemaphores[] = { renderCompleteSemaphores[currentFrame] };
 	submitInfo.signalSemaphoreCount = 1;
@@ -76,7 +81,7 @@ void Gf3dGraphics::draw()
 
 	recordCommandBuffer(imageIndex);
 
-	VK_CHECK(vkQueueSubmit(gf3dDevice.GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]));
+	VK_CHECK(vkQueueSubmit(gf3dDevice->GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]));
 
 	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -90,11 +95,10 @@ void Gf3dGraphics::draw()
 
 	presentInfo.pResults = nullptr;
 
-	result = vkQueuePresentKHR(gf3dDevice.GetPresentQueue(), &presentInfo);
+	result = vkQueuePresentKHR(gf3dDevice->GetPresentQueue(), &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		recreateSwapChain();
-		return;
 	}
 
 
@@ -103,34 +107,20 @@ void Gf3dGraphics::draw()
 
 void Gf3dGraphics::cleanMaterials()
 {
-	auto device = gf3dDevice.GetDevice();
+	auto device = gf3dDevice->GetDevice();
 	for (auto& material : materials) {
 		material.second.freeMaterial(device);
 	}
 }
 
-void Gf3dGraphics::createCommandPool()
-{
-	auto device = gf3dDevice.GetDevice();
-	VkCommandPoolCreateInfo createInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
-	createInfo.queueFamilyIndex = gf3dDevice.GetQueueIndex(VK_QUEUE_GRAPHICS_BIT);
-	createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK(vkCreateCommandPool(device, &createInfo, nullptr, &commandPool));
-
-	VkCommandPoolCreateInfo transferCreateInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
-	transferCreateInfo.queueFamilyIndex = gf3dDevice.GetQueueIndex(VK_QUEUE_TRANSFER_BIT);
-	transferCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK(vkCreateCommandPool(device, &transferCreateInfo, nullptr, &transferCommandPool));
-}
-
 void Gf3dGraphics::createCommandBuffers()
 {
-	auto device = gf3dDevice.GetDevice();
+	auto device = gf3dDevice->GetDevice();
 
-	commandBuffers.resize(swapchain.imageCount());
+	commandBuffers.resize(MAX_FRAMES_INFLIGHT);
 	
 	VkCommandBufferAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
-	allocInfo.commandPool = commandPool;
+	allocInfo.commandPool = gf3dDevice->GetCommandPool();
 	allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
@@ -139,7 +129,7 @@ void Gf3dGraphics::createCommandBuffers()
 
 void Gf3dGraphics::createSyncObjects()
 {
-	auto device = gf3dDevice.GetDevice();
+	auto device = gf3dDevice->GetDevice();
 
 	imageAvailableSemaphores.resize(MAX_FRAMES_INFLIGHT);
 	renderCompleteSemaphores.resize(MAX_FRAMES_INFLIGHT);
@@ -160,15 +150,15 @@ void Gf3dGraphics::createSyncObjects()
 
 void Gf3dGraphics::recordCommandBuffer(uint32_t imageIndex)
 {
-	if (glfwGetKey(window->getWindow(), GLFW_KEY_W) == GLFW_PRESS) { camera.position.z += 0.01f; }
-	if (glfwGetKey(window->getWindow(), GLFW_KEY_S) == GLFW_PRESS) { camera.position.z -= 0.01f; }
+	if (glfwGetKey(gf3dWindow->getWindow(), GLFW_KEY_W) == GLFW_PRESS) { camera.position.z += 0.01f; }
+	if (glfwGetKey(gf3dWindow->getWindow(), GLFW_KEY_S) == GLFW_PRESS) { camera.position.z -= 0.01f; }
 	camera.OnUpdate();
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = 0;
 	beginInfo.pInheritanceInfo = nullptr;
 
-	VkCommandBuffer cmd = commandBuffers[imageIndex];
+	VkCommandBuffer cmd = commandBuffers[currentFrame];
 
 	VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
 
@@ -203,6 +193,7 @@ void Gf3dGraphics::recordCommandBuffer(uint32_t imageIndex)
 	
 
 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getGraphicsPipeline());
+	//vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getPipelineLayout(), 0, 0, nullptr, 0, nullptr);
 	if (sampleMesh.isAllocated) {
 		sampleMesh.bind(cmd);
 		sampleMesh.draw(cmd);
@@ -216,23 +207,63 @@ void Gf3dGraphics::recordCommandBuffer(uint32_t imageIndex)
 
 void Gf3dGraphics::recreateSwapChain()
 {
-	VkExtent2D extent = window->getExtent();
+	VkExtent2D extent = gf3dWindow->getExtent();
 	while (extent.width == 0 || extent.height == 0) {
-		extent = window->getExtent();
+		extent = gf3dWindow->getExtent();
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(gf3dDevice.GetDevice());
+	vkDeviceWaitIdle(gf3dDevice->GetDevice());
 
-	swapchain.recreate(gf3dDevice);
+	swapchain.recreate(*gf3dDevice);
 }
 
 void Gf3dGraphics::createDescriptorPool()
 {
-	auto device = gf3dDevice.GetDevice();
+	auto device = gf3dDevice->GetDevice();
+	std::vector<VkDescriptorPoolSize> poolSizes = { {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10} };
 
 	VkDescriptorPoolCreateInfo createInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
-	vkCreateDescriptorPool(device, &createInfo, nullptr, &descriptorPool);
+	createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	createInfo.pPoolSizes = poolSizes.data();
+	createInfo.maxSets = 10;
+	createInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	VK_CHECK(vkCreateDescriptorPool(device, &createInfo, nullptr, &descriptorPool));
+
+	VkDescriptorSetLayoutBinding cameraBinding = {};
+	cameraBinding.binding = 0;
+	cameraBinding.descriptorCount = 1;
+	cameraBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	cameraBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutCreateInfo layoutInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO };
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &cameraBinding;
+	
+	VK_CHECK(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &globalLayout));
+
+	for (int i = 0; i < frameData.size(); i++) {
+
+		VkDescriptorSetAllocateInfo globalAllocInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
+		globalAllocInfo.descriptorPool = descriptorPool;
+		globalAllocInfo.descriptorSetCount = 1;
+		globalAllocInfo.pSetLayouts = &globalLayout;
+		VK_CHECK(vkAllocateDescriptorSets(device, &globalAllocInfo, &frameData[i].globalSet));
+
+		VkDescriptorBufferInfo cameraBufferInfo = {};
+		cameraBufferInfo.buffer = frameData[i].cameraBuffer.buffer;
+		cameraBufferInfo.offset = 0;
+		cameraBufferInfo.range = sizeof(GPUCameraData);
+
+		VkWriteDescriptorSet cameraWrite = { VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET };
+		cameraWrite.descriptorCount = 1;
+		cameraWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		cameraWrite.dstSet = frameData[i].globalSet;
+		cameraWrite.dstBinding = 0;
+		cameraWrite.pBufferInfo = &cameraBufferInfo;
+
+		vkUpdateDescriptorSets(device, 1, &cameraWrite, 0, nullptr);
+	}
 }
 
 void Gf3dGraphics::createGlobalUniforms()
@@ -240,14 +271,30 @@ void Gf3dGraphics::createGlobalUniforms()
 
 }
 
+void Gf3dGraphics::createPerFrameData()
+{
+	frameData.resize(MAX_FRAMES_INFLIGHT);
+
+	for (int i = 0; i < frameData.size(); i++) {
+		frameData[i].cameraBuffer = createBuffer(gf3dDevice->GetAllocator(), sizeof(GPUCameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+	}
+}
+
 void Gf3dGraphics::oncePerFrameCommands(VkCommandBuffer& cmd)
 {
+	auto allocator = gf3dDevice->GetAllocator();
 
+	void* data;
+	vmaMapMemory(allocator, frameData[currentFrame].cameraBuffer.allocation, &data);
+
+	memcpy(data, &camera, sizeof(GPUCameraData));
+
+	vmaUnmapMemory(allocator, frameData[currentFrame].cameraBuffer.allocation);
 }
 
 void Gf3dGraphics::createMaterial(const std::string& vertPath, const std::string& fragPath)
 {
-	auto device = gf3dDevice.GetDevice();
+	auto device = gf3dDevice->GetDevice();
 	//TODO: Make better system in which materials are named/made
 	std::string uniqueMaterialName = vertPath + fragPath;
 	if (materials.find(uniqueMaterialName) != materials.end()) {
@@ -269,7 +316,7 @@ Mesh Gf3dGraphics::createMesh(const std::string& path)
 {
 	Mesh mesh;
 
-	mesh.allocateMesh(gf3dDevice, commandPool);
+	mesh.allocateMesh(*gf3dDevice, gf3dDevice->GetCommandPool());
 
 	meshes["triangle"] = mesh;
 
@@ -279,17 +326,15 @@ Mesh Gf3dGraphics::createMesh(const std::string& path)
 //Initializes the vulkan api
 void Gf3dGraphics::initVulkan() 
 {
-	gf3dDevice.init(window);
-
-	swapchain.init(gf3dDevice);
-	
-	createCommandPool();
+	swapchain.init(*gf3dDevice);
 
 	createCommandBuffers();
 
 	createSyncObjects();
 
-	//createDescriptorPool();
+	createPerFrameData();
+
+	createDescriptorPool();
 
 	createMaterial("D:/Programming/gf3d++/gf3d++/shaders/vert.spv", "D:/Programming/gf3d++/gf3d++/shaders/frag.spv");
 }

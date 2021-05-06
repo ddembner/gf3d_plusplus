@@ -4,15 +4,14 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <string>
+#include "NonCopyable.h"
 
-class Gf3dWindow 
+class Gf3dWindow : NonCopyable
 {
 public:
-	Gf3dWindow(const int Width, const int Height, const std::string& Title) : width(Width), height(Height), title(Title) {}
+	Gf3dWindow(const int Width = 1280, const int Height = 720, const std::string& Title = "Gf3d++ Engine");
 	~Gf3dWindow() { }
-	Gf3dWindow(const Gf3dWindow&) = delete;
-	Gf3dWindow& operator=(const Gf3dWindow&) = delete;
-	static std::unique_ptr<Gf3dWindow> Create(const int width = 1280, const int height = 720, const std::string& title = "gf3d++");
+
 	void cleanup();
 	VkSurfaceKHR createWindowSurface(VkInstance instance);
 	GLFWwindow* getWindow() const { return glfw_window; }

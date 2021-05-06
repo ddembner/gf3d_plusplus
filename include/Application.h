@@ -1,13 +1,17 @@
 #pragma once
 #include "gf3d_device.h"
 #include "gf3d_graphics.h"
+#include "GameObject.h"
+#include "NonCopyable.h"
 #include <memory>
 
-class Application 
+class Application : NonCopyable
 {
 public: 
-	Application() { }
+	Application() = default;
 	~Application() { }
+	Application(const Application&) = delete;
+	Application& operator=(const Application&) = delete;
 	void run();
 
 private:
@@ -18,6 +22,8 @@ private:
 
 private:
 	bool isDonePlaying = false;
+	Gf3dWindow window{ 1280, 720, "gf3d++" };
+	Gf3dDevice gf3dDevice;
 	Gf3dGraphics renderer;
-	std::unique_ptr<Gf3dWindow> window;
+	std::vector<GameObject> gameObjects;
 };

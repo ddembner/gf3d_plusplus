@@ -2,15 +2,15 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include "gf3d_window.h"
+#include "NonCopyable.h"
 
-class Gf3dDevice
+class Gf3dDevice : NonCopyable
 {
 public:
 	Gf3dDevice() = default;
-	Gf3dDevice(const Gf3dDevice&) = delete;
-	Gf3dDevice& operator=(const Gf3dDevice&) = delete;
+	~Gf3dDevice() = default;
 	void init(Gf3dWindow* window);
-	void createSurface(Gf3dWindow* window);
+	void createSurface();
 	void cleanup();
 public:
 	const VkInstance& GetInstance() { return instance; }
@@ -21,6 +21,7 @@ public:
 	const VkQueue GetGraphicsQueue() { return graphicsQueue; }
 	const VkQueue GetPresentQueue() { return presentQueue; }
 	const VkQueue GetTransferQueue() { return transferQueue; }
+	const VkCommandPool GetCommandPool() { return commandPool; }
 	const uint32_t GetQueueIndex (VkQueueFlags queueFlag);
 private:
 	void createInstance();
@@ -28,6 +29,7 @@ private:
 	void findPhysicalDevice();
 	void createLogicalDevice();
 	void createMemoryAllocator();
+	void createCommandPool();
 	uint32_t findQueueFamilyIndex(VkQueueFlags queueFlag);
 private:
 	VkInstance instance;
@@ -39,6 +41,7 @@ private:
 	VkQueue graphicsQueue;
 	VkQueue presentQueue;
 	VkQueue transferQueue;
+	VkCommandPool commandPool;
 
 	struct PhysicalDeviceInfo {
 		VkPhysicalDeviceFeatures deviceFeatures;
@@ -51,4 +54,6 @@ private:
 		uint32_t compute;
 		uint32_t transfer;
 	} queueIndices;
+
+	Gf3dWindow* gf3dWindow;
 };

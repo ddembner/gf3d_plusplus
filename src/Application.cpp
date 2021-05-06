@@ -1,9 +1,8 @@
 #include "Application.h"
-#include <iostream>
+
 void Application::run()
 {
 	init();
-	
 	while (!isDonePlaying) {
 		glfwPollEvents();
 		update();
@@ -15,14 +14,14 @@ void Application::run()
 
 void Application::init()
 {
-	window = Gf3dWindow::Create();
-	renderer.init(window.get());
+	gf3dDevice.init(&window);
+	renderer.init(&window, &gf3dDevice);
 	renderer.loadModel();
 }
 
 void Application::update()
 {
-	isDonePlaying = window->windowClosed() || glfwGetKey(window->getWindow(), GLFW_KEY_ESCAPE);
+	isDonePlaying = window.windowClosed() || glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE);
 }
 
 void Application::render()
@@ -33,5 +32,6 @@ void Application::render()
 void Application::cleanup()
 {
 	renderer.cleanup();
-	window->cleanup();
+	gf3dDevice.cleanup();
+	window.cleanup();
 }

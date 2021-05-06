@@ -6,6 +6,8 @@
 
 void Gf3dDevice::init(Gf3dWindow* window)
 {
+	assert(window);
+	gf3dWindow = window;
 	createInstance();
 	if (isValidationLayersEnabled()) {
 		setupDebugCallback();
@@ -15,15 +17,17 @@ void Gf3dDevice::init(Gf3dWindow* window)
 	findPhysicalDevice();
 	createLogicalDevice();
 	createMemoryAllocator();
+	createCommandPool();
 }
 
-void Gf3dDevice::createSurface(Gf3dWindow* window)
+void Gf3dDevice::createSurface()
 {
-	surface = window->createWindowSurface(instance);
+	surface = gf3dWindow->createWindowSurface(instance);
 }
 
 void Gf3dDevice::cleanup()
 {
+	vkDestroyCommandPool(device, commandPool, nullptr);
 	vmaDestroyAllocator(allocator);
 	vkDestroyDevice(device, nullptr);
 	DestroyDebugUtilsMessengerEXT(instance, callback, nullptr);
@@ -185,6 +189,14 @@ void Gf3dDevice::createMemoryAllocator()
 	createInfo.vulkanApiVersion = VK_API_VERSION_1_2;
 
 	vmaCreateAllocator(&createInfo, &allocator);
+}
+
+void Gf3dDevice::createCommandPool()
+{
+	VkCommandPoolCreateInfo createInfo = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+	createInfo.queueFamilyIndex = queueIndices.graphics;
+	createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	VK_CHECK(vkCreateCommandPool(device, &createInfo, nullptr, &commandPool));
 }
 
 uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)

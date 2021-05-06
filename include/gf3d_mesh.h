@@ -32,7 +32,7 @@ public:
 	uint32_t getVertexCount() const { return vertexCount; }
 private:
 	std::vector<Vertex> vertices;
-	uint32_t vertexCount;
+	uint32_t vertexCount = 0;
 };
 
 class MeshFactory

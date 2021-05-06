@@ -41,7 +41,7 @@ set(INCLUDE_PATHS
 	${CMAKE_CURRENT_SOURCE_DIR}/external/vma/src
 )
 
-add_executable("${PROJECT_NAME}" "${SOURCE_FILES}" )
+add_executable("${PROJECT_NAME}" "${SOURCE_FILES}")
 
 target_include_directories("${PROJECT_NAME}" PRIVATE "${INCLUDE_PATHS}")
 

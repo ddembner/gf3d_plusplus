@@ -11,15 +11,13 @@
 class Gf3dGraphics
 {
 public:
-	Gf3dGraphics() {}
-	~Gf3dGraphics() {}
-	void init(Gf3dWindow* window);
+	Gf3dGraphics() = default;
+	~Gf3dGraphics() = default;
+	void init(Gf3dWindow* const window, Gf3dDevice* device);
 	void cleanup();
 	void draw();
 private:
 	Swapchain swapchain;
-	VkCommandPool commandPool;
-	VkCommandPool transferCommandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderCompleteSemaphores;
@@ -40,8 +38,23 @@ private:
 
 	Mesh sampleMesh;
 	Camera camera;
-	Gf3dWindow* window;
-	Gf3dDevice gf3dDevice;
+	Gf3dWindow* gf3dWindow;
+	Gf3dDevice* gf3dDevice;
+
+	struct GPUCameraData
+	{
+		glm::mat4 viewMatrix;
+		glm::mat4 projectionMatrix;
+		glm::mat4 viewProjectionMatrix;
+	};
+
+	struct PerFrameData
+	{
+		AllocatedBuffer cameraBuffer;
+		VkDescriptorSet globalSet;
+	};
+
+	std::vector<PerFrameData> frameData;
 
 public:
 	void createMaterial(const std::string& vertPath, const std::string& fragPath);
@@ -50,13 +63,12 @@ public:
 private:
 	void initVulkan();
 	void cleanMaterials();
-
-	void createCommandPool();
 	void createCommandBuffers();
 	void createSyncObjects();
 	void recordCommandBuffer(uint32_t imageIndex);
 	void recreateSwapChain();
 	void createDescriptorPool();
 	void createGlobalUniforms();
+	void createPerFrameData();
 	void oncePerFrameCommands(VkCommandBuffer& cmd);
 };
