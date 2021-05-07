@@ -95,7 +95,7 @@ void Gf3dGraphics::draw()
 
 	presentInfo.pResults = nullptr;
 
-	result = vkQueuePresentKHR(gf3dDevice->GetPresentQueue(), &presentInfo);
+	result = vkQueuePresentKHR(gf3dDevice->GetGraphicsQueue(), &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		recreateSwapChain();
@@ -124,7 +124,7 @@ void Gf3dGraphics::createCommandBuffers()
 	allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-	vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data());
+	VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()));
 }
 
 void Gf3dGraphics::createSyncObjects()
@@ -198,7 +198,6 @@ void Gf3dGraphics::recordCommandBuffer(uint32_t imageIndex)
 		sampleMesh.bind(cmd);
 		sampleMesh.draw(cmd);
 	}
-	//vkCmdDraw(commandBuffers[imageIndex], 3, 1, 0, 0);
 
 	vkCmdEndRenderPass(cmd);
 

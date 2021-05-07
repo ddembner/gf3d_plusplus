@@ -19,7 +19,7 @@ public:
 	const VmaAllocator GetAllocator() { return allocator; }
 	const VkSurfaceKHR GetSurface() { return surface; }
 	const VkQueue GetGraphicsQueue() { return graphicsQueue; }
-	const VkQueue GetPresentQueue() { return presentQueue; }
+	const VkQueue GetComputeQueue() { return computeQueue; }
 	const VkQueue GetTransferQueue() { return transferQueue; }
 	const VkCommandPool GetCommandPool() { return commandPool; }
 	const uint32_t GetQueueIndex (VkQueueFlags queueFlag);
@@ -32,16 +32,16 @@ private:
 	void createCommandPool();
 	uint32_t findQueueFamilyIndex(VkQueueFlags queueFlag);
 private:
-	VkInstance instance;
-	VkDebugUtilsMessengerEXT callback;
-	VkPhysicalDevice physicalDevice;
-	VkDevice device;
-	VmaAllocator allocator;
-	VkSurfaceKHR surface;
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
-	VkQueue transferQueue;
-	VkCommandPool commandPool;
+	VkInstance instance = 0;
+	VkDebugUtilsMessengerEXT callback = 0;
+	VkPhysicalDevice physicalDevice = 0;
+	VkDevice device = 0;
+	VmaAllocator allocator = 0;
+	VkSurfaceKHR surface = 0;
+	VkQueue graphicsQueue = 0;
+	VkQueue computeQueue = 0;
+	VkQueue transferQueue = 0;
+	VkCommandPool commandPool = 0;
 
 	struct PhysicalDeviceInfo {
 		VkPhysicalDeviceFeatures deviceFeatures;

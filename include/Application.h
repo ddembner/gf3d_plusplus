@@ -22,7 +22,7 @@ private:
 
 private:
 	bool isDonePlaying = false;
-	Gf3dWindow window{ 1280, 720, "gf3d++" };
+	Gf3dWindow window;
 	Gf3dDevice gf3dDevice;
 	Gf3dGraphics renderer;
 	std::vector<GameObject> gameObjects;

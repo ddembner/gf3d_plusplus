@@ -1,21 +1,25 @@
+#include "gf3d_logger.h"
 #include "gf3d_window.h"
 #include <cassert>
 
-Gf3dWindow::Gf3dWindow(const int Width, const int Height, const std::string& Title) : width(Width), height(Height), title(Title)
+void Gf3dWindow::init(const int Width, const int Height, const std::string& Title)
 {
-	init();
-}
+	width = Width;
+	height = Height;
+	title = Title;
 
-void Gf3dWindow::init()
-{
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfw_window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
-	assert(glfw_window && "Failed to create glfw window");
+	if (!glfw_window) {
+		LOGGER_ERROR("Failed to initialize GLFW window!");
+	}
+	assert(glfw_window);
 	glfwSetWindowSizeLimits(glfw_window, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
 	glfwSetWindowUserPointer(glfw_window, this);
 	glfwSetFramebufferSizeCallback(glfw_window, windowResizeCallback);
+	LOGGER_INFO("Successfully initialized GLFW window");
 }
 
 void Gf3dWindow::cleanup()
