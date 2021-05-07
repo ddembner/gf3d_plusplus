@@ -37,4 +37,5 @@ void Application::cleanup()
 	renderer.cleanup();
 	gf3dDevice.cleanup();
 	window.cleanup();
+	Logger::shutdown();
 }
