@@ -1,5 +1,6 @@
 #include "gf3d_logger.h"
 #include "Application.h"
+
 void Application::run()
 {
 	init();
@@ -8,7 +9,6 @@ void Application::run()
 		update();
 		render();
 	}
-
 	cleanup();
 }
 
