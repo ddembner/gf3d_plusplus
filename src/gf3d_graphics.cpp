@@ -55,6 +55,7 @@ void Gf3dGraphics::draw()
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
+		return;
 	}
 	
 	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
