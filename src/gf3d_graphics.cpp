@@ -40,8 +40,6 @@ void Gf3dGraphics::cleanup()
 
 	vkFreeCommandBuffers(device, gf3dDevice->GetCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 	swapchain.cleanup(device);
-
-	cout << "Successfully cleaned graphics" << endl;
 }
 
 void Gf3dGraphics::draw()
@@ -336,5 +334,7 @@ void Gf3dGraphics::initVulkan()
 
 	createDescriptorPool();
 
-	createMaterial("D:/Programming/gf3d++/gf3d++/shaders/vert.spv", "D:/Programming/gf3d++/gf3d++/shaders/frag.spv");
+	std::string vertPath = ASSETS_PATH "shaders/vert.spv";
+	std::string fragPath = ASSETS_PATH "shaders/frag.spv";
+	createMaterial(vertPath, fragPath);
 }

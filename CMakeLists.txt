@@ -12,6 +12,9 @@ ENDIF()
 
 add_subdirectory(./external/glfw)
 
+set(ASSET_PATH_DIR "${CMAKE_SOURCE_DIR}/assets/")
+add_definitions(-DASSETS_PATH=\"${ASSET_PATH_DIR}\")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
