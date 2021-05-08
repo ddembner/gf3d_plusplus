@@ -122,7 +122,7 @@ void Gf3dDevice::findPhysicalDevice()
 	for (uint32_t i = 0; i < devices.size(); i++) {
 
 		vkGetPhysicalDeviceProperties(devices[i], &physicalDeviceInfo.deviceProperties);
-		if (physicalDeviceInfo.deviceProperties.deviceType = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+		if (physicalDeviceInfo.deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
 			physicalDevice = devices[i];
 			vkGetPhysicalDeviceFeatures(devices[i], &physicalDeviceInfo.deviceFeatures);
 			vkGetPhysicalDeviceMemoryProperties(devices[i], &physicalDeviceInfo.deviceMemoryProperties);

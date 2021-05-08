@@ -39,7 +39,7 @@ class MeshFactory
 {
 public:
 	static Mesh* Create(std::string& filepath) {
-
+		return nullptr;
 	}
 
 	static bool Destroy(std::string& filepath) {
@@ -57,8 +57,8 @@ public:
 				delete it->second;
 				return true;
 			}
-			return false;
 		}
+		return false;
 	}
 
 private:
