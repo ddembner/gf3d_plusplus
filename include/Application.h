@@ -19,6 +19,7 @@ private:
 	void update();
 	void render();
 	void cleanup();
+	void CalculateFPS();
 
 private:
 	bool isDonePlaying = false;

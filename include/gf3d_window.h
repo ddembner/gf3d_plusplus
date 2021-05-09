@@ -17,6 +17,8 @@ public:
 	inline bool windowClosed() { return glfwWindowShouldClose(glfw_window); }
 	inline bool wasWindowResized() { return framebufferResized; }
 	VkExtent2D getExtent() const { return { static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; }
+	void setFPSWindowTitle(size_t fpsCount);
+	const std::string& getTitle() const { return title; }
 private:
 	static void windowResizeCallback(GLFWwindow* window, int width, int height);
 private:

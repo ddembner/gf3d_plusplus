@@ -1,5 +1,6 @@
 #include "gf3d_logger.h"
 #include "Application.h"
+#include <spdlog/stopwatch.h>
 
 void Application::run()
 {
@@ -8,6 +9,7 @@ void Application::run()
 		glfwPollEvents();
 		update();
 		render();
+		CalculateFPS();
 	}
 	cleanup();
 }
@@ -29,7 +31,9 @@ void Application::update()
 
 void Application::render()
 {
-	renderer.draw();
+	if (VkCommandBuffer cmd = renderer.beginFrame()) {
+		renderer.draw();
+	}
 }
 
 void Application::cleanup()
@@ -38,4 +42,16 @@ void Application::cleanup()
 	gf3dDevice.cleanup();
 	window.cleanup();
 	Logger::shutdown();
+}
+
+void Application::CalculateFPS()
+{
+	static spdlog::stopwatch sw;
+	static size_t fpsCount = 0;
+	fpsCount++;
+	if (sw.elapsed().count() > 1.0) {
+		window.setFPSWindowTitle(fpsCount);
+		fpsCount = 0;
+		sw.reset();
+	}
 }

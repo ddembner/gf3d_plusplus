@@ -35,6 +35,12 @@ VkSurfaceKHR Gf3dWindow::createWindowSurface(VkInstance instance)
 	return newSurface;
 }
 
+void Gf3dWindow::setFPSWindowTitle(size_t fpsCount)
+{
+	std::string fpsTitle = title + " - FPS(" + std::to_string(fpsCount) + ')';
+	glfwSetWindowTitle(glfw_window, fpsTitle.c_str());
+}
+
 void Gf3dWindow::windowResizeCallback(GLFWwindow* window, int width, int height)
 {
 	auto appWindow = reinterpret_cast<Gf3dWindow*>(glfwGetWindowUserPointer(window));

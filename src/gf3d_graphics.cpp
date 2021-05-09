@@ -46,20 +46,10 @@ void Gf3dGraphics::draw()
 {
 	auto device = gf3dDevice->GetDevice();
 	
-	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-
-	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(device, swapchain.getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-
-	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		recreateSwapChain();
-		return;
+	if (imagesInFlight[currentImageIndex] != VK_NULL_HANDLE) {
+		vkWaitForFences(device, 1, &imagesInFlight[currentImageIndex], VK_TRUE, UINT64_MAX);
 	}
-	
-	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-	}
-	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+	imagesInFlight[currentImageIndex] = inFlightFences[currentFrame];
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -78,7 +68,7 @@ void Gf3dGraphics::draw()
 
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-	recordCommandBuffer(imageIndex);
+	recordCommandBuffer(currentImageIndex);
 
 	VK_CHECK(vkQueueSubmit(gf3dDevice->GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]));
 
@@ -90,11 +80,11 @@ void Gf3dGraphics::draw()
 	VkSwapchainKHR swapChains[] = { swapchain.getSwapchain() };
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
-	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pImageIndices = &currentImageIndex;
 
 	presentInfo.pResults = nullptr;
 
-	result = vkQueuePresentKHR(gf3dDevice->GetGraphicsQueue(), &presentInfo);
+	VkResult result = vkQueuePresentKHR(gf3dDevice->GetGraphicsQueue(), &presentInfo);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		recreateSwapChain();
@@ -152,14 +142,8 @@ void Gf3dGraphics::recordCommandBuffer(uint32_t imageIndex)
 	if (glfwGetKey(gf3dWindow->getWindow(), GLFW_KEY_W) == GLFW_PRESS) { camera.position.z += 0.01f; }
 	if (glfwGetKey(gf3dWindow->getWindow(), GLFW_KEY_S) == GLFW_PRESS) { camera.position.z -= 0.01f; }
 	camera.OnUpdate();
-	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	beginInfo.flags = 0;
-	beginInfo.pInheritanceInfo = nullptr;
 
-	VkCommandBuffer cmd = commandBuffers[currentFrame];
-
-	VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+	VkCommandBuffer cmd = getCurrentCommandBuffer();
 
 	oncePerFrameCommands(cmd);
 
@@ -319,6 +303,31 @@ Mesh Gf3dGraphics::createMesh(const std::string& path)
 	meshes["triangle"] = mesh;
 
 	return mesh;
+}
+
+VkCommandBuffer Gf3dGraphics::beginFrame()
+{
+	auto device = gf3dDevice->GetDevice();
+
+	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+	VkResult result = vkAcquireNextImageKHR(device, swapchain.getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &currentImageIndex);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		recreateSwapChain();
+		return VK_NULL_HANDLE;
+	}
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = 0;
+	beginInfo.pInheritanceInfo = nullptr;
+
+	VkCommandBuffer cmd = getCurrentCommandBuffer();
+
+	VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+
+	return cmd;
 }
 
 //Initializes the vulkan api

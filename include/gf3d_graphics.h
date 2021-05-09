@@ -34,7 +34,8 @@ private:
 	VkDescriptorSetLayout globalLayout;
 
 	const uint32_t MAX_FRAMES_INFLIGHT = 2;
-	size_t currentFrame = 0;
+	uint32_t currentImageIndex;
+	int currentFrame = 0;
 
 	Mesh sampleMesh;
 	Camera camera;
@@ -60,6 +61,7 @@ public:
 	void createMaterial(const std::string& vertPath, const std::string& fragPath);
 	void loadModel();
 	Mesh createMesh(const std::string& path);
+	VkCommandBuffer beginFrame();
 private:
 	void initVulkan();
 	void cleanMaterials();
@@ -71,4 +73,5 @@ private:
 	void createGlobalUniforms();
 	void createPerFrameData();
 	void oncePerFrameCommands(VkCommandBuffer& cmd);
+	VkCommandBuffer getCurrentCommandBuffer() { return commandBuffers[currentFrame]; }
 };
