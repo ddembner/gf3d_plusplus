@@ -1,12 +1,11 @@
 #pragma once
 #include "gf3d_mesh.h"
+#include "NonCopyable.h"
 
-class GameObject
+class GameObject : NonCopyable
 {
 public:
-	GameObject() = default;
-	~GameObject() = default;
-private:
-	//TODO Components
 	Mesh mesh;
+	glm::mat4 transform{ 1.f };
+	glm::vec4 color;
 };

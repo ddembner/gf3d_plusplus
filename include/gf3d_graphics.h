@@ -7,6 +7,7 @@
 #include "gf3d_pipeline.h"
 #include "gf3d_mesh.h"
 #include "gf3d_camera.h"
+#include "GameObject.h"
 
 class Gf3dGraphics
 {
@@ -36,8 +37,8 @@ private:
 	const uint32_t MAX_FRAMES_INFLIGHT = 2;
 	uint32_t currentImageIndex;
 	int currentFrame = 0;
+	bool isFrameInProgress = false;
 
-	Mesh sampleMesh;
 	Camera camera;
 	Gf3dWindow* gf3dWindow;
 	Gf3dDevice* gf3dDevice;
@@ -59,15 +60,16 @@ private:
 
 public:
 	void createMaterial(const std::string& vertPath, const std::string& fragPath);
-	void loadModel();
-	Mesh createMesh(const std::string& path);
 	VkCommandBuffer beginFrame();
+	void endFrame();
+	void beginRenderPass(VkCommandBuffer cmd);
+	void endRenderPass(VkCommandBuffer cmd);
+	void renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects);
 private:
 	void initVulkan();
 	void cleanMaterials();
 	void createCommandBuffers();
 	void createSyncObjects();
-	void recordCommandBuffer(uint32_t imageIndex);
 	void recreateSwapChain();
 	void createDescriptorPool();
 	void createGlobalUniforms();

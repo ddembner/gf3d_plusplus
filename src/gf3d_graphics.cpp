@@ -20,9 +20,7 @@ void Gf3dGraphics::cleanup()
 	auto device = gf3dDevice->GetDevice();
 	auto allocator = gf3dDevice->GetAllocator();
 
-	vkDeviceWaitIdle(device);
 	cleanMaterials();
-	sampleMesh.destroy(allocator);
 
 	for (int i = 0; i < frameData.size(); i++) {
 		vmaDestroyBuffer(gf3dDevice->GetAllocator(), frameData[i].cameraBuffer.buffer, frameData[i].cameraBuffer.allocation);
@@ -46,52 +44,10 @@ void Gf3dGraphics::draw()
 {
 	auto device = gf3dDevice->GetDevice();
 	
-	if (imagesInFlight[currentImageIndex] != VK_NULL_HANDLE) {
-		vkWaitForFences(device, 1, &imagesInFlight[currentImageIndex], VK_TRUE, UINT64_MAX);
-	}
-	imagesInFlight[currentImageIndex] = inFlightFences[currentFrame];
+	
 
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	
 
-	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
-	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = waitSemaphores;
-	submitInfo.pWaitDstStageMask = waitStages;
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
-
-	VkSemaphore signalSemaphores[] = { renderCompleteSemaphores[currentFrame] };
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = signalSemaphores;
-
-	vkResetFences(device, 1, &inFlightFences[currentFrame]);
-
-	recordCommandBuffer(currentImageIndex);
-
-	VK_CHECK(vkQueueSubmit(gf3dDevice->GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]));
-
-	VkPresentInfoKHR presentInfo = {};
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores = signalSemaphores;
-
-	VkSwapchainKHR swapChains[] = { swapchain.getSwapchain() };
-	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = swapChains;
-	presentInfo.pImageIndices = &currentImageIndex;
-
-	presentInfo.pResults = nullptr;
-
-	VkResult result = vkQueuePresentKHR(gf3dDevice->GetGraphicsQueue(), &presentInfo);
-
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-		recreateSwapChain();
-	}
-
-
-	currentFrame = (currentFrame + 1) % MAX_FRAMES_INFLIGHT;
 }
 
 void Gf3dGraphics::cleanMaterials()
@@ -135,56 +91,6 @@ void Gf3dGraphics::createSyncObjects()
 		VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderCompleteSemaphores[i]));
 		VK_CHECK(vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]));
 	}
-}
-
-void Gf3dGraphics::recordCommandBuffer(uint32_t imageIndex)
-{
-	if (glfwGetKey(gf3dWindow->getWindow(), GLFW_KEY_W) == GLFW_PRESS) { camera.position.z += 0.01f; }
-	if (glfwGetKey(gf3dWindow->getWindow(), GLFW_KEY_S) == GLFW_PRESS) { camera.position.z -= 0.01f; }
-	camera.OnUpdate();
-
-	VkCommandBuffer cmd = getCurrentCommandBuffer();
-
-	oncePerFrameCommands(cmd);
-
-	VkRenderPassBeginInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = swapchain.getRenderPass();
-	renderPassInfo.framebuffer = swapchain.getFrameBuffer(imageIndex);
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapchain.getExtent();
-
-	VkClearValue clearColor = { 0.2f, 0.2f, 0.3f, 1.0f };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
-
-	vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-	
-	VkViewport viewport = {};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(swapchain.getExtent().width);
-	viewport.height = static_cast<float>(swapchain.getExtent().height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-
-	VkRect2D scissor = {};
-	scissor.offset = { 0, 0 };
-	scissor.extent = swapchain.getExtent();
-	vkCmdSetViewport(cmd, 0, 1, &viewport);
-	vkCmdSetScissor(cmd, 0, 1, &scissor);
-	
-
-	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getGraphicsPipeline());
-	//vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getPipelineLayout(), 0, 0, nullptr, 0, nullptr);
-	if (sampleMesh.isAllocated) {
-		sampleMesh.bind(cmd);
-		sampleMesh.draw(cmd);
-	}
-
-	vkCmdEndRenderPass(cmd);
-
-	VK_CHECK(vkEndCommandBuffer(cmd));
 }
 
 void Gf3dGraphics::recreateSwapChain()
@@ -287,24 +193,6 @@ void Gf3dGraphics::createMaterial(const std::string& vertPath, const std::string
 	materials[uniqueMaterialName] = material;
 }
 
-void Gf3dGraphics::loadModel()
-{
-	if (sampleMesh.isAllocated) return;
-
-	sampleMesh = createMesh("");
-}
-
-Mesh Gf3dGraphics::createMesh(const std::string& path)
-{
-	Mesh mesh;
-
-	mesh.allocateMesh(*gf3dDevice, gf3dDevice->GetCommandPool());
-
-	meshes["triangle"] = mesh;
-
-	return mesh;
-}
-
 VkCommandBuffer Gf3dGraphics::beginFrame()
 {
 	auto device = gf3dDevice->GetDevice();
@@ -318,6 +206,8 @@ VkCommandBuffer Gf3dGraphics::beginFrame()
 		return VK_NULL_HANDLE;
 	}
 
+	isFrameInProgress = true;
+
 	VkCommandBufferBeginInfo beginInfo = {};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = 0;
@@ -328,6 +218,109 @@ VkCommandBuffer Gf3dGraphics::beginFrame()
 	VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
 
 	return cmd;
+}
+
+void Gf3dGraphics::endFrame()
+{
+	auto device = gf3dDevice->GetDevice();
+	auto cmd = getCurrentCommandBuffer();
+
+	VK_CHECK(vkEndCommandBuffer(cmd));
+
+	if (imagesInFlight[currentImageIndex] != VK_NULL_HANDLE) {
+		vkWaitForFences(device, 1, &imagesInFlight[currentImageIndex], VK_TRUE, UINT64_MAX);
+	}
+	imagesInFlight[currentImageIndex] = inFlightFences[currentFrame];
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
+
+	VkSemaphore signalSemaphores[] = { renderCompleteSemaphores[currentFrame] };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
+	VK_CHECK(vkQueueSubmit(gf3dDevice->GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]));
+
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+
+	VkSwapchainKHR swapChains[] = { swapchain.getSwapchain() };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+	presentInfo.pImageIndices = &currentImageIndex;
+
+	presentInfo.pResults = nullptr;
+
+	VkResult result = vkQueuePresentKHR(gf3dDevice->GetGraphicsQueue(), &presentInfo);
+
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+		recreateSwapChain();
+	}
+
+	isFrameInProgress = false;
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_INFLIGHT;
+}
+
+void Gf3dGraphics::beginRenderPass(VkCommandBuffer cmd)
+{
+	VkRenderPassBeginInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = swapchain.getRenderPass();
+	renderPassInfo.framebuffer = swapchain.getFrameBuffer(currentImageIndex);
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = swapchain.getExtent();
+
+	VkClearValue clearColor = { 0.2f, 0.2f, 0.3f, 1.0f };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	VkViewport viewport = {};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = static_cast<float>(swapchain.getExtent().width);
+	viewport.height = static_cast<float>(swapchain.getExtent().height);
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	VkRect2D scissor = {};
+	scissor.offset = { 0, 0 };
+	scissor.extent = swapchain.getExtent();
+	vkCmdSetViewport(cmd, 0, 1, &viewport);
+	vkCmdSetScissor(cmd, 0, 1, &scissor);
+}
+
+void Gf3dGraphics::endRenderPass(VkCommandBuffer cmd)
+{
+	vkCmdEndRenderPass(cmd);
+}
+
+void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects)
+{
+	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getGraphicsPipeline());
+	//vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getPipelineLayout(), 0, 0, nullptr, 0, nullptr);
+
+	for (auto& gameObject : gameObjects) {
+		PushConstantData pushData;
+		pushData.transform = gameObject.transform;
+		pushData.color = gameObject.color;
+		vkCmdPushConstants(cmd, materials.begin()->second.getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushData);
+		gameObject.mesh.bind(cmd);
+		gameObject.mesh.draw(cmd);
+	}
 }
 
 //Initializes the vulkan api

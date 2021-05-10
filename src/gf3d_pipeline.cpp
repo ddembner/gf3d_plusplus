@@ -62,7 +62,14 @@ VkShaderModule Pipeline::loadShaderModule(VkDevice device, const std::string& sh
 
 void Pipeline::createPipelineLayout(VkDevice device)
 {
+	VkPushConstantRange pushConstantRange = {};
+	pushConstantRange.offset = 0;
+	pushConstantRange.size = sizeof(PushConstantData);
+	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
 	VkPipelineLayoutCreateInfo createInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
+	createInfo.pushConstantRangeCount = 1;
+	createInfo.pPushConstantRanges = &pushConstantRange;
 	VK_CHECK(vkCreatePipelineLayout(device, &createInfo, nullptr, &pipelineLayout));
 }
 

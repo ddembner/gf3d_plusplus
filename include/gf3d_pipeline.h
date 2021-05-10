@@ -1,6 +1,13 @@
 #pragma once
 #include "gf3d_swapchain.h"
 #include <string>
+#include <glm/mat4x4.hpp>
+
+struct PushConstantData
+{
+	glm::mat4 transform;
+	glm::vec4 color;
+};
 
 class Pipeline
 {

@@ -38,11 +38,12 @@ Mesh::Mesh(const std::string& path)
 
 void Mesh::destroy(const VmaAllocator& allocator)
 {
+	if (!isAllocated) return;
 	vmaDestroyBuffer(allocator, allocatedBuffer.buffer, allocatedBuffer.allocation);
 	isAllocated = false;
 }
 
-void Mesh::allocateMesh(Gf3dDevice& gf3dDevice, VkCommandPool commandPool)
+void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 {
 	auto device = gf3dDevice.GetDevice();
 	auto allocator = gf3dDevice.GetAllocator();
@@ -71,7 +72,7 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice, VkCommandPool commandPool)
 	VkCommandBuffer cmd;
 	VkCommandBufferAllocateInfo cmdInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
 	cmdInfo.commandBufferCount = 1;
-	cmdInfo.commandPool = commandPool;
+	cmdInfo.commandPool = gf3dDevice.GetCommandPool();
 	cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	vkAllocateCommandBuffers(device, &cmdInfo, &cmd);
 
@@ -94,7 +95,7 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice, VkCommandPool commandPool)
 	vkQueueSubmit(gf3dDevice.GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(gf3dDevice.GetGraphicsQueue());
 
-	vkFreeCommandBuffers(device, commandPool, 1, &cmd);
+	vkFreeCommandBuffers(device, gf3dDevice.GetCommandPool(), 1, &cmd);
 	vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
 	vertexCount = static_cast<uint32_t>(vertices.size());

@@ -3,7 +3,6 @@
 #include "gf3d_graphics.h"
 #include "GameObject.h"
 #include "NonCopyable.h"
-#include <memory>
 
 class Application : NonCopyable
 {
@@ -20,6 +19,8 @@ private:
 	void render();
 	void cleanup();
 	void CalculateFPS();
+	void initScene();
+	void destroyGameObjects();
 
 private:
 	bool isDonePlaying = false;

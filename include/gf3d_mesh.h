@@ -23,15 +23,15 @@ public:
 		static std::vector<VkVertexInputBindingDescription> getBindingDescription();
 	};
 	AllocatedBuffer allocatedBuffer;
+	std::vector<Vertex> vertices;
 	bool isAllocated = false;
 public:
 	void destroy(const VmaAllocator& allocator);
-	void allocateMesh(Gf3dDevice& gf3dDevice, VkCommandPool commandPool);
+	void allocateMesh(Gf3dDevice& gf3dDevice);
 	void bind(VkCommandBuffer cmd);
 	void draw(VkCommandBuffer cmd);
 	uint32_t getVertexCount() const { return vertexCount; }
 private:
-	std::vector<Vertex> vertices;
 	uint32_t vertexCount = 0;
 };
 
