@@ -28,6 +28,7 @@ void Swapchain::init(Gf3dDevice& gf3dDevice)
 	VkSwapchainCreateInfoKHR swapchainInfo = { VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR };
 	swapchainInfo.surface = surface;
 	swapchainInfo.oldSwapchain = oldSwapchain;
+	swapchainInfo.presentMode = presentMode;
 	swapchainInfo.imageExtent = extent;
 	swapchainInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 	swapchainInfo.compositeAlpha = compositeAlpha;
