@@ -20,8 +20,6 @@ void Gf3dGraphics::cleanup()
 	auto device = gf3dDevice->GetDevice();
 	auto allocator = gf3dDevice->GetAllocator();
 
-	cleanMaterials();
-
 	for (int i = 0; i < frameData.size(); i++) {
 		vmaDestroyBuffer(gf3dDevice->GetAllocator(), frameData[i].cameraBuffer.buffer, frameData[i].cameraBuffer.allocation);
 		vkFreeDescriptorSets(device, descriptorPool, 1, &frameData[i].globalSet);
@@ -38,24 +36,6 @@ void Gf3dGraphics::cleanup()
 
 	vkFreeCommandBuffers(device, gf3dDevice->GetCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 	swapchain.cleanup(device);
-}
-
-void Gf3dGraphics::draw()
-{
-	auto device = gf3dDevice->GetDevice();
-	
-	
-
-	
-
-}
-
-void Gf3dGraphics::cleanMaterials()
-{
-	auto device = gf3dDevice->GetDevice();
-	for (auto& material : materials) {
-		material.second.freeMaterial(device);
-	}
 }
 
 void Gf3dGraphics::createCommandBuffers()
@@ -180,19 +160,6 @@ void Gf3dGraphics::oncePerFrameCommands(VkCommandBuffer& cmd)
 	vmaUnmapMemory(allocator, frameData[currentFrame].cameraBuffer.allocation);
 }
 
-void Gf3dGraphics::createMaterial(const std::string& vertPath, const std::string& fragPath)
-{
-	auto device = gf3dDevice->GetDevice();
-	//TODO: Make better system in which materials are named/made
-	std::string uniqueMaterialName = vertPath + fragPath;
-	if (materials.find(uniqueMaterialName) != materials.end()) {
-		cout << "Material already exists" << std::endl;
-		return;
-	}
-	Material material(swapchain, device, vertPath, fragPath);
-	materials[uniqueMaterialName] = material;
-}
-
 VkCommandBuffer Gf3dGraphics::beginFrame()
 {
 	auto device = gf3dDevice->GetDevice();
@@ -310,14 +277,15 @@ void Gf3dGraphics::endRenderPass(VkCommandBuffer cmd)
 
 void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects)
 {
-	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getGraphicsPipeline());
+	//vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getGraphicsPipeline());
 	//vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getPipelineLayout(), 0, 0, nullptr, 0, nullptr);
 
 	for (auto& gameObject : gameObjects) {
+		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gameObject.material->getGraphicsPipeline());
 		PushConstantData pushData;
 		pushData.transform = gameObject.transform;
 		pushData.color = gameObject.color;
-		vkCmdPushConstants(cmd, materials.begin()->second.getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushData);
+		vkCmdPushConstants(cmd, gameObject.material->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushData);
 		gameObject.mesh.bind(cmd);
 		gameObject.mesh.draw(cmd);
 	}
@@ -338,5 +306,4 @@ void Gf3dGraphics::initVulkan()
 
 	std::string vertPath = ASSETS_PATH "shaders/vert.spv";
 	std::string fragPath = ASSETS_PATH "shaders/frag.spv";
-	createMaterial(vertPath, fragPath);
 }
