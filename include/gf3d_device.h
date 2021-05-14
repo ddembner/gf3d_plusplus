@@ -1,8 +1,6 @@
 #pragma once
-#include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include "gf3d_window.h"
-#include "NonCopyable.h"
 
 class Gf3dDevice : NonCopyable
 {

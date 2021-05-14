@@ -22,12 +22,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Application.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/Debug.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/GameObject.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_camera.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_device.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_graphics.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_logger.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_math.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_mesh.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_material.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_material_system.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_pipeline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_validations.cpp

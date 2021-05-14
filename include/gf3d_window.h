@@ -1,8 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
-#include <vk_mem_alloc.h>
-#include <memory>
 #include <string>
 #include "NonCopyable.h"
 

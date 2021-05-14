@@ -1,10 +1,9 @@
 #include "gf3d_logger.h"
 #include "Application.h"
 #include <spdlog/stopwatch.h>
-#include <memory>
 
 void Application::run()
-{
+{	
 	init();
 	while (!isDonePlaying) {
 		CalculateFPS();
@@ -21,6 +20,8 @@ void Application::init()
 	window.init();
 	gf3dDevice.init(&window);
 	renderer.init(&window, &gf3dDevice);
+	materialSystem = std::make_unique<MaterialSystem>();
+	materialSystem->init(&gf3dDevice, renderer.getSwapchainRenderPass());
 	initScene();
 	LOGGER_INFO("Initialized engine successfully");
 }
@@ -51,6 +52,7 @@ void Application::cleanup()
 {
 	vkDeviceWaitIdle(gf3dDevice.GetDevice());
 	destroyGameObjects();
+	materialSystem->destroy();
 	renderer.cleanup();
 	gf3dDevice.cleanup();
 	window.cleanup();
@@ -79,6 +81,10 @@ void Application::initScene()
 	};
 	newObj.mesh.allocateMesh(gf3dDevice);
 	newObj.color = { 0.1f, 0, 1, 1 };
+
+	std::string vertPath = ASSETS_PATH "shaders/vert.spv";
+	std::string fragPath = ASSETS_PATH "shaders/frag.spv";
+	newObj.material = materialSystem->create(vertPath, fragPath);
 
 	gameObjects.push_back(std::move(newObj));
 }

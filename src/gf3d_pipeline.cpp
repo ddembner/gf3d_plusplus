@@ -13,13 +13,13 @@ Pipeline::~Pipeline()
 {
 }
 
-void Pipeline::loadPipeline(const Swapchain& swapchain, VkDevice device, const std::string& vertPath, const std::string& fragPath)
+void Pipeline::loadPipeline(Gf3dDevice& gf3dDevice, VkRenderPass renderpass, const std::string& vertPath, const std::string& fragPath)
 {
-	vertModule = loadShaderModule(device, vertPath);
-	fragModule = loadShaderModule(device, fragPath);
+	vertModule = loadShaderModule(gf3dDevice.GetDevice(), vertPath);
+	fragModule = loadShaderModule(gf3dDevice.GetDevice(), fragPath);
 
-	createPipelineLayout(device);
-	createGraphicsPipeline(device, swapchain);
+	createPipelineLayout(gf3dDevice.GetDevice());
+	createGraphicsPipeline(gf3dDevice, renderpass);
 
 }
 
@@ -73,7 +73,7 @@ void Pipeline::createPipelineLayout(VkDevice device)
 	VK_CHECK(vkCreatePipelineLayout(device, &createInfo, nullptr, &pipelineLayout));
 }
 
-void Pipeline::createGraphicsPipeline(VkDevice device, Swapchain swapchain)
+void Pipeline::createGraphicsPipeline(Gf3dDevice& gf3dDevice, VkRenderPass renderpass)
 {
 	VkPipelineShaderStageCreateInfo vertexInfo = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
 	vertexInfo.module = vertModule;
@@ -132,7 +132,7 @@ void Pipeline::createGraphicsPipeline(VkDevice device, Swapchain swapchain)
 	dynamicStateInfo.pDynamicStates = dynamicState;
 
 	VkGraphicsPipelineCreateInfo graphicsInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
-	graphicsInfo.renderPass = swapchain.getRenderPass();
+	graphicsInfo.renderPass = renderpass;
 	graphicsInfo.layout = pipelineLayout;
 	graphicsInfo.stageCount = 2;
 	graphicsInfo.pStages = shaderStages;
@@ -143,23 +143,5 @@ void Pipeline::createGraphicsPipeline(VkDevice device, Swapchain swapchain)
 	graphicsInfo.pColorBlendState = &blendInfo;
 	graphicsInfo.pVertexInputState = &vertexInput;
 	graphicsInfo.pDynamicState = &dynamicStateInfo;
-	VK_CHECK(vkCreateGraphicsPipelines(device, nullptr, 1, &graphicsInfo, nullptr, &pipeline));
-}
-
-Material::Material()
-{
-}
-
-Material::Material(const Swapchain& swapchain, VkDevice device, const std::string& vertPath, const std::string& fragPath)
-{
-	pipeline.loadPipeline(swapchain, device, vertPath, fragPath);
-}
-
-Material::~Material()
-{
-}
-
-void Material::freeMaterial(VkDevice device)
-{
-	pipeline.destroyPipeline(device);
+	VK_CHECK(vkCreateGraphicsPipelines(gf3dDevice.GetDevice(), nullptr, 1, &graphicsInfo, nullptr, &pipeline));
 }

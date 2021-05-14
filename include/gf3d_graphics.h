@@ -1,11 +1,5 @@
 #pragma once
 
-#include <cassert>
-#include <unordered_map>
-#include "gf3d_device.h"
-#include "gf3d_swapchain.h"
-#include "gf3d_pipeline.h"
-#include "gf3d_mesh.h"
 #include "gf3d_camera.h"
 #include "GameObject.h"
 
@@ -16,7 +10,7 @@ public:
 	~Gf3dGraphics() = default;
 	void init(Gf3dWindow* const window, Gf3dDevice* device);
 	void cleanup();
-	void draw();
+	VkRenderPass getSwapchainRenderPass() const { return swapchain.getRenderPass(); }
 private:
 	Swapchain swapchain;
 	std::vector<VkCommandBuffer> commandBuffers;
@@ -24,7 +18,6 @@ private:
 	std::vector<VkSemaphore> renderCompleteSemaphores;
 	std::vector<VkFence> imagesInFlight;
 	std::vector<VkFence> inFlightFences;
-	std::unordered_map<std::string, Material> materials;
 	std::unordered_map<std::string, Mesh> meshes;
 	struct {
 		uint32_t graphics;
@@ -59,7 +52,6 @@ private:
 	std::vector<PerFrameData> frameData;
 
 public:
-	void createMaterial(const std::string& vertPath, const std::string& fragPath);
 	VkCommandBuffer beginFrame();
 	void endFrame();
 	void beginRenderPass(VkCommandBuffer cmd);
@@ -67,7 +59,6 @@ public:
 	void renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects);
 private:
 	void initVulkan();
-	void cleanMaterials();
 	void createCommandBuffers();
 	void createSyncObjects();
 	void recreateSwapChain();

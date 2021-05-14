@@ -1,8 +1,8 @@
 #pragma once
-#include "gf3d_device.h"
 #include "gf3d_graphics.h"
 #include "GameObject.h"
-#include "NonCopyable.h"
+#include "gf3d_material_system.h"
+#include <memory>
 
 class Application : NonCopyable
 {
@@ -27,5 +27,6 @@ private:
 	Gf3dWindow window;
 	Gf3dDevice gf3dDevice;
 	Gf3dGraphics renderer;
+	std::unique_ptr<MaterialSystem> materialSystem;
 	std::vector<GameObject> gameObjects;
 };
