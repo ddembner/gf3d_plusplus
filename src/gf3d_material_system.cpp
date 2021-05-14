@@ -20,7 +20,7 @@ void MaterialSystem::init(Gf3dDevice* device, VkRenderPass renderpass)
 void MaterialSystem::destroy()
 {
 	for (auto& material : materials) {
-		material.second->pipeline.destroyPipeline(gf3dDevice->GetDevice());
+		material.second->freeMaterial(gf3dDevice->GetDevice());
 	}
 }
 
@@ -31,7 +31,6 @@ Material* MaterialSystem::create(const std::string& vertPath, const std::string&
 	Material* newMat = find(name);
 
 	if (newMat) {
-		LOGGER_DEBUG("Material already exists");
 		return newMat;
 	}
 

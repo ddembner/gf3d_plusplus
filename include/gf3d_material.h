@@ -11,8 +11,8 @@ public:
 	~Material() { }
 	Material* Create(const std::string& vertPath, const std::string& fragPath);
 	void freeMaterial(VkDevice device);
-	VkPipeline getGraphicsPipeline() const { return pipeline.getGraphicsPipeline(); }
-	VkPipelineLayout getPipelineLayout() const { return pipeline.getPipelineLayout(); }
+	void bindPipeline(VkCommandBuffer cmd, VkPipelineBindPoint pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS);
+	void submitPushConstantData(VkCommandBuffer cmd, VkShaderStageFlags stages, uint32_t size, const PushConstantData* data, uint32_t offset = 0);
 private:
 	Pipeline pipeline;
 };

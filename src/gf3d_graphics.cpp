@@ -277,15 +277,12 @@ void Gf3dGraphics::endRenderPass(VkCommandBuffer cmd)
 
 void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects)
 {
-	//vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getGraphicsPipeline());
-	//vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, materials.begin()->second.getPipelineLayout(), 0, 0, nullptr, 0, nullptr);
-
 	for (auto& gameObject : gameObjects) {
-		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, gameObject.material->getGraphicsPipeline());
+		gameObject.material->bindPipeline(cmd);
 		PushConstantData pushData;
 		pushData.transform = gameObject.transform;
 		pushData.color = gameObject.color;
-		vkCmdPushConstants(cmd, gameObject.material->getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstantData), &pushData);
+		gameObject.material->submitPushConstantData(cmd, VK_SHADER_STAGE_VERTEX_BIT, sizeof(PushConstantData), &pushData);
 		gameObject.mesh.bind(cmd);
 		gameObject.mesh.draw(cmd);
 	}
