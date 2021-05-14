@@ -1,4 +1,8 @@
 #pragma once
+#ifdef __APPLE__
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+#endif // __APPLE__
+
 #include <vk_mem_alloc.h>
 #include "gf3d_window.h"
 
