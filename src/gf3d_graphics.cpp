@@ -277,8 +277,11 @@ void Gf3dGraphics::endRenderPass(VkCommandBuffer cmd)
 
 void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects)
 {
+	Material* lastMaterial = nullptr;
 	for (auto& gameObject : gameObjects) {
-		gameObject.material->bindPipeline(cmd);
+		if (lastMaterial != gameObject.material) {
+			gameObject.material->bindPipeline(cmd);
+		}
 		PushConstantData pushData;
 		pushData.transform = gameObject.transform;
 		pushData.color = gameObject.color;

@@ -1,10 +1,8 @@
 #pragma once
 #include "gf3d_device.h"
-#include <vector>
 #define GLM_FORCE_RADIANS
 #define FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <string>
 #include <unordered_map>
 #include "vulkan_types.h"
 

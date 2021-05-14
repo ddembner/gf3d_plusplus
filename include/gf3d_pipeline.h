@@ -1,6 +1,5 @@
 #pragma once
 #include "gf3d_swapchain.h"
-#include <string>
 #include <glm/mat4x4.hpp>
 
 struct PushConstantData

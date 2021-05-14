@@ -1,8 +1,8 @@
 #pragma once
-#include "gf3d_device.h"
 #include "gf3d_graphics.h"
 #include "GameObject.h"
 #include "gf3d_material_system.h"
+#include <memory>
 
 class Application : NonCopyable
 {

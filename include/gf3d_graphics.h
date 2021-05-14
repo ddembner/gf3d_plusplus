@@ -1,11 +1,5 @@
 #pragma once
 
-#include <cassert>
-#include <unordered_map>
-#include "gf3d_device.h"
-#include "gf3d_swapchain.h"
-#include "gf3d_pipeline.h"
-#include "gf3d_mesh.h"
 #include "gf3d_camera.h"
 #include "GameObject.h"
 
