@@ -1,7 +1,7 @@
 #include "gf3d_logger.h"
 #include "gf3d_material_system.h"
 
-MaterialSystem* MaterialSystem::instance = nullptr;
+template<> MaterialSystem*  Singleton<MaterialSystem>::instance = nullptr;
 
 MaterialSystem::MaterialSystem()
 {
