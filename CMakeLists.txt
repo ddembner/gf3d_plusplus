@@ -58,5 +58,10 @@ target_link_libraries("${PROJECT_NAME}" glfw)
 target_link_libraries("${PROJECT_NAME}" Vulkan::Vulkan)
 
 if(WIN32)
+target_link_libraries("${PROJECT_NAME}" debug "$ENV{VULKAN_SDK}/Lib/shaderc_combinedd.lib")
+target_link_libraries("${PROJECT_NAME}" optimized "$ENV{VULKAN_SDK}/Lib/shaderc_combined.lib")
+endif()
+
+if(WIN32)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
 endif()

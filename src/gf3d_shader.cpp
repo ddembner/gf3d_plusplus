@@ -1,3 +1,4 @@
+#include <shaderc/shaderc.hpp>
 #include "gf3d_logger.h"
 #include "gf3d_shader.h"
 
@@ -5,7 +6,6 @@
 #include <filesystem>
 #include <vector>
 
-#include <shaderc/shaderc.hpp>
 
 Shader::Shader(const std::string& filepath)
 {
@@ -100,5 +100,5 @@ std::unordered_map<VkShaderStageFlags, std::string> Shader::getShaderSources(con
 
 void Shader::compileShadersToSpv()
 {
-    //shaderc::Compiler compiler;
+    shaderc::Compiler compiler;
 }
