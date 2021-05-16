@@ -1,8 +1,11 @@
 #include "gf3d_logger.h"
 #include "gf3d_shader.h"
+
 #include <fstream>
 #include <filesystem>
 #include <vector>
+
+#include <shaderc/shaderc.hpp>
 
 Shader::Shader(const std::string& filepath)
 {
@@ -12,6 +15,10 @@ Shader::Shader(const std::string& filepath)
     else { 
         std::string shaderFile = readFile(filepath);
         shaderSources = getShaderSources(shaderFile);
+        if (shaderSources.size() == 0) {
+            LOGGER_WARN("No shader stages found in shader file: {}", filepath);
+        }
+        compileShadersToSpv();
     }
 }
 
@@ -73,8 +80,25 @@ std::unordered_map<VkShaderStageFlags, std::string> Shader::getShaderSources(con
     const char* token = "#type ";
     size_t tokenLen = strlen(token);
     size_t pos = source.find(token, 0);
-    //while (pos != std::string::npos) {}
-    std::string stringType = source.substr(pos + tokenLen, source.find_first_of('\n', pos) - (pos + tokenLen));
-    LOGGER_DEBUG(source.substr(pos + source.find_first_of('\n', pos) + 1, source.find(token, pos + tokenLen)));
+    while (pos != std::string::npos) {
+        size_t eol = source.find_first_of("\r\n", pos);
+        size_t begin = pos + tokenLen;
+        std::string stringType = source.substr(begin, eol - begin);
+        VkShaderStageFlags shaderStage = stringToVulkanShaderFlag(stringType);
+        if (!shaderStage) {
+            LOGGER_ERROR("Failed to find supported shader stage in shader");
+            return std::unordered_map<VkShaderStageFlags, std::string>();
+        }
+        size_t nextLine = source.find_first_not_of("\r\n", eol);
+        size_t nextPos = source.find(token, eol);
+        pos = nextPos;
+        sources[shaderStage] = source.substr(nextLine, nextPos - nextLine);
+    }
+
     return sources;
+}
+
+void Shader::compileShadersToSpv()
+{
+    //shaderc::Compiler compiler;
 }

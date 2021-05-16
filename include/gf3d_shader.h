@@ -12,6 +12,7 @@ private:
 	bool checkIfAlreadyCompiled(const std::string& filepath);
 	std::string readFile(const std::string& filepath);
 	std::unordered_map<VkShaderStageFlags, std::string> getShaderSources(const std::string& source);
+	void compileShadersToSpv();
 private:
 	bool isVertCompiled = false;
 	bool isFragCompiled = false;
