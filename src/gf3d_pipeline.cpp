@@ -4,6 +4,7 @@
 #include <vector>
 #include "vulkan_functions.h"
 #include "gf3d_mesh.h"
+#include "gf3d_shader.h"
 
 Pipeline::Pipeline()
 {
@@ -15,6 +16,7 @@ Pipeline::~Pipeline()
 
 void Pipeline::loadPipeline(Gf3dDevice& gf3dDevice, VkRenderPass renderpass, const std::string& vertPath, const std::string& fragPath)
 {
+	Shader shader(ASSETS_PATH "shaders/test.shader");
 	vertModule = loadShaderModule(gf3dDevice.GetDevice(), vertPath);
 	fragModule = loadShaderModule(gf3dDevice.GetDevice(), fragPath);
 

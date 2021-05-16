@@ -32,6 +32,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_material.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_material_system.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_pipeline.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_shader.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_validations.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_window.cpp

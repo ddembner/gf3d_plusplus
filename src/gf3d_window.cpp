@@ -1,6 +1,5 @@
 #include "gf3d_logger.h"
 #include "gf3d_window.h"
-#include <cassert>
 
 void Gf3dWindow::init(const int Width, const int Height, const std::string& Title)
 {
