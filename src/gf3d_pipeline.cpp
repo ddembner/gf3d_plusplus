@@ -9,9 +9,6 @@
 Pipeline::Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath)
 	: shader(device, shaderPath)
 {
-	for (auto& thing : shader.getShaderModules()) { 
-		LOGGER_DEBUG(thing.first);
-	}
 	createPipelineLayout(device);
 	createGraphicsPipeline(device,renderPass);
 }

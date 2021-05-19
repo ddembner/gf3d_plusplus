@@ -7,13 +7,13 @@
 class Shader
 {
 public:
-	Shader(VkDevice _device, const std::string& filepath);
+	Shader(VkDevice _device, const std::string& pathToFile);
 	Shader(const std::string& vertPath, const std::string& fragPath);
 	void destroy();
 	std::unordered_map<VkShaderStageFlagBits, VkShaderModule> getShaderModules() const { return shaderModules; }
 private:
-	bool checkIfAlreadyCompiled(const std::string& filepath);
-	std::string readFile(const std::string& filepath);
+	bool checkIfAlreadyCompiled();
+	std::string readFile();
 	std::unordered_map<VkShaderStageFlagBits, std::string> getShaderSources(const std::string& source);
 	void readPreCompiledFiles();
 	void compileShadersToSpv();
@@ -21,7 +21,7 @@ private:
 	std::string getShaderFileFinalNameForStage(VkShaderStageFlagBits stage);
 private:
 	VkDevice device;
-	std::string pathToFile;
+	std::string filepath;
 	std::unordered_map<VkShaderStageFlagBits, std::string> shaderSources;
 	std::unordered_map<VkShaderStageFlagBits, VkShaderModule> shaderModules;
 };

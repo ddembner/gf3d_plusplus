@@ -6,17 +6,15 @@
 #include <fstream>
 #include <filesystem>
 
-Shader::Shader(VkDevice _device, const std::string& filepath) : device(_device)
+Shader::Shader(VkDevice _device, const std::string& pathToFile) : device(_device), filepath(pathToFile)
 {
-    pathToFile = filepath;
-    std::string shaderFile = readFile(filepath);
+    std::string shaderFile = readFile();
     shaderSources = getShaderSources(shaderFile);
     if (shaderSources.size() == 0) {
         LOGGER_WARN("No shader stages found in shader file: {}", filepath);
     }
 
-    if (checkIfAlreadyCompiled(filepath)) {
-        LOGGER_DEBUG("ALREADY COMPILED");
+    if (checkIfAlreadyCompiled()) {
         readPreCompiledFiles();
     }
     else {    
@@ -70,17 +68,26 @@ static shaderc_shader_kind shaderStageToShadercKind(VkShaderStageFlagBits stage)
     }
 }
 
-bool Shader::checkIfAlreadyCompiled(const std::string& filepath)
+bool Shader::checkIfAlreadyCompiled()
 {
     for (auto&& [stage, source] : shaderSources) {
-        std::ifstream in(getShaderFileFinalNameForStage(stage), std::ios::in);
+        std::string shaderCompiledPath = getShaderFileFinalNameForStage(stage);
+        std::ifstream in(shaderCompiledPath, std::ios::in);
+
+        // File doesn't exist
         if (!in.is_open()) return false;
+
+        // File is newer than the compiled versions and needs to be recompiled
+        auto shaderFileTime = std::filesystem::last_write_time(filepath);
+        auto shaderCompiledFileTime = std::filesystem::last_write_time(shaderCompiledPath);
+        if (shaderFileTime > shaderCompiledFileTime) return false;
+        
     }
 
     return true;
 }
 
-std::string Shader::readFile(const std::string& filepath)
+std::string Shader::readFile()
 {
     std::string fileContent;
     std::ifstream file(filepath, std::ios::in | std::ios::binary);
@@ -151,7 +158,7 @@ void Shader::compileShadersToSpv()
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
     options.SetTargetSpirv(shaderc_spirv_version_1_5);
     for (auto&& [stage, source] : shaderSources) {
-        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), pathToFile.c_str(), options);
+        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), filepath.c_str(), options);
 
         if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
             LOGGER_ERROR(result.GetErrorMessage());
@@ -186,8 +193,8 @@ void Shader::loadShaderModule(VkShaderStageFlagBits stage, const std::vector<uin
 
 std::string Shader::getShaderFileFinalNameForStage(VkShaderStageFlagBits stage)
 {
-    std::string path = pathToFile.substr(0, pathToFile.find_last_of("/\\") + 1);
-    std::string filename = pathToFile.substr(pathToFile.find_last_of("/\\") + 1);
+    std::string path = filepath.substr(0, filepath.find_last_of("/\\") + 1);
+    std::string filename = filepath.substr(filepath.find_last_of("/\\") + 1);
     filename = filename.substr(0, filename.find_first_of('.'));
     return path + filename + shaderStageToFileExtention(stage) + ".spv";
 }
