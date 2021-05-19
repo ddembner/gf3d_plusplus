@@ -15,12 +15,12 @@ private:
 	bool checkIfAlreadyCompiled(const std::string& filepath);
 	std::string readFile(const std::string& filepath);
 	std::unordered_map<VkShaderStageFlagBits, std::string> getShaderSources(const std::string& source);
+	void readPreCompiledFiles();
 	void compileShadersToSpv();
 	void loadShaderModule(VkShaderStageFlagBits stage, const std::vector<uint32_t>& codeData);
+	std::string getShaderFileFinalNameForStage(VkShaderStageFlagBits stage);
 private:
 	VkDevice device;
-	bool isVertCompiled = false;
-	bool isFragCompiled = false;
 	std::string pathToFile;
 	std::unordered_map<VkShaderStageFlagBits, std::string> shaderSources;
 	std::unordered_map<VkShaderStageFlagBits, VkShaderModule> shaderModules;

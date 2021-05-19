@@ -9,6 +9,7 @@
 *.vcxproj.filters
 .vscode/
 build/
+*.spv
 
 # Cmake
 CMakeLists.txt.user

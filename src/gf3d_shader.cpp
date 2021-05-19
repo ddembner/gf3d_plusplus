@@ -4,20 +4,22 @@
 #include "vulkan_functions.h"
 
 #include <fstream>
+#include <filesystem>
 
 Shader::Shader(VkDevice _device, const std::string& filepath) : device(_device)
 {
-    //This should return true when a file tracker is implemented for shaders
+    pathToFile = filepath;
+    std::string shaderFile = readFile(filepath);
+    shaderSources = getShaderSources(shaderFile);
+    if (shaderSources.size() == 0) {
+        LOGGER_WARN("No shader stages found in shader file: {}", filepath);
+    }
+
     if (checkIfAlreadyCompiled(filepath)) {
         LOGGER_DEBUG("ALREADY COMPILED");
+        readPreCompiledFiles();
     }
-    else { 
-        pathToFile = filepath;
-        std::string shaderFile = readFile(filepath);
-        shaderSources = getShaderSources(shaderFile);
-        if (shaderSources.size() == 0) {
-            LOGGER_WARN("No shader stages found in shader file: {}", filepath);
-        }
+    else {    
         compileShadersToSpv();
     }
 }
@@ -70,17 +72,12 @@ static shaderc_shader_kind shaderStageToShadercKind(VkShaderStageFlagBits stage)
 
 bool Shader::checkIfAlreadyCompiled(const std::string& filepath)
 {
-    std::ifstream vertFile(filepath + ".vert", std::ios::in);
-    std::ifstream fragFile(filepath + ".frag", std::ios::in);
-    
-    isVertCompiled = vertFile.is_open();
-    isFragCompiled = fragFile.is_open();
-
-    if (isVertCompiled && isFragCompiled) {
-        return true;
+    for (auto&& [stage, source] : shaderSources) {
+        std::ifstream in(getShaderFileFinalNameForStage(stage), std::ios::in);
+        if (!in.is_open()) return false;
     }
 
-    return false;
+    return true;
 }
 
 std::string Shader::readFile(const std::string& filepath)
@@ -130,31 +127,46 @@ std::unordered_map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(
     return sources;
 }
 
+void Shader::readPreCompiledFiles()
+{
+    for (auto&& [stage, source] : shaderSources) {
+        std::ifstream in(getShaderFileFinalNameForStage(stage), std::ios::in | std::ios::binary);
+
+        in.seekg(0, std::ios::end);
+        auto size = in.tellg();
+        in.seekg(0, std::ios::beg);
+
+        std::vector<uint32_t> data(size / sizeof(uint32_t));
+        in.read((char*)data.data(), size);
+
+        loadShaderModule(stage, data);
+    }
+}
+
 void Shader::compileShadersToSpv()
 {
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
     options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
-    options.SetTargetSpirv(shaderc_spirv_version_1_3);
+    options.SetTargetSpirv(shaderc_spirv_version_1_5);
     for (auto&& [stage, source] : shaderSources) {
-        std::string finalPath = pathToFile + shaderStageToFileExtention(stage);
         shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), pathToFile.c_str(), options);
 
         if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
             LOGGER_ERROR(result.GetErrorMessage());
         }
 
-        loadShaderModule(stage, std::vector<uint32_t>(result.cbegin(), result.cend()));
+        std::vector shaderData = std::vector<uint32_t>(result.cbegin(), result.cend());
 
-        // Uncomment then when the shader code should be cahced for future use instead of being recompiled
-        // std::ofstream out(finalPath, std::ios::out | std::ios::binary);
-        // if (out.is_open()) {
-        //     std::vector<uint32_t> shaderData = std::vector<uint32_t>(result.cbegin(), result.cend());
-        //     out.write((char*)shaderData.data(), shaderData.size() * sizeof(uint32_t));
-        //     out.flush();
-        //     out.close();
-        // }
+        loadShaderModule(stage, shaderData);
+
+         std::ofstream out(getShaderFileFinalNameForStage(stage), std::ios::out | std::ios::binary);
+         if (out.is_open()) {
+             out.write((char*)shaderData.data(), shaderData.size() * sizeof(uint32_t));
+             out.flush();
+             out.close();
+         }
 
     }
 }
@@ -170,4 +182,12 @@ void Shader::loadShaderModule(VkShaderStageFlagBits stage, const std::vector<uin
     VK_CHECK( vkCreateShaderModule(device, &shaderInfo, nullptr, &newModule));
 
     shaderModules[stage] = newModule;
+}
+
+std::string Shader::getShaderFileFinalNameForStage(VkShaderStageFlagBits stage)
+{
+    std::string path = pathToFile.substr(0, pathToFile.find_last_of("/\\") + 1);
+    std::string filename = pathToFile.substr(pathToFile.find_last_of("/\\") + 1);
+    filename = filename.substr(0, filename.find_first_of('.'));
+    return path + filename + shaderStageToFileExtention(stage) + ".spv";
 }
