@@ -1,34 +1,39 @@
+#include "gf3d_logger.h"
 #include "gf3d_pipeline.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include "vulkan_functions.h"
 #include "gf3d_mesh.h"
-#include "gf3d_shader.h"
 
-Pipeline::Pipeline()
+Pipeline::Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath)
+	: shader(device, shaderPath)
 {
+	for (auto& thing : shader.getShaderModules()) { 
+		LOGGER_DEBUG(thing.first);
+	}
+	createPipelineLayout(device);
+	createGraphicsPipeline(device,renderPass);
 }
 
 Pipeline::~Pipeline()
 {
 }
 
-void Pipeline::loadPipeline(Gf3dDevice& gf3dDevice, VkRenderPass renderpass, const std::string& vertPath, const std::string& fragPath)
+void Pipeline::loadPipeline(VkDevice device, VkRenderPass renderpass, const std::string& shaderPath)
 {
-	Shader shader(ASSETS_PATH "shaders/test.shader");
-	vertModule = loadShaderModule(gf3dDevice.GetDevice(), vertPath);
-	fragModule = loadShaderModule(gf3dDevice.GetDevice(), fragPath);
+	// Shader newShader(device, ASSETS_PATH "shaders/test.shader");
 
-	createPipelineLayout(gf3dDevice.GetDevice());
-	createGraphicsPipeline(gf3dDevice, renderpass);
+	// shader = newShader;
+
+	createPipelineLayout(device);
+	createGraphicsPipeline(device, renderpass);
 
 }
 
 void Pipeline::destroyPipeline(VkDevice device)
 {
-	vkDestroyShaderModule(device, vertModule, nullptr);
-	vkDestroyShaderModule(device, fragModule, nullptr);
+	shader.destroy();
 	vkDestroyPipeline(device, pipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 }
@@ -75,19 +80,19 @@ void Pipeline::createPipelineLayout(VkDevice device)
 	VK_CHECK(vkCreatePipelineLayout(device, &createInfo, nullptr, &pipelineLayout));
 }
 
-void Pipeline::createGraphicsPipeline(Gf3dDevice& gf3dDevice, VkRenderPass renderpass)
+void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 {
-	VkPipelineShaderStageCreateInfo vertexInfo = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
-	vertexInfo.module = vertModule;
-	vertexInfo.pName = "main";
-	vertexInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+	shaderStages.reserve(shader.getShaderModules().size());
 
-	VkPipelineShaderStageCreateInfo fragInfo = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
-	fragInfo.module = fragModule;
-	fragInfo.pName = "main";
-	fragInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	for (auto&& [stage, module] : shader.getShaderModules()) {
+		VkPipelineShaderStageCreateInfo shaderInfo = { VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO };
+		shaderInfo.module = module;
+		shaderInfo.pName = "main";
+		shaderInfo.stage = stage;
 
-	VkPipelineShaderStageCreateInfo shaderStages[] = { vertexInfo, fragInfo };
+		shaderStages.push_back(shaderInfo);
+	}
 
 	VkPipelineRasterizationStateCreateInfo rasterizerInfo = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
 	rasterizerInfo.depthClampEnable = VK_FALSE;
@@ -136,8 +141,8 @@ void Pipeline::createGraphicsPipeline(Gf3dDevice& gf3dDevice, VkRenderPass rende
 	VkGraphicsPipelineCreateInfo graphicsInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
 	graphicsInfo.renderPass = renderpass;
 	graphicsInfo.layout = pipelineLayout;
-	graphicsInfo.stageCount = 2;
-	graphicsInfo.pStages = shaderStages;
+	graphicsInfo.stageCount = shaderStages.size();
+	graphicsInfo.pStages = shaderStages.data();
 	graphicsInfo.pRasterizationState = &rasterizerInfo;
 	graphicsInfo.pInputAssemblyState =  &inputAssembly;
 	graphicsInfo.pViewportState = &viewportStateInfo;
@@ -145,5 +150,5 @@ void Pipeline::createGraphicsPipeline(Gf3dDevice& gf3dDevice, VkRenderPass rende
 	graphicsInfo.pColorBlendState = &blendInfo;
 	graphicsInfo.pVertexInputState = &vertexInput;
 	graphicsInfo.pDynamicState = &dynamicStateInfo;
-	VK_CHECK(vkCreateGraphicsPipelines(gf3dDevice.GetDevice(), nullptr, 1, &graphicsInfo, nullptr, &pipeline));
+	VK_CHECK(vkCreateGraphicsPipelines(device, nullptr, 1, &graphicsInfo, nullptr, &pipeline));
 }

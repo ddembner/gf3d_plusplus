@@ -1,5 +1,6 @@
 #pragma once
 #include "gf3d_swapchain.h"
+#include "gf3d_shader.h"
 #include <glm/mat4x4.hpp>
 
 struct PushConstantData
@@ -11,21 +12,18 @@ struct PushConstantData
 class Pipeline
 {
 public:
-	Pipeline();
+	Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath);
 	~Pipeline();
-	void loadPipeline(Gf3dDevice& gf3dDevice, VkRenderPass renderpass, const std::string& vertPath, const std::string& fragPath);
+	void loadPipeline(VkDevice device, VkRenderPass renderpass, const std::string& shaderPath);
 	void destroyPipeline(VkDevice device);
 	VkPipeline getGraphicsPipeline() const { return pipeline; }
 	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
 private:
 	VkShaderModule loadShaderModule(VkDevice device, const std::string& shaderPath);
 	void createPipelineLayout(VkDevice device);
-	void createGraphicsPipeline(Gf3dDevice& gf3dDevice, VkRenderPass renderpass);
+	void createGraphicsPipeline(VkDevice device, VkRenderPass renderpass);
 private:
 	VkPipeline pipeline;
-	VkShaderModule vertModule;
-	VkShaderModule fragModule;
+	Shader shader;
 	VkPipelineLayout pipelineLayout;
-	std::string vertPath;
-	std::string fragPath;
 };

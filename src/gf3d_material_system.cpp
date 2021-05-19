@@ -24,6 +24,20 @@ void MaterialSystem::destroy()
 	}
 }
 
+Material* MaterialSystem::create(const std::string& shaderPath)
+{
+	Material* newMat = find(shaderPath);
+
+	if (newMat) {
+		return newMat;
+	}
+
+	newMat = new Material(gf3dDevice->GetDevice(), renderpass, shaderPath);
+	materials[shaderPath] = newMat;
+
+	return newMat;
+}
+
 Material* MaterialSystem::create(const std::string& vertPath, const std::string& fragPath)
 {
 	std::string name = vertPath + fragPath;
@@ -34,11 +48,13 @@ Material* MaterialSystem::create(const std::string& vertPath, const std::string&
 		return newMat;
 	}
 
-	newMat = new Material();
-	newMat->pipeline.loadPipeline(*gf3dDevice, renderpass, vertPath, fragPath);
-	materials[name] = newMat;
+	//newMat = new Material();
+	//newMat->pipeline.loadPipeline(*gf3dDevice, renderpass, vertPath, fragPath);
+	//materials[name] = newMat;
 
-	return newMat;
+	//return newMat;
+
+	return nullptr;
 }
 
 Material* MaterialSystem::find(const std::string& name)
