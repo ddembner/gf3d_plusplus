@@ -8,6 +8,7 @@ IF (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
 ELSE()
 	message(STATUS ${Vulkan_LIBRARY})
+	message(STATUS Vulkan::Vulkan)
 ENDIF()
 
 add_subdirectory(./external/glfw)
@@ -32,6 +33,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_material.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_material_system.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_pipeline.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_shader.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_validations.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/gf3d_window.cpp
@@ -56,6 +58,21 @@ target_include_directories("${PROJECT_NAME}" PRIVATE "${INCLUDE_PATHS}")
 target_link_libraries("${PROJECT_NAME}" glfw)
 target_link_libraries("${PROJECT_NAME}" Vulkan::Vulkan)
 
+#Linking shaderc library that comes with vulkan SDK
+if(WIN32)
+target_link_libraries("${PROJECT_NAME}" debug "$ENV{VULKAN_SDK}/Lib/shaderc_combinedd.lib")
+target_link_libraries("${PROJECT_NAME}" optimized "$ENV{VULKAN_SDK}/Lib/shaderc_combined.lib")
+elseif(APPLE)
+target_link_libraries("${PROJECT_NAME}" debug "/usr/local/lib/libshaderc_combinedd.a")
+target_link_libraries("${PROJECT_NAME}" optimized "/usr/local/lib/libshaderc_combined.a")
+elseif(UNIX)
+target_link_libraries("${PROJECT_NAME}" debug "$ENV{VULKAN_SDK}/x86_64/lib/shaderc_combinedd.lib")
+target_link_libraries("${PROJECT_NAME}" optimized "$ENV{VULKAN_SDK}/x86_64/lib/shaderc_combined.lib")
+else()
+message(FATAL_ERROR "Could not find libraries for shaderc")
+endif()
+
 if(WIN32)
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ignore:4099")
 endif()

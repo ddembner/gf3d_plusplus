@@ -82,9 +82,7 @@ void Application::initScene()
 	newObj.mesh.allocateMesh(gf3dDevice);
 	newObj.color = { 0.1f, 0, 1, 1 };
 
-	std::string vertPath = ASSETS_PATH "shaders/vert.spv";
-	std::string fragPath = ASSETS_PATH "shaders/frag.spv";
-	newObj.material = materialSystem->create(vertPath, fragPath);
+	newObj.material = materialSystem->create(ASSETS_PATH "shaders/test.shader");
 
 	gameObjects.push_back(std::move(newObj));
 }

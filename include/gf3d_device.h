@@ -16,7 +16,7 @@ public:
 	void cleanup();
 public:
 	const VkInstance& GetInstance() { return instance; }
-	const VkDevice GetDevice() const { return device; }
+	VkDevice GetDevice() const { return device; }
 	const VkPhysicalDevice& GetPhysicalDevice() { return physicalDevice; }
 	const VmaAllocator GetAllocator() { return allocator; }
 	const VkSurfaceKHR GetSurface() { return surface; }
