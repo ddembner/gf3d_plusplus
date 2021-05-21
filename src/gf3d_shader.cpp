@@ -1,4 +1,5 @@
 #include <shaderc/shaderc.hpp>
+#include <spirv_cross/spirv_cross.hpp>
 #include "gf3d_logger.h"
 #include "gf3d_shader.h"
 #include "vulkan_functions.h"
@@ -147,6 +148,8 @@ void Shader::readPreCompiledFiles()
         in.read((char*)data.data(), size);
 
         loadShaderModule(stage, data);
+
+        Reflect(stage, data);
     }
 }
 
@@ -155,8 +158,13 @@ void Shader::compileShadersToSpv()
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
     options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-    options.SetOptimizationLevel(shaderc_optimization_level_performance);
     options.SetTargetSpirv(shaderc_spirv_version_1_3);
+
+#ifdef NDEBUG
+    // performance should be preferred in non-debug builds
+    options.SetOptimizationLevel(shaderc_optimization_level_performance);
+#endif // NDEBUG
+
     for (auto&& [stage, source] : shaderSources) {
         shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), filepath.c_str(), options);
 
@@ -174,6 +182,8 @@ void Shader::compileShadersToSpv()
              out.flush();
              out.close();
          }
+
+         Reflect(stage, shaderData);
 
     }
 }
@@ -197,4 +207,35 @@ std::string Shader::getShaderFileFinalNameForStage(VkShaderStageFlagBits stage)
     std::string filename = filepath.substr(filepath.find_last_of("/\\") + 1);
     filename = filename.substr(0, filename.find_first_of('.'));
     return path + filename + shaderStageToFileExtention(stage) + ".spv";
+}
+
+void Shader::Reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& data)
+{
+    spirv_cross::Compiler compiler(data);
+    spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+    for (auto& resource : resources.push_constant_buffers) {
+        const auto& bufferType = compiler.get_type(resource.base_type_id);
+        uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
+        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+        int memberCount = bufferType.member_types.size();
+        
+        LOGGER_TRACE("  {0}", resource.name);
+        LOGGER_TRACE("    Size = {0}", bufferSize);
+        LOGGER_TRACE("    Binding = {0}", binding);
+        LOGGER_TRACE("    Members = {0}", memberCount);
+        LOGGER_TRACE("    sizeof shader resource = {0}", sizeof(resource));
+
+        VkPushConstantRange pushConstantRange;
+        pushConstantRange.size = bufferSize;
+        pushConstantRange.stageFlags = stage;
+        if (pushConstantRanges.size() > 0) {
+            pushConstantRange.offset = pushConstantRanges.back().size + pushConstantRanges.back().offset;
+        }
+        else {
+            pushConstantRange.offset = 0;
+        }
+
+        pushConstantRanges.push_back(pushConstantRange);
+    }
 }

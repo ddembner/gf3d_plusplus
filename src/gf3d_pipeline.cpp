@@ -17,17 +17,6 @@ Pipeline::~Pipeline()
 {
 }
 
-void Pipeline::loadPipeline(VkDevice device, VkRenderPass renderpass, const std::string& shaderPath)
-{
-	// Shader newShader(device, ASSETS_PATH "shaders/test.shader");
-
-	// shader = newShader;
-
-	createPipelineLayout(device);
-	createGraphicsPipeline(device, renderpass);
-
-}
-
 void Pipeline::destroyPipeline(VkDevice device)
 {
 	shader.destroy();
@@ -66,14 +55,11 @@ VkShaderModule Pipeline::loadShaderModule(VkDevice device, const std::string& sh
 
 void Pipeline::createPipelineLayout(VkDevice device)
 {
-	VkPushConstantRange pushConstantRange = {};
-	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(PushConstantData);
-	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	std::vector<VkPushConstantRange> pushRanges = shader.getPushConstantRanges();
 
 	VkPipelineLayoutCreateInfo createInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
-	createInfo.pushConstantRangeCount = 1;
-	createInfo.pPushConstantRanges = &pushConstantRange;
+	createInfo.pushConstantRangeCount = pushRanges.size();
+	createInfo.pPushConstantRanges = pushRanges.data();
 	VK_CHECK(vkCreatePipelineLayout(device, &createInfo, nullptr, &pipelineLayout));
 }
 

@@ -23,7 +23,7 @@ void Material::bindPipeline(VkCommandBuffer cmd, VkPipelineBindPoint pipelineBin
 	vkCmdBindPipeline(cmd, pipelineBindPoint, pipeline.getGraphicsPipeline());
 }
 
-void Material::submitPushConstantData(VkCommandBuffer cmd, VkShaderStageFlags stages, uint32_t size, const PushConstantData* data, uint32_t offset)
+void Material::submitPushConstantData(VkCommandBuffer cmd, VkShaderStageFlags stages, uint32_t size, const void* data, uint32_t offset)
 {
 	vkCmdPushConstants(cmd, pipeline.getPipelineLayout(), stages, offset, size, data);
 }

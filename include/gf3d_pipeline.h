@@ -14,7 +14,6 @@ class Pipeline
 public:
 	Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath);
 	~Pipeline();
-	void loadPipeline(VkDevice device, VkRenderPass renderpass, const std::string& shaderPath);
 	void destroyPipeline(VkDevice device);
 	VkPipeline getGraphicsPipeline() const { return pipeline; }
 	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }

@@ -282,10 +282,11 @@ void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& g
 		if (lastMaterial != gameObject.material) {
 			gameObject.material->bindPipeline(cmd);
 		}
-		PushConstantData pushData;
-		pushData.transform = gameObject.transform;
-		pushData.color = gameObject.color;
-		gameObject.material->submitPushConstantData(cmd, VK_SHADER_STAGE_VERTEX_BIT, sizeof(PushConstantData), &pushData);
+		//PushConstantData pushData;
+		//pushData.transform = gameObject.transform;
+		//pushData.color = gameObject.color;
+		gameObject.material->submitPushConstantData(cmd, VK_SHADER_STAGE_VERTEX_BIT, sizeof(gameObject.transform), &gameObject.transform);
+		gameObject.material->submitPushConstantData(cmd, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(gameObject.color), &gameObject.color, sizeof(gameObject.transform));
 		gameObject.mesh.bind(cmd);
 		gameObject.mesh.draw(cmd);
 	}
