@@ -12,6 +12,7 @@ ELSE()
 ENDIF()
 
 add_subdirectory(./external/glfw)
+add_subdirectory(./external/spirv-cross)
 
 set(ASSET_PATH_DIR "${CMAKE_SOURCE_DIR}/assets/")
 add_definitions(-DASSETS_PATH=\"${ASSET_PATH_DIR}\")
@@ -56,6 +57,8 @@ add_executable("${PROJECT_NAME}" "${SOURCE_FILES}")
 target_include_directories("${PROJECT_NAME}" PRIVATE "${INCLUDE_PATHS}")
 
 target_link_libraries("${PROJECT_NAME}" glfw)
+#target_link_libraries("${PROJECT_NAME}" spirv-cross-core)
+target_link_libraries("${PROJECT_NAME}" spirv-cross-glsl)
 target_link_libraries("${PROJECT_NAME}" Vulkan::Vulkan)
 
 #Linking shaderc library that comes with vulkan SDK

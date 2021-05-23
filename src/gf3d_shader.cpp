@@ -1,5 +1,5 @@
 #include <shaderc/shaderc.hpp>
-#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
 #include "gf3d_logger.h"
 #include "gf3d_shader.h"
 #include "vulkan_functions.h"
@@ -111,9 +111,9 @@ std::string Shader::readFile()
     return fileContent;
 }
 
-std::unordered_map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(const std::string& source)
+std::map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(const std::string& source)
 {
-    std::unordered_map<VkShaderStageFlagBits, std::string> sources;
+    std::map<VkShaderStageFlagBits, std::string> sources;
     const char* token = "#type ";
     size_t tokenLen = strlen(token);
     size_t pos = source.find(token, 0);
@@ -124,7 +124,7 @@ std::unordered_map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(
         VkShaderStageFlagBits shaderStage = stringToVulkanShaderFlag(stringType);
         if (!shaderStage) {
             LOGGER_ERROR("Failed to find supported shader stage in shader");
-            return std::unordered_map<VkShaderStageFlagBits, std::string>();
+            return std::map<VkShaderStageFlagBits, std::string>();
         }
         size_t nextLine = source.find_first_not_of("\r\n", eol);
         size_t nextPos = source.find(token, eol);
@@ -146,10 +146,10 @@ void Shader::readPreCompiledFiles()
 
         std::vector<uint32_t> data(size / sizeof(uint32_t));
         in.read((char*)data.data(), size);
+        
+        Reflect(stage, data);
 
         loadShaderModule(stage, data);
-
-        Reflect(stage, data);
     }
 }
 
@@ -173,6 +173,8 @@ void Shader::compileShadersToSpv()
         }
 
         std::vector shaderData = std::vector<uint32_t>(result.cbegin(), result.cend());
+         
+        Reflect(stage, shaderData);
 
         loadShaderModule(stage, shaderData);
 
@@ -183,7 +185,6 @@ void Shader::compileShadersToSpv()
              out.close();
          }
 
-         Reflect(stage, shaderData);
 
     }
 }
@@ -211,31 +212,32 @@ std::string Shader::getShaderFileFinalNameForStage(VkShaderStageFlagBits stage)
 
 void Shader::Reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& data)
 {
-    spirv_cross::Compiler compiler(data);
+    spirv_cross::CompilerGLSL compiler(data);
     spirv_cross::ShaderResources resources = compiler.get_shader_resources();
-
     for (auto& resource : resources.push_constant_buffers) {
         const auto& bufferType = compiler.get_type(resource.base_type_id);
         uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
         uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
         int memberCount = bufferType.member_types.size();
-        
         LOGGER_TRACE("  {0}", resource.name);
         LOGGER_TRACE("    Size = {0}", bufferSize);
         LOGGER_TRACE("    Binding = {0}", binding);
         LOGGER_TRACE("    Members = {0}", memberCount);
-        LOGGER_TRACE("    sizeof shader resource = {0}", sizeof(resource));
 
-        VkPushConstantRange pushConstantRange;
+        VkPushConstantRange pushConstantRange = {};
         pushConstantRange.size = bufferSize;
         pushConstantRange.stageFlags = stage;
+        
         if (pushConstantRanges.size() > 0) {
             pushConstantRange.offset = pushConstantRanges.back().size + pushConstantRanges.back().offset;
+            auto &member_type = compiler.get_type(bufferType.member_types[0]);
+            LOGGER_DEBUG(compiler.type_struct_member_offset(bufferType, 0));
         }
         else {
             pushConstantRange.offset = 0;
         }
 
+        LOGGER_TRACE("    member name = {0}", compiler.get_member_name(bufferType.self, 0));
         pushConstantRanges.push_back(pushConstantRange);
     }
 }
