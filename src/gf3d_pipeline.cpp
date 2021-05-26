@@ -8,7 +8,10 @@
 
 Pipeline::Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath)
 	: shader(device, shaderPath)
+	, pushSize(shader.getPushDataSize())
+	, pushData(std::make_unique<char[]>(pushSize))
 {
+	std::memset(pushData.get(), 0, shader.getPushDataSize());
 	createPipelineLayout(device);
 	createGraphicsPipeline(device,renderPass);
 }
@@ -24,33 +27,24 @@ void Pipeline::destroyPipeline(VkDevice device)
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 }
 
-VkShaderModule Pipeline::loadShaderModule(VkDevice device, const std::string& shaderPath)
+void Pipeline::updatePush(const std::string& name, void* data)
 {
+	auto uniform = shader.getUniform(name);
 
-	std::ifstream file(shaderPath, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open()) {
-		std::cout << "Failed to open file: " << shaderPath << std::endl;
-		return VkShaderModule();
+	if (uniform.type == 0) {
+		LOGGER_WARN("Uniform \"{}\" was not found", name);
+		return;
 	}
 
-	size_t fileSize = (size_t)file.tellg();
-	std::vector<uint8_t> shaderCode(fileSize);
+	std::memcpy(pushData.get() + uniform.offset, data, uniform.size);
+}
 
-	file.seekg(0);
-	file.read(reinterpret_cast<char*>(shaderCode.data()), fileSize);
-
-	file.close();
-	VkShaderModuleCreateInfo createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = static_cast<uint32_t>(shaderCode.size());
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
-	createInfo.flags = 0;
-
-	VkShaderModule shaderModule;
-	VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule));
-
-	return shaderModule;
+void Pipeline::submitPush(const VkCommandBuffer& cmd)
+{
+	const auto& pushRanges = shader.getPushConstantRanges();
+	for (const auto& pushRange : pushRanges) {
+		vkCmdPushConstants(cmd, pipelineLayout, pushRange.stageFlags, pushRange.offset, pushRange.size, pushData.get() + pushRange.offset);
+	}
 }
 
 void Pipeline::createPipelineLayout(VkDevice device)

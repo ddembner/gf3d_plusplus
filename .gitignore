@@ -10,6 +10,7 @@
 .vscode/
 build/
 *.spv
+external/
 
 # Cmake
 CMakeLists.txt.user
@@ -42,6 +43,7 @@ mono_crash.*
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
+[Rr]el[Ww]ith[Dd]eb[Ii]nfo/
 x64/
 x86/
 [Ww][Ii][Nn]32/

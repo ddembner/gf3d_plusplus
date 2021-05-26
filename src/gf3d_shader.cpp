@@ -1,5 +1,6 @@
 #include <shaderc/shaderc.hpp>
-#include <spirv_cross/spirv_glsl.hpp>
+#include <spirv_parser.hpp>
+#include <spirv_glsl.hpp>
 #include "gf3d_logger.h"
 #include "gf3d_shader.h"
 #include "vulkan_functions.h"
@@ -21,6 +22,8 @@ Shader::Shader(VkDevice _device, const std::string& pathToFile) : device(_device
     else {    
         compileShadersToSpv();
     }
+
+    shaderSources.clear();
 }
 
 void Shader::destroy()
@@ -59,6 +62,13 @@ static const char* shaderStageToFileExtention(VkShaderStageFlagBits stage)
     }
 }
 
+static void getUniformType(const spirv_cross::SPIRType& type, Uniform& outMemberData)
+{
+    outMemberData.type = type.basetype;
+    outMemberData.column = type.columns;
+    outMemberData.vecsize = type.vecsize;
+}
+
 static shaderc_shader_kind shaderStageToShadercKind(VkShaderStageFlagBits stage)
 {
     switch(stage)
@@ -67,6 +77,15 @@ static shaderc_shader_kind shaderStageToShadercKind(VkShaderStageFlagBits stage)
         case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_fragment_shader;
         default: return (shaderc_shader_kind)-1;
     }
+}
+
+uint32_t Shader::getPushDataSize()
+{
+    uint32_t total = 0;
+    for (const auto& pushConstantRange : pushConstantRanges) {
+        total += pushConstantRange.size;
+    }
+    return total;
 }
 
 bool Shader::checkIfAlreadyCompiled()
@@ -155,6 +174,18 @@ void Shader::readPreCompiledFiles()
 
 void Shader::compileShadersToSpv()
 {
+    for (auto&& [stage, source] : shaderSources) {
+        
+        std::vector shaderData = compileSourceToSpirv(stage, source);
+         
+        Reflect(stage, shaderData);
+
+        loadShaderModule(stage, shaderData);
+    }
+}
+
+std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source)
+{
     shaderc::Compiler compiler;
     shaderc::CompileOptions options;
     options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
@@ -165,28 +196,23 @@ void Shader::compileShadersToSpv()
     options.SetOptimizationLevel(shaderc_optimization_level_performance);
 #endif // NDEBUG
 
-    for (auto&& [stage, source] : shaderSources) {
-        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), filepath.c_str(), options);
+    shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), filepath.c_str(), options);
 
-        if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            LOGGER_ERROR(result.GetErrorMessage());
-        }
-
-        std::vector shaderData = std::vector<uint32_t>(result.cbegin(), result.cend());
-         
-        Reflect(stage, shaderData);
-
-        loadShaderModule(stage, shaderData);
-
-         std::ofstream out(getShaderFileFinalNameForStage(stage), std::ios::out | std::ios::binary);
-         if (out.is_open()) {
-             out.write((char*)shaderData.data(), shaderData.size() * sizeof(uint32_t));
-             out.flush();
-             out.close();
-         }
-
-
+    if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+        LOGGER_ERROR(result.GetErrorMessage());
+        return std::vector<uint32_t>();
     }
+
+    std::vector<uint32_t> shaderData(result.cbegin(), result.cend());
+
+    std::ofstream out(getShaderFileFinalNameForStage(stage), std::ios::out | std::ios::binary);
+    if (out.is_open()) {
+        out.write((char*)shaderData.data(), shaderData.size() * sizeof(uint32_t));
+        out.flush();
+        out.close();
+    }
+
+    return shaderData;
 }
 
 void Shader::loadShaderModule(VkShaderStageFlagBits stage, const std::vector<uint32_t>& codeData)
@@ -210,34 +236,63 @@ std::string Shader::getShaderFileFinalNameForStage(VkShaderStageFlagBits stage)
     return path + filename + shaderStageToFileExtention(stage) + ".spv";
 }
 
-void Shader::Reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& data)
+void Shader::Reflect(VkShaderStageFlagBits stage, std::vector<uint32_t>& data)
 {
-    spirv_cross::CompilerGLSL compiler(data);
-    spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+    std::unique_ptr<spirv_cross::CompilerGLSL> compiler = std::make_unique<spirv_cross::CompilerGLSL>(data);
+
+    spirv_cross::CompilerGLSL::Options options;
+    options.vulkan_semantics = true;
+    compiler->set_common_options(options);
+    spirv_cross::ShaderResources resources = compiler->get_shader_resources();
+
     for (auto& resource : resources.push_constant_buffers) {
-        const auto& bufferType = compiler.get_type(resource.base_type_id);
-        uint32_t bufferSize = compiler.get_declared_struct_size(bufferType);
-        uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-        int memberCount = bufferType.member_types.size();
-        LOGGER_TRACE("  {0}", resource.name);
-        LOGGER_TRACE("    Size = {0}", bufferSize);
-        LOGGER_TRACE("    Binding = {0}", binding);
-        LOGGER_TRACE("    Members = {0}", memberCount);
+        
+        const auto& bufferType = compiler->get_type(resource.base_type_id);
+        uint32_t bufferSize = compiler->get_declared_struct_size(bufferType);
+        std::vector<Uniform> pushData(bufferType.member_types.size());
+
+        if (pushData.size() == 0) {
+            LOGGER_WARN("Push constant struct has 0 members");
+            return;
+        }
+
+        //Get uniform member data
+        for (int i = 0; i < bufferType.member_types.size(); i++) {
+            pushData[i].offset = compiler->type_struct_member_offset(bufferType, i);
+            pushData[i].size = compiler->get_declared_struct_member_size(bufferType, i);
+            getUniformType(compiler->get_type(bufferType.member_types[0]), pushData[i]);
+        }
+        
+        //check to see if the push range would be identical
+        for (auto&& [shaderStage, pushMembers] : pushMemberData) {
+            for (int i = 0; i < pushMembers.size(); i++) {
+                if (pushMembers[i] != pushData[i])
+                    continue;
+
+                //There is a match and will add the shader stage to the first push range of the match
+                for (auto& pushRange : pushConstantRanges) {
+                    if (pushRange.stageFlags == shaderStage) {
+                        pushRange.stageFlags |= stage;
+                        pushMemberData[stage] = pushData;
+                        return;
+                    }
+                }
+
+            }
+        }
 
         VkPushConstantRange pushConstantRange = {};
-        pushConstantRange.size = bufferSize;
+        pushConstantRange.size = bufferSize - pushData[0].offset;
         pushConstantRange.stageFlags = stage;
-        
-        if (pushConstantRanges.size() > 0) {
-            pushConstantRange.offset = pushConstantRanges.back().size + pushConstantRanges.back().offset;
-            auto &member_type = compiler.get_type(bufferType.member_types[0]);
-            LOGGER_DEBUG(compiler.type_struct_member_offset(bufferType, 0));
-        }
-        else {
-            pushConstantRange.offset = 0;
+        pushConstantRange.offset = pushData[0].offset;
+
+        for (int i = 0; i < pushData.size(); i++) {
+           std::string name = compiler->get_member_name(resource.base_type_id, i);
+           uniforms[name] = pushData[i];
         }
 
-        LOGGER_TRACE("    member name = {0}", compiler.get_member_name(bufferType.self, 0));
+        pushMemberData[stage] = pushData;
+
         pushConstantRanges.push_back(pushConstantRange);
     }
 }

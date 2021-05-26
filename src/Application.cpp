@@ -1,6 +1,8 @@
 #include "gf3d_logger.h"
 #include "Application.h"
 #include <spdlog/stopwatch.h>
+#include <bitset>
+#include <algorithm>
 
 void Application::run()
 {	
@@ -24,6 +26,17 @@ void Application::init()
 	materialSystem->init(&gf3dDevice, renderer.getSwapchainRenderPass());
 	initScene();
 	LOGGER_INFO("Initialized engine successfully");
+
+	/*std::unique_ptr<char[]> data = std::make_unique<char[]>(80);
+	uint32_t object = 44;
+	auto size = std::min(sizeof(object), static_cast<std::size_t>(4));
+	size_t offset = 0;
+
+	std::memcpy(data.get() + offset, &object, size);
+	
+	for (int i = 0; i < 80; i++) {
+		LOGGER_DEBUG(data.get()[i]);
+	}*/
 }
 
 void Application::update()
