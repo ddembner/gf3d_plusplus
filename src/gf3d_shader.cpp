@@ -245,6 +245,7 @@ void Shader::Reflect(VkShaderStageFlagBits stage, std::vector<uint32_t>& data)
     compiler->set_common_options(options);
     spirv_cross::ShaderResources resources = compiler->get_shader_resources();
 
+    // Push Constants
     for (auto& resource : resources.push_constant_buffers) {
         
         const auto& bufferType = compiler->get_type(resource.base_type_id);
@@ -295,4 +296,14 @@ void Shader::Reflect(VkShaderStageFlagBits stage, std::vector<uint32_t>& data)
 
         pushConstantRanges.push_back(pushConstantRange);
     }
+
+    // Uniform Buffers
+    for (auto& resource : resources.uniform_buffers) {
+        auto bufferType = compiler->get_type(resource.base_type_id);
+
+        for (int i = 0; i < bufferType.member_types.size(); i++) {
+            LOGGER_TRACE(compiler->get_member_name(resource.base_type_id, i));
+        }
+    }
+
 }

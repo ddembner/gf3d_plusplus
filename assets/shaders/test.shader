@@ -11,6 +11,12 @@ layout(push_constant) uniform Push
     vec4 color;
 } push;
 
+layout(binding = 0) uniform UniformScene{
+    mat4 view;
+    mat4 projection;
+    vec3 cameraPos;
+} scene;
+
 layout(location = 0) out vec3 fragColor;
 
 void main(){ 

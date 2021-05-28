@@ -11,8 +11,6 @@ void Gf3dGraphics::init(Gf3dWindow* window, Gf3dDevice* device)
 	gf3dWindow = window;
 	gf3dDevice = device;
 	initVulkan();
-	camera.position = glm::vec3(0.f, 0.f, -2.f);
-	camera.OnUpdate();
 }
 
 void Gf3dGraphics::cleanup()
@@ -150,14 +148,14 @@ void Gf3dGraphics::createPerFrameData()
 
 void Gf3dGraphics::oncePerFrameCommands(VkCommandBuffer& cmd)
 {
-	auto allocator = gf3dDevice->GetAllocator();
+	/*auto allocator = gf3dDevice->GetAllocator();
 
 	void* data;
 	vmaMapMemory(allocator, frameData[currentFrame].cameraBuffer.allocation, &data);
 
 	memcpy(data, &camera, sizeof(GPUCameraData));
 
-	vmaUnmapMemory(allocator, frameData[currentFrame].cameraBuffer.allocation);
+	vmaUnmapMemory(allocator, frameData[currentFrame].cameraBuffer.allocation);*/
 }
 
 VkCommandBuffer Gf3dGraphics::beginFrame()
@@ -283,13 +281,15 @@ void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& g
 			gameObject.material->bindPipeline(cmd);
 		}
 
-		gameObject.material->pushUpdate("mvp", &gameObject.transform);
-		gameObject.material->pushUpdate("color", &gameObject.color);
-
 		gameObject.material->submitPushConstant(cmd);
 		gameObject.mesh.bind(cmd);
 		gameObject.mesh.draw(cmd);
 	}
+}
+
+void Gf3dGraphics::updateCameraDescriptor(Camera& camera)
+{
+
 }
 
 //Initializes the vulkan api

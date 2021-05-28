@@ -47,6 +47,8 @@ void Application::update()
 		auto translate = glm::translate(glm::mat4{ 1.f }, glm::vec3{ scaleFactor * 0.5f });
 		auto scale = glm::scale(glm::mat4{ 1.f }, glm::vec3{ scaleFactor });
 		gameObject.transform = scale * translate;
+		gameObject.material->pushUpdate("mvp", &gameObject.transform);
+
 	}
 }
 
@@ -96,6 +98,8 @@ void Application::initScene()
 	newObj.color = { 0.1f, 0, 1, 1 };
 
 	newObj.material = materialSystem->create(ASSETS_PATH "shaders/test.shader");
+
+	newObj.material->pushUpdate("color", &newObj.color);
 
 	gameObjects.push_back(std::move(newObj));
 }

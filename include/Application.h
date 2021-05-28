@@ -29,4 +29,5 @@ private:
 	Gf3dGraphics renderer;
 	std::unique_ptr<MaterialSystem> materialSystem;
 	std::vector<GameObject> gameObjects;
+	Camera cam;
 };
