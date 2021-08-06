@@ -48,12 +48,6 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 	auto device = gf3dDevice.GetDevice();
 	auto allocator = gf3dDevice.GetAllocator();
 
-	vertices = {
-		{{0.0f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-		{{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
-	};
-
 	size_t size = vertices.size() * sizeof(Vertex);
 
 	//Create a buffer on the cpu

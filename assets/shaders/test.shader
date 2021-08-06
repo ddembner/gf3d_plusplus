@@ -8,7 +8,7 @@ layout(location = 1) in vec3 vertColor;
 layout(push_constant) uniform Push
 {
     mat4 mvp;
-    vec4 color;
+    //vec4 color;
 } push;
 
 layout(binding = 0) uniform UniformScene{
@@ -21,7 +21,8 @@ layout(location = 0) out vec3 fragColor;
 
 void main(){ 
     gl_Position = push.mvp * vec4(vertPosition, 1.0);
-    fragColor = push.color.xyz;
+    //fragColor = push.color.xyz;
+    fragColor = vertColor;
 }
 
 #type fragment
@@ -33,11 +34,12 @@ layout(location = 0) in vec3 fragColor;
 layout(push_constant) uniform Push
 { 
     mat4 mvp;
-    vec4 color;
+    //vec4 color;
 } push;
 
 layout(location = 0) out vec4 outColor;
 
 void main(){
-	outColor = push.color;
+	//outColor = push.color;
+	outColor = vec4(fragColor, 1.0);
 }

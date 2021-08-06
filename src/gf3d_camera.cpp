@@ -1,8 +1,18 @@
 #include "gf3d_camera.h"
+
+void Camera::setOrthographicProjection(float left, float right, float top, float bottom, float zNear, float zFar)
+{
+	projectionMatrix = glm::ortho(left, right, top, bottom, zNear, zFar);
+	projectionMatrix[1][1] *= -1;
+}
+
+void Camera::setPerspectiveProjection(float fov, float aspect, float near, float far)
+{
+	projectionMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
+	projectionMatrix[2][1] *= -1;
+}
+
 void Camera::OnUpdate()
 {
 	viewMatrix = glm::translate(glm::mat4(1.0f), position);
-	projectionMartix = glm::perspective(glm::radians(60.f), 800.f / 600.f, 0.1f, 200.f);
-	//projectionMartix = glm::ortho(-1.f, 1.f, -1.f, 1.f, -50.f, 50.f);
-	//projectionMartix[1][1] *= -1;
 }
