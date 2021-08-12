@@ -7,8 +7,8 @@
 struct Transform
 {
 	glm::vec3 position{};
-	glm::vec3 rotation{};
 	glm::vec3 scale{ 1.f, 1.f, 1.f };
+	glm::vec3 rotation{};
 
 	glm::mat4 mat4()
 	{
@@ -46,6 +46,6 @@ class GameObject : NonCopyable
 public:
 	Mesh mesh;
 	Material* material;
-	Transform transform;
+    Transform transform{};
 	glm::vec4 color;
 };

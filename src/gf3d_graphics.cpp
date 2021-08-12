@@ -8,6 +8,8 @@ using std::endl;
 
 void Gf3dGraphics::init(Gf3dWindow* window, Gf3dDevice* device)
 {
+	assert(window);
+	assert(device);
 	gf3dWindow = window;
 	gf3dDevice = device;
 	initVulkan();
@@ -33,7 +35,7 @@ void Gf3dGraphics::cleanup()
 	}
 
 	vkFreeCommandBuffers(device, gf3dDevice->GetCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-	swapchain.cleanup(device);
+	swapchain.cleanup();
 }
 
 void Gf3dGraphics::createCommandBuffers()
@@ -81,7 +83,7 @@ void Gf3dGraphics::recreateSwapChain()
 
 	vkDeviceWaitIdle(gf3dDevice->GetDevice());
 
-	swapchain.recreate(*gf3dDevice);
+	swapchain.recreate();
 }
 
 void Gf3dGraphics::createDescriptorPool()
@@ -248,8 +250,11 @@ void Gf3dGraphics::beginRenderPass(VkCommandBuffer cmd)
 	renderPassInfo.renderArea.extent = swapchain.getExtent();
 
 	VkClearValue clearColor = { 0.2f, 0.2f, 0.3f, 1.0f };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
+	VkClearValue clearDepth = {};
+	clearDepth.depthStencil.depth = 1.0f;
+	renderPassInfo.clearValueCount = 2;
+	VkClearValue clearValues[2] = { clearColor, clearDepth };
+	renderPassInfo.pClearValues = clearValues;
 
 	vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -295,7 +300,7 @@ void Gf3dGraphics::updateCameraDescriptor(Camera& camera)
 //Initializes the vulkan api
 void Gf3dGraphics::initVulkan() 
 {
-	swapchain.init(*gf3dDevice);
+	swapchain.init(gf3dDevice);
 
 	createCommandBuffers();
 

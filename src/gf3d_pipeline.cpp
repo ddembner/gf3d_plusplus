@@ -76,7 +76,7 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	rasterizerInfo.rasterizerDiscardEnable = VK_FALSE;
 	rasterizerInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizerInfo.lineWidth = 1.0f;
-	rasterizerInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizerInfo.cullMode = VK_CULL_MODE_NONE;
 	rasterizerInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizerInfo.depthBiasEnable = VK_FALSE;
 
@@ -115,6 +115,15 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	dynamicStateInfo.dynamicStateCount = 2;
 	dynamicStateInfo.pDynamicStates = dynamicState;
 
+	VkPipelineDepthStencilStateCreateInfo depthStateInfo = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
+	depthStateInfo.depthTestEnable = VK_TRUE;
+	depthStateInfo.depthWriteEnable = VK_TRUE;
+	depthStateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStateInfo.depthBoundsTestEnable = VK_FALSE;
+	depthStateInfo.minDepthBounds = 0.0f;
+	depthStateInfo.maxDepthBounds = 1.0f;
+	depthStateInfo.stencilTestEnable = VK_FALSE;
+
 	VkGraphicsPipelineCreateInfo graphicsInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
 	graphicsInfo.renderPass = renderpass;
 	graphicsInfo.layout = pipelineLayout;
@@ -127,5 +136,6 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	graphicsInfo.pColorBlendState = &blendInfo;
 	graphicsInfo.pVertexInputState = &vertexInput;
 	graphicsInfo.pDynamicState = &dynamicStateInfo;
+	graphicsInfo.pDepthStencilState = &depthStateInfo;
 	VK_CHECK(vkCreateGraphicsPipelines(device, nullptr, 1, &graphicsInfo, nullptr, &pipeline));
 }

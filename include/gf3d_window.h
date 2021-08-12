@@ -8,7 +8,7 @@ class Gf3dWindow : NonCopyable
 {
 public:
 	Gf3dWindow() = default;
-	void init(const int Width = 1280, const int Height = 720, const std::string& Title = "Gf3d++ Engine");
+	void init(const int Width = 800, const int Height = 600, const std::string& Title = "Gf3d++ Engine");
 	void cleanup();
 	VkSurfaceKHR createWindowSurface(VkInstance instance);
 	GLFWwindow* getWindow() const { return glfw_window; }

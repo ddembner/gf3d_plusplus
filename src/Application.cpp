@@ -33,11 +33,13 @@ void Application::update()
 	isDonePlaying = window.windowClosed() || glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE);
 	float aspect = window.getAspectRatio();
 	//cam.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
-	cam.setPerspectiveProjection(60.f, aspect, 0.1f, 200.f);
+	cam.setPerspectiveProjection(aspect, 0.1f, 100.f);
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_LEFT) == GLFW_PRESS) cam.fovy -= .005f;
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_RIGHT) == GLFW_PRESS) cam.fovy += .005f;
 	for (auto& gameObject : gameObjects) {
-		gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y + 0.0001f, glm::two_pi<float>());
-		//gameObject.transform.rotation.x = glm::mod(gameObject.transform.rotation.x + 0.00005f, glm::two_pi<float>());
-		auto finalTransform = cam.getViewProjectionMatrix() * gameObject.transform.mat4();
+		gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y + 0.01f, glm::two_pi<float>());
+		gameObject.transform.rotation.x = glm::mod(gameObject.transform.rotation.x + 0.005f, glm::two_pi<float>());
+		auto finalTransform = cam.getProjectionMatrix() * gameObject.transform.mat4();
 		gameObject.material->pushUpdate("mvp", &finalTransform);
 	}
 }
@@ -81,52 +83,52 @@ void Application::initScene()
 	GameObject newObj;
 	newObj.mesh.vertices = {
 		// left face (white)
-		{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-		{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-		{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-		{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-		{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-		{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+	  {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+	  {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
+	  {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
+	  {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+	  {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+	  {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
 
-		// right face (yellow)
-		{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-		{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-		{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-		{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+	  // right face (yellow)
+	  {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+	  {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
+	  {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
+	  {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
+	  {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+	  {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
 
-		// top face (orange, remember y axis points down)
-		{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-		{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-		{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-		{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-		{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-		{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+	  // top face (orange, remember y axis points down)
+	  {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+	  {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+	  {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+	  {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+	  {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+	  {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
 
-		// bottom face (red)
-		{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-		{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-		{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-		{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+	  // bottom face (red)
+	  {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+	  {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+	  {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+	  {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+	  {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+	  {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
 
-		// nose face (blue)
-		{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-		{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-		{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-		{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-		{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-		{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+	  // nose face (blue)
+	  {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+	  {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+	  {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+	  {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+	  {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+	  {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
 
-		// tail face (green)
-		{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-		{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-		{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-		{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-		{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-		{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+	  // tail face (green)
+	  {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+	  {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+	  {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+	  {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+	  {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+	  {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
 	};
 	newObj.mesh.allocateMesh(gf3dDevice);
 	newObj.color = { 0.1f, 0, 1, 1 };
@@ -135,12 +137,13 @@ void Application::initScene()
 
 	//newObj.material->pushUpdate("color", &newObj.color);
 
+	newObj.transform.position.z = 2.5f;
 	newObj.transform.scale *= 0.5f;
 
 	gameObjects.push_back(std::move(newObj));
 
-	cam.position = glm::vec3( 0, 0, -1 );
-	cam.OnUpdate();
+	//cam.position = glm::vec3( 0, 0, -1 );
+	//cam.OnUpdate();
 }
 
 void Application::destroyGameObjects()
