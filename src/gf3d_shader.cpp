@@ -1,5 +1,4 @@
-#include <shaderc/shaderc.hpp>
-#include <spirv_parser.hpp>
+#include <glslang/SPIRV/GlslangToSpv.h>
 #include <spirv_glsl.hpp>
 #include "gf3d_logger.h"
 #include "gf3d_shader.h"
@@ -69,13 +68,13 @@ static void getUniformType(const spirv_cross::SPIRType& type, Uniform& outMember
     outMemberData.vecsize = type.vecsize;
 }
 
-static shaderc_shader_kind shaderStageToShadercKind(VkShaderStageFlagBits stage)
+static EShLanguage shaderStageToGlslangKind(VkShaderStageFlagBits stage)
 {
     switch(stage)
     {
-        case VK_SHADER_STAGE_VERTEX_BIT: return shaderc_vertex_shader;
-        case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_fragment_shader;
-        default: return (shaderc_shader_kind)-1;
+        case VK_SHADER_STAGE_VERTEX_BIT: return EShLangFragment;
+        case VK_SHADER_STAGE_FRAGMENT_BIT: return EShLangFragment;
+        default: return (EShLanguage)-1;
     }
 }
 
@@ -186,24 +185,9 @@ void Shader::compileShadersToSpv()
 
 std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source)
 {
-    shaderc::Compiler compiler;
-    shaderc::CompileOptions options;
-    options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-    options.SetTargetSpirv(shaderc_spirv_version_1_3);
-
-#ifdef NDEBUG
-    // performance should be preferred in non-debug builds
-    options.SetOptimizationLevel(shaderc_optimization_level_performance);
-#endif // NDEBUG
-
-    shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), filepath.c_str(), options);
-
-    if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
-        LOGGER_ERROR(result.GetErrorMessage());
-        return std::vector<uint32_t>();
-    }
-
-    std::vector<uint32_t> shaderData(result.cbegin(), result.cend());
+    glslang::InitializeProcess();
+    
+    std::vector<uint32_t> shaderData;
 
     std::ofstream out(getShaderFileFinalNameForStage(stage), std::ios::out | std::ios::binary);
     if (out.is_open()) {
@@ -211,6 +195,8 @@ std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, 
         out.flush();
         out.close();
     }
+
+    glslang::FinalizeProcess();
 
     return shaderData;
 }
