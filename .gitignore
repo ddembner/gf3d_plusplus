@@ -11,6 +11,7 @@
 build/
 *.spv
 external/
+.DS_Store
 
 # Cmake
 CMakeLists.txt.user
