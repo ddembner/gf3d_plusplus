@@ -1,5 +1,10 @@
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include "gf3d_camera.h"
 #include "gf3d_logger.h"
+
+#include <glm/trigonometric.hpp>
 
 void Camera::setOrthographicProjection(float left, float right, float top, float bottom, float zNear, float zFar)
 {

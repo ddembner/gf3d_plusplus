@@ -1,8 +1,8 @@
-#include <glslang/SPIRV/GlslangToSpv.h>
-#include <spirv_glsl.hpp>
-#include "gf3d_logger.h"
 #include "gf3d_shader.h"
 #include "vulkan_functions.h"
+#include "gf3d_logger.h"
+#include <glslang/SPIRV/GlslangToSpv.h>
+#include <spirv_cross/spirv_glsl.hpp>
 
 #include <fstream>
 #include <filesystem>

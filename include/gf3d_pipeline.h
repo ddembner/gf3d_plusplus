@@ -1,7 +1,6 @@
 #pragma once
 #include "gf3d_swapchain.h"
 #include "gf3d_shader.h"
-#include <glm/mat4x4.hpp>
 #include <memory>
 
 class Pipeline

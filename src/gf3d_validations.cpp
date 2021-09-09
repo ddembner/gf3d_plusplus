@@ -1,5 +1,4 @@
 #include "gf3d_validations.h"
-#include <iostream>
 #include "gf3d_logger.h"
 
 //Makes it so the validation layer is only on when debugging

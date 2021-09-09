@@ -1,6 +1,5 @@
 #pragma once
 #include "gf3d_device.h"
-#include <glm/glm.hpp>
 #include <vector>
 #include <unordered_map>
 #include "vulkan_types.h"
