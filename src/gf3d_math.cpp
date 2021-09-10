@@ -1,1 +1,0 @@
-#include "gf3d_math.h"
