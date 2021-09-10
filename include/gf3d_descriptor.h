@@ -6,7 +6,7 @@ class Descriptor
 
 };
 
-class DescriptorManager
+class DescriptorSetAllocator
 {
 private:
 	std::vector<Descriptor> pools;

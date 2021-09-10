@@ -8,24 +8,16 @@
 
 Pipeline::Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath)
 	: shader(device, shaderPath)
+	, pushSize(shader.getPushDataSize())
+	, pushData(std::make_unique<char[]>(pushSize))
 {
+	std::memset(pushData.get(), 0, shader.getPushDataSize());
 	createPipelineLayout(device);
 	createGraphicsPipeline(device,renderPass);
 }
 
 Pipeline::~Pipeline()
 {
-}
-
-void Pipeline::loadPipeline(VkDevice device, VkRenderPass renderpass, const std::string& shaderPath)
-{
-	// Shader newShader(device, ASSETS_PATH "shaders/test.shader");
-
-	// shader = newShader;
-
-	createPipelineLayout(device);
-	createGraphicsPipeline(device, renderpass);
-
 }
 
 void Pipeline::destroyPipeline(VkDevice device)
@@ -35,45 +27,33 @@ void Pipeline::destroyPipeline(VkDevice device)
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 }
 
-VkShaderModule Pipeline::loadShaderModule(VkDevice device, const std::string& shaderPath)
+void Pipeline::updatePush(const std::string& name, void* data)
 {
+	auto uniform = shader.getUniform(name);
 
-	std::ifstream file(shaderPath, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open()) {
-		std::cout << "Failed to open file: " << shaderPath << std::endl;
-		return VkShaderModule();
+	if (uniform.type == 0) {
+		LOGGER_WARN("Uniform \"{}\" was not found", name);
+		return;
 	}
 
-	size_t fileSize = (size_t)file.tellg();
-	std::vector<uint8_t> shaderCode(fileSize);
+	std::memcpy(pushData.get() + uniform.offset, data, uniform.size);
+}
 
-	file.seekg(0);
-	file.read(reinterpret_cast<char*>(shaderCode.data()), fileSize);
-
-	file.close();
-	VkShaderModuleCreateInfo createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = static_cast<uint32_t>(shaderCode.size());
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
-	createInfo.flags = 0;
-
-	VkShaderModule shaderModule;
-	VK_CHECK(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule));
-
-	return shaderModule;
+void Pipeline::submitPush(const VkCommandBuffer& cmd)
+{
+	const auto& pushRanges = shader.getPushConstantRanges();
+	for (const auto& pushRange : pushRanges) {
+		vkCmdPushConstants(cmd, pipelineLayout, pushRange.stageFlags, pushRange.offset, pushRange.size, pushData.get() + pushRange.offset);
+	}
 }
 
 void Pipeline::createPipelineLayout(VkDevice device)
 {
-	VkPushConstantRange pushConstantRange = {};
-	pushConstantRange.offset = 0;
-	pushConstantRange.size = sizeof(PushConstantData);
-	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	std::vector<VkPushConstantRange> pushRanges = shader.getPushConstantRanges();
 
 	VkPipelineLayoutCreateInfo createInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
-	createInfo.pushConstantRangeCount = 1;
-	createInfo.pPushConstantRanges = &pushConstantRange;
+	createInfo.pushConstantRangeCount = pushRanges.size();
+	createInfo.pPushConstantRanges = pushRanges.data();
 	VK_CHECK(vkCreatePipelineLayout(device, &createInfo, nullptr, &pipelineLayout));
 }
 
@@ -96,7 +76,7 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	rasterizerInfo.rasterizerDiscardEnable = VK_FALSE;
 	rasterizerInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizerInfo.lineWidth = 1.0f;
-	rasterizerInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizerInfo.cullMode = VK_CULL_MODE_NONE;
 	rasterizerInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizerInfo.depthBiasEnable = VK_FALSE;
 
@@ -135,6 +115,15 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	dynamicStateInfo.dynamicStateCount = 2;
 	dynamicStateInfo.pDynamicStates = dynamicState;
 
+	VkPipelineDepthStencilStateCreateInfo depthStateInfo = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
+	depthStateInfo.depthTestEnable = VK_TRUE;
+	depthStateInfo.depthWriteEnable = VK_TRUE;
+	depthStateInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStateInfo.depthBoundsTestEnable = VK_FALSE;
+	depthStateInfo.minDepthBounds = 0.0f;
+	depthStateInfo.maxDepthBounds = 1.0f;
+	depthStateInfo.stencilTestEnable = VK_FALSE;
+
 	VkGraphicsPipelineCreateInfo graphicsInfo = { VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO };
 	graphicsInfo.renderPass = renderpass;
 	graphicsInfo.layout = pipelineLayout;
@@ -147,5 +136,6 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	graphicsInfo.pColorBlendState = &blendInfo;
 	graphicsInfo.pVertexInputState = &vertexInput;
 	graphicsInfo.pDynamicState = &dynamicStateInfo;
+	graphicsInfo.pDepthStencilState = &depthStateInfo;
 	VK_CHECK(vkCreateGraphicsPipelines(device, nullptr, 1, &graphicsInfo, nullptr, &pipeline));
 }

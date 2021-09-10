@@ -1,23 +1,18 @@
 #pragma once
 #include "gf3d_swapchain.h"
 #include "gf3d_shader.h"
-#include <glm/mat4x4.hpp>
-
-struct PushConstantData
-{
-	glm::mat4 transform;
-	glm::vec4 color;
-};
+#include <memory>
 
 class Pipeline
 {
 public:
 	Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath);
 	~Pipeline();
-	void loadPipeline(VkDevice device, VkRenderPass renderpass, const std::string& shaderPath);
 	void destroyPipeline(VkDevice device);
 	VkPipeline getGraphicsPipeline() const { return pipeline; }
 	VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
+	void updatePush(const std::string& name, void* data);
+	void submitPush(const VkCommandBuffer& cmd);
 private:
 	VkShaderModule loadShaderModule(VkDevice device, const std::string& shaderPath);
 	void createPipelineLayout(VkDevice device);
@@ -26,4 +21,6 @@ private:
 	VkPipeline pipeline;
 	Shader shader;
 	VkPipelineLayout pipelineLayout;
+	uint32_t pushSize;
+	std::unique_ptr<char[]> pushData;
 };

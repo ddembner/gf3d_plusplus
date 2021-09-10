@@ -1,7 +1,8 @@
-#include <shaderc/shaderc.hpp>
-#include "gf3d_logger.h"
 #include "gf3d_shader.h"
 #include "vulkan_functions.h"
+#include "gf3d_logger.h"
+#include <glslang/SPIRV/GlslangToSpv.h>
+#include <spirv_cross/spirv_glsl.hpp>
 
 #include <fstream>
 #include <filesystem>
@@ -20,6 +21,8 @@ Shader::Shader(VkDevice _device, const std::string& pathToFile) : device(_device
     else {    
         compileShadersToSpv();
     }
+
+    shaderSources.clear();
 }
 
 void Shader::destroy()
@@ -58,14 +61,34 @@ static const char* shaderStageToFileExtention(VkShaderStageFlagBits stage)
     }
 }
 
-static shaderc_shader_kind shaderStageToShadercKind(VkShaderStageFlagBits stage)
+static void getUniformType(const spirv_cross::SPIRType& type, Uniform& outMemberData)
+{
+    outMemberData.type = type.basetype;
+    outMemberData.column = type.columns;
+    outMemberData.vecsize = type.vecsize;
+}
+
+static EShLanguage shaderStageToGlslangKind(VkShaderStageFlagBits stage)
 {
     switch(stage)
     {
-        case VK_SHADER_STAGE_VERTEX_BIT: return shaderc_vertex_shader;
-        case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_fragment_shader;
-        default: return (shaderc_shader_kind)-1;
+        case VK_SHADER_STAGE_VERTEX_BIT: return EShLangVertex;
+        case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return EShLangTessControl;
+        case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return EShLangTessEvaluation;
+        case VK_SHADER_STAGE_GEOMETRY_BIT: return EShLangGeometry;
+        case VK_SHADER_STAGE_FRAGMENT_BIT: return EShLangFragment;
+        case VK_SHADER_STAGE_COMPUTE_BIT: return EShLangCompute;
+        default: return EShLangVertex;
     }
+}
+
+uint32_t Shader::getPushDataSize()
+{
+    uint32_t total = 0;
+    for (const auto& pushConstantRange : pushConstantRanges) {
+        total += pushConstantRange.size;
+    }
+    return total;
 }
 
 bool Shader::checkIfAlreadyCompiled()
@@ -110,9 +133,9 @@ std::string Shader::readFile()
     return fileContent;
 }
 
-std::unordered_map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(const std::string& source)
+std::map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(const std::string& source)
 {
-    std::unordered_map<VkShaderStageFlagBits, std::string> sources;
+    std::map<VkShaderStageFlagBits, std::string> sources;
     const char* token = "#type ";
     size_t tokenLen = strlen(token);
     size_t pos = source.find(token, 0);
@@ -123,7 +146,7 @@ std::unordered_map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(
         VkShaderStageFlagBits shaderStage = stringToVulkanShaderFlag(stringType);
         if (!shaderStage) {
             LOGGER_ERROR("Failed to find supported shader stage in shader");
-            return std::unordered_map<VkShaderStageFlagBits, std::string>();
+            return std::map<VkShaderStageFlagBits, std::string>();
         }
         size_t nextLine = source.find_first_not_of("\r\n", eol);
         size_t nextPos = source.find(token, eol);
@@ -132,6 +155,116 @@ std::unordered_map<VkShaderStageFlagBits, std::string> Shader::getShaderSources(
     }
 
     return sources;
+}
+
+static TBuiltInResource InitResources()
+{
+    TBuiltInResource Resources;
+
+    Resources.maxLights = 32;
+    Resources.maxClipPlanes = 6;
+    Resources.maxTextureUnits = 32;
+    Resources.maxTextureCoords = 32;
+    Resources.maxVertexAttribs = 64;
+    Resources.maxVertexUniformComponents = 4096;
+    Resources.maxVaryingFloats = 64;
+    Resources.maxVertexTextureImageUnits = 32;
+    Resources.maxCombinedTextureImageUnits = 80;
+    Resources.maxTextureImageUnits = 32;
+    Resources.maxFragmentUniformComponents = 4096;
+    Resources.maxDrawBuffers = 32;
+    Resources.maxVertexUniformVectors = 128;
+    Resources.maxVaryingVectors = 8;
+    Resources.maxFragmentUniformVectors = 16;
+    Resources.maxVertexOutputVectors = 16;
+    Resources.maxFragmentInputVectors = 15;
+    Resources.minProgramTexelOffset = -8;
+    Resources.maxProgramTexelOffset = 7;
+    Resources.maxClipDistances = 8;
+    Resources.maxComputeWorkGroupCountX = 65535;
+    Resources.maxComputeWorkGroupCountY = 65535;
+    Resources.maxComputeWorkGroupCountZ = 65535;
+    Resources.maxComputeWorkGroupSizeX = 1024;
+    Resources.maxComputeWorkGroupSizeY = 1024;
+    Resources.maxComputeWorkGroupSizeZ = 64;
+    Resources.maxComputeUniformComponents = 1024;
+    Resources.maxComputeTextureImageUnits = 16;
+    Resources.maxComputeImageUniforms = 8;
+    Resources.maxComputeAtomicCounters = 8;
+    Resources.maxComputeAtomicCounterBuffers = 1;
+    Resources.maxVaryingComponents = 60;
+    Resources.maxVertexOutputComponents = 64;
+    Resources.maxGeometryInputComponents = 64;
+    Resources.maxGeometryOutputComponents = 128;
+    Resources.maxFragmentInputComponents = 128;
+    Resources.maxImageUnits = 8;
+    Resources.maxCombinedImageUnitsAndFragmentOutputs = 8;
+    Resources.maxCombinedShaderOutputResources = 8;
+    Resources.maxImageSamples = 0;
+    Resources.maxVertexImageUniforms = 0;
+    Resources.maxTessControlImageUniforms = 0;
+    Resources.maxTessEvaluationImageUniforms = 0;
+    Resources.maxGeometryImageUniforms = 0;
+    Resources.maxFragmentImageUniforms = 8;
+    Resources.maxCombinedImageUniforms = 8;
+    Resources.maxGeometryTextureImageUnits = 16;
+    Resources.maxGeometryOutputVertices = 256;
+    Resources.maxGeometryTotalOutputComponents = 1024;
+    Resources.maxGeometryUniformComponents = 1024;
+    Resources.maxGeometryVaryingComponents = 64;
+    Resources.maxTessControlInputComponents = 128;
+    Resources.maxTessControlOutputComponents = 128;
+    Resources.maxTessControlTextureImageUnits = 16;
+    Resources.maxTessControlUniformComponents = 1024;
+    Resources.maxTessControlTotalOutputComponents = 4096;
+    Resources.maxTessEvaluationInputComponents = 128;
+    Resources.maxTessEvaluationOutputComponents = 128;
+    Resources.maxTessEvaluationTextureImageUnits = 16;
+    Resources.maxTessEvaluationUniformComponents = 1024;
+    Resources.maxTessPatchComponents = 120;
+    Resources.maxPatchVertices = 32;
+    Resources.maxTessGenLevel = 64;
+    Resources.maxViewports = 16;
+    Resources.maxVertexAtomicCounters = 0;
+    Resources.maxTessControlAtomicCounters = 0;
+    Resources.maxTessEvaluationAtomicCounters = 0;
+    Resources.maxGeometryAtomicCounters = 0;
+    Resources.maxFragmentAtomicCounters = 8;
+    Resources.maxCombinedAtomicCounters = 8;
+    Resources.maxAtomicCounterBindings = 1;
+    Resources.maxVertexAtomicCounterBuffers = 0;
+    Resources.maxTessControlAtomicCounterBuffers = 0;
+    Resources.maxTessEvaluationAtomicCounterBuffers = 0;
+    Resources.maxGeometryAtomicCounterBuffers = 0;
+    Resources.maxFragmentAtomicCounterBuffers = 1;
+    Resources.maxCombinedAtomicCounterBuffers = 1;
+    Resources.maxAtomicCounterBufferSize = 16384;
+    Resources.maxTransformFeedbackBuffers = 4;
+    Resources.maxTransformFeedbackInterleavedComponents = 64;
+    Resources.maxCullDistances = 8;
+    Resources.maxCombinedClipAndCullDistances = 8;
+    Resources.maxSamples = 4;
+    Resources.maxMeshOutputVerticesNV = 256;
+    Resources.maxMeshOutputPrimitivesNV = 512;
+    Resources.maxMeshWorkGroupSizeX_NV = 32;
+    Resources.maxMeshWorkGroupSizeY_NV = 1;
+    Resources.maxMeshWorkGroupSizeZ_NV = 1;
+    Resources.maxTaskWorkGroupSizeX_NV = 32;
+    Resources.maxTaskWorkGroupSizeY_NV = 1;
+    Resources.maxTaskWorkGroupSizeZ_NV = 1;
+    Resources.maxMeshViewCountNV = 4;
+
+    Resources.limits.nonInductiveForLoops = 1;
+    Resources.limits.whileLoops = 1;
+    Resources.limits.doWhileLoops = 1;
+    Resources.limits.generalUniformIndexing = 1;
+    Resources.limits.generalAttributeMatrixVectorIndexing = 1;
+    Resources.limits.generalVaryingIndexing = 1;
+    Resources.limits.generalSamplerIndexing = 1;
+    Resources.limits.generalVariableIndexing = 1;
+    Resources.limits.generalConstantMatrixVectorIndexing = 1;
+
+    return Resources;
 }
 
 void Shader::readPreCompiledFiles()
@@ -145,6 +278,8 @@ void Shader::readPreCompiledFiles()
 
         std::vector<uint32_t> data(size / sizeof(uint32_t));
         in.read((char*)data.data(), size);
+        
+        Reflect(stage, data);
 
         loadShaderModule(stage, data);
     }
@@ -152,30 +287,58 @@ void Shader::readPreCompiledFiles()
 
 void Shader::compileShadersToSpv()
 {
-    shaderc::Compiler compiler;
-    shaderc::CompileOptions options;
-    options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-    options.SetOptimizationLevel(shaderc_optimization_level_performance);
-    options.SetTargetSpirv(shaderc_spirv_version_1_3);
     for (auto&& [stage, source] : shaderSources) {
-        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(source, shaderStageToShadercKind(stage), filepath.c_str(), options);
-
-        if(result.GetCompilationStatus() != shaderc_compilation_status_success) {
-            LOGGER_ERROR(result.GetErrorMessage());
-        }
-
-        std::vector shaderData = std::vector<uint32_t>(result.cbegin(), result.cend());
+        
+        std::vector shaderData = compileSourceToSpirv(stage, source);
+         
+        Reflect(stage, shaderData);
 
         loadShaderModule(stage, shaderData);
-
-         std::ofstream out(getShaderFileFinalNameForStage(stage), std::ios::out | std::ios::binary);
-         if (out.is_open()) {
-             out.write((char*)shaderData.data(), shaderData.size() * sizeof(uint32_t));
-             out.flush();
-             out.close();
-         }
-
     }
+}
+
+std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source)
+{
+    glslang::InitializeProcess();
+    EShLanguage glslangStage = shaderStageToGlslangKind(stage);
+    glslang::TShader shader(glslangStage);
+    glslang::TProgram program;
+    TBuiltInResource  resources = InitResources();
+    
+    const char* shaderCode = source.c_str();
+    shader.setStrings(&shaderCode, 1);
+    shader.setEnvTarget(glslang::EShTargetLanguage::EShTargetSpv, glslang::EShTargetLanguageVersion::EShTargetSpv_1_3);
+    shader.setEnvClient(glslang::EShClient::EShClientVulkan, glslang::EShTargetClientVersion::EShTargetVulkan_1_2);
+
+    EShMessages messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules);
+
+    if (!shader.parse(&resources, 100, false, messages)) {
+        LOGGER_WARN(shader.getInfoLog());
+        LOGGER_WARN(shader.getInfoDebugLog());
+        return std::vector<uint32_t>(0);
+    }
+
+    program.addShader(&shader);
+
+    if (!program.link(messages)) {
+        LOGGER_WARN(shader.getInfoLog());
+        LOGGER_WARN(shader.getInfoDebugLog());
+        return std::vector<uint32_t>(0);
+    }
+
+    std::vector<uint32_t> shaderData;
+    glslang::GlslangToSpv(*program.getIntermediate(glslangStage), shaderData);
+
+    std::ofstream out(getShaderFileFinalNameForStage(stage), std::ios::out | std::ios::binary);
+    if (out.is_open()) {
+        out.write((char*)shaderData.data(), shaderData.size() * sizeof(uint32_t));
+        out.flush();
+        out.close();
+    }
+
+    glslang::FinalizeProcess();
+
+    return shaderData;
 }
 
 void Shader::loadShaderModule(VkShaderStageFlagBits stage, const std::vector<uint32_t>& codeData)
@@ -197,4 +360,76 @@ std::string Shader::getShaderFileFinalNameForStage(VkShaderStageFlagBits stage)
     std::string filename = filepath.substr(filepath.find_last_of("/\\") + 1);
     filename = filename.substr(0, filename.find_first_of('.'));
     return path + filename + shaderStageToFileExtention(stage) + ".spv";
+}
+
+void Shader::Reflect(VkShaderStageFlagBits stage, std::vector<uint32_t>& data)
+{
+    std::unique_ptr<spirv_cross::CompilerGLSL> compiler = std::make_unique<spirv_cross::CompilerGLSL>(data);
+
+    spirv_cross::CompilerGLSL::Options options;
+    options.vulkan_semantics = true;
+    compiler->set_common_options(options);
+    spirv_cross::ShaderResources resources = compiler->get_shader_resources();
+
+    // Push Constants
+    for (auto& resource : resources.push_constant_buffers) {
+        
+        const auto& bufferType = compiler->get_type(resource.base_type_id);
+        uint32_t bufferSize = compiler->get_declared_struct_size(bufferType);
+        std::vector<Uniform> pushData(bufferType.member_types.size());
+
+        if (pushData.size() == 0) {
+            LOGGER_WARN("Push constant struct has 0 members");
+            return;
+        }
+
+        //Get uniform member data
+        for (int i = 0; i < bufferType.member_types.size(); i++) {
+            pushData[i].offset = compiler->type_struct_member_offset(bufferType, i);
+            pushData[i].size = compiler->get_declared_struct_member_size(bufferType, i);
+            getUniformType(compiler->get_type(bufferType.member_types[0]), pushData[i]);
+        }
+        
+        //check to see if the push range would be identical
+        for (auto&& [shaderStage, pushMembers] : pushMemberData) {
+            for (int i = 0; i < pushMembers.size(); i++) {
+                if (pushMembers[i] != pushData[i])
+                    continue;
+
+                //There is a match and will add the shader stage to the first push range of the match
+                for (auto& pushRange : pushConstantRanges) {
+                    if (pushRange.stageFlags == shaderStage) {
+                        pushRange.stageFlags |= stage;
+                        pushMemberData[stage] = pushData;
+                        return;
+                    }
+                }
+
+            }
+        }
+
+        VkPushConstantRange pushConstantRange = {};
+        pushConstantRange.size = bufferSize - pushData[0].offset;
+        pushConstantRange.stageFlags = stage;
+        pushConstantRange.offset = pushData[0].offset;
+
+        for (int i = 0; i < pushData.size(); i++) {
+           std::string name = compiler->get_member_name(resource.base_type_id, i);
+           uniforms[name] = pushData[i];
+        }
+
+        pushMemberData[stage] = pushData;
+
+        pushConstantRanges.push_back(pushConstantRange);
+    }
+
+    // Uniform Buffers
+    for (auto& resource : resources.uniform_buffers) {
+        auto bufferType = compiler->get_type(resource.base_type_id);
+
+        for (int i = 0; i < bufferType.member_types.size(); i++) {
+            LOGGER_TRACE(compiler->get_member_name(resource.base_type_id, i));
+        }
+    }
+
 }

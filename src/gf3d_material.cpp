@@ -1,3 +1,4 @@
+#include "gf3d_logger.h"
 #include "gf3d_material.h"
 #include "gf3d_material_system.h"
 
@@ -23,7 +24,12 @@ void Material::bindPipeline(VkCommandBuffer cmd, VkPipelineBindPoint pipelineBin
 	vkCmdBindPipeline(cmd, pipelineBindPoint, pipeline.getGraphicsPipeline());
 }
 
-void Material::submitPushConstantData(VkCommandBuffer cmd, VkShaderStageFlags stages, uint32_t size, const PushConstantData* data, uint32_t offset)
+void Material::pushUpdate(const std::string& name, void* data)
 {
-	vkCmdPushConstants(cmd, pipeline.getPipelineLayout(), stages, offset, size, data);
+	pipeline.updatePush(name, data);
+}
+
+void Material::submitPushConstant(const VkCommandBuffer& cmd)
+{
+	pipeline.submitPush(cmd);
 }

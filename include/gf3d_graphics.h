@@ -32,7 +32,6 @@ private:
 	int currentFrame = 0;
 	bool isFrameInProgress = false;
 
-	Camera camera;
 	Gf3dWindow* gf3dWindow;
 	Gf3dDevice* gf3dDevice;
 
@@ -57,6 +56,7 @@ public:
 	void beginRenderPass(VkCommandBuffer cmd);
 	void endRenderPass(VkCommandBuffer cmd);
 	void renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects);
+	void updateCameraDescriptor(Camera& camera);
 private:
 	void initVulkan();
 	void createCommandBuffers();
