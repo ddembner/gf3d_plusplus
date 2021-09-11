@@ -7,8 +7,6 @@ ELSE()
 	message(STATUS Vulkan::Vulkan)
 ENDIF()
 
-add_subdirectory(./third_party/glfw)
-
 add_definitions(-DASSETS_PATH=\"${ASSET_PATH_DIR}\")
 
 set(LIB_NAME "lib${PROJECT_NAME}")
@@ -35,17 +33,9 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/vulkan_functions.cpp
 )
 
-set(INCLUDE_PATHS
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/include
-	${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm
-	${CMAKE_CURRENT_SOURCE_DIR}/third_party/vma/src
-	${CMAKE_CURRENT_SOURCE_DIR}/third_party/spdlog/include
-)
-
 add_library("${LIB_NAME}" "${SOURCE_FILES}")
 
-target_include_directories("${LIB_NAME}" PRIVATE "${INCLUDE_PATHS}")
+target_include_directories("${LIB_NAME}" PRIVATE "${gf3d_INCLUDE_PATHS}")
 
 target_link_libraries("${LIB_NAME}" glfw)
 target_link_libraries("${LIB_NAME}" Vulkan::Vulkan)

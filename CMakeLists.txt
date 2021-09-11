@@ -8,6 +8,15 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(ASSET_PATH_DIR "${CMAKE_SOURCE_DIR}/assets/")
 
+set(gf3d_INCLUDE_PATHS
+	${CMAKE_CURRENT_SOURCE_DIR}/engine
+	${CMAKE_SOURCE_DIR}/third_party/glfw/include
+	${CMAKE_SOURCE_DIR}/third_party/glm
+	${CMAKE_SOURCE_DIR}/third_party/vma/include
+	${CMAKE_SOURCE_DIR}/third_party/spdlog/include
+)
+
+add_subdirectory(third_party/glfw)
 add_subdirectory(engine)
 add_subdirectory(application)
 
