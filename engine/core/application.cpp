@@ -1,5 +1,5 @@
 #include "gf3d_logger.h"
-#include "Application.h"
+#include "application.h"
 #include <spdlog/stopwatch.h>
 #include <bitset>
 #include <algorithm>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gf3d_camera.h"
-#include "GameObject.h"
+#include "core/gf3d_camera.h"
+#include "core/GameObject.h"
 
 class Gf3dGraphics
 {

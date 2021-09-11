@@ -1,6 +1,6 @@
 #pragma once
-#include "gf3d_mesh.h"
-#include "gf3d_material.h"
+#include "renderer/gf3d_mesh.h"
+#include "renderer/gf3d_material.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

@@ -2,7 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
 #include <string>
-#include "NonCopyable.h"
+#include "core/NonCopyable.h"
 
 class Gf3dWindow : NonCopyable
 {

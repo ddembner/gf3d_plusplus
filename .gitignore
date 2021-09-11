@@ -10,7 +10,7 @@
 .vscode/
 build/
 *.spv
-external/
+engine/third_party/
 .DS_Store
 
 # Cmake

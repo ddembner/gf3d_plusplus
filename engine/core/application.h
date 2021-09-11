@@ -1,7 +1,7 @@
 #pragma once
-#include "gf3d_graphics.h"
-#include "GameObject.h"
-#include "gf3d_material_system.h"
+#include "renderer/gf3d_graphics.h"
+#include "core/GameObject.h"
+#include "renderer/gf3d_material_system.h"
 #include <memory>
 
 class Application : NonCopyable

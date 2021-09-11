@@ -1,5 +1,5 @@
 #define VMA_IMPLEMENTATION
-#include <gf3d_mesh.h>
+#include "gf3d_mesh.h"
 #include "vulkan_functions.h"
 
 std::vector<VkVertexInputAttributeDescription> Mesh::Vertex::getAttributeDescription()

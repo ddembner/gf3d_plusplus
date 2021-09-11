@@ -1,6 +1,6 @@
 #include "gf3d_shader.h"
 #include "vulkan_functions.h"
-#include "gf3d_logger.h"
+#include "core/gf3d_logger.h"
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <spirv_cross/spirv_glsl.hpp>
 
