@@ -1,10 +1,6 @@
 #include "gf3d_graphics.h"
 #include "gf3d_validations.h"
 #include "vulkan_functions.h"
-#include <iostream>
-
-using std::cout;
-using std::endl;
 
 void Gf3dGraphics::init(Gf3dWindow* window, Gf3dDevice* device)
 {
