@@ -1,4 +1,4 @@
-#include "gf3d_logger.h"
+#include "core/gf3d_logger.h"
 #include "gf3d_pipeline.h"
 #include <fstream>
 #include <iostream>

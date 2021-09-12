@@ -1,5 +1,5 @@
 #pragma once
-#include "gf3d_singleton.h"
+#include "core/gf3d_singleton.h"
 #include "gf3d_material.h"
 #include <unordered_map>
 

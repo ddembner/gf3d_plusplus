@@ -4,7 +4,7 @@
 #endif // __APPLE__
 
 #include <vk_mem_alloc.h>
-#include "gf3d_window.h"
+#include "platform/gf3d_window.h"
 
 class Gf3dDevice : NonCopyable
 {
