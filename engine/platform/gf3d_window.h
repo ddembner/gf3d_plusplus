@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include "core/NonCopyable.h"
+#include "defines.hpp"
 
 class Gf3dWindow : NonCopyable
 {
@@ -14,7 +15,7 @@ public:
 	GLFWwindow* getWindow() const { return glfw_window; }
 	inline bool windowClosed() { return glfwWindowShouldClose(glfw_window); }
 	inline bool wasWindowResized() { return framebufferResized; }
-	VkExtent2D getExtent() const { return { static_cast<uint32_t>(width), static_cast<uint32_t>(height) }; }
+	VkExtent2D getExtent() const { return { static_cast<u32>(width), static_cast<u32>(height) }; }
 	float getAspectRatio() const { return static_cast<float>(width) / static_cast<float>(height); }
 	void setFPSWindowTitle(size_t fpsCount);
 	const std::string& getTitle() const { return title; }

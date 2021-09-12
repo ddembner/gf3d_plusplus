@@ -21,6 +21,6 @@ private:
 	VkPipeline pipeline;
 	Shader shader;
 	VkPipelineLayout pipelineLayout;
-	uint32_t pushSize;
+	u32 pushSize;
 	std::unique_ptr<char[]> pushData;
 };

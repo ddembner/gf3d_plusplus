@@ -82,9 +82,9 @@ static EShLanguage shaderStageToGlslangKind(VkShaderStageFlagBits stage)
     }
 }
 
-uint32_t Shader::getPushDataSize()
+u32 Shader::getPushDataSize()
 {
-    uint32_t total = 0;
+    u32 total = 0;
     for (const auto& pushConstantRange : pushConstantRanges) {
         total += pushConstantRange.size;
     }
@@ -276,7 +276,7 @@ void Shader::readPreCompiledFiles()
         auto size = in.tellg();
         in.seekg(0, std::ios::beg);
 
-        std::vector<uint32_t> data(size / sizeof(uint32_t));
+        std::vector<u32> data(size / sizeof(u32));
         in.read((char*)data.data(), size);
         
         Reflect(stage, data);
@@ -297,7 +297,7 @@ void Shader::compileShadersToSpv()
     }
 }
 
-std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source)
+std::vector<u32> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source)
 {
     glslang::InitializeProcess();
     EShLanguage glslangStage = shaderStageToGlslangKind(stage);
@@ -315,7 +315,7 @@ std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, 
     if (!shader.parse(&resources, 100, false, messages)) {
         LOGGER_WARN(shader.getInfoLog());
         LOGGER_WARN(shader.getInfoDebugLog());
-        return std::vector<uint32_t>(0);
+        return std::vector<u32>(0);
     }
 
     program.addShader(&shader);
@@ -323,15 +323,15 @@ std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, 
     if (!program.link(messages)) {
         LOGGER_WARN(shader.getInfoLog());
         LOGGER_WARN(shader.getInfoDebugLog());
-        return std::vector<uint32_t>(0);
+        return std::vector<u32>(0);
     }
 
-    std::vector<uint32_t> shaderData;
+    std::vector<u32> shaderData;
     glslang::GlslangToSpv(*program.getIntermediate(glslangStage), shaderData);
 
     std::ofstream out(getShaderFileFinalNameForStage(stage), std::ios::out | std::ios::binary);
     if (out.is_open()) {
-        out.write((char*)shaderData.data(), shaderData.size() * sizeof(uint32_t));
+        out.write((char*)shaderData.data(), shaderData.size() * sizeof(u32));
         out.flush();
         out.close();
     }
@@ -341,10 +341,10 @@ std::vector<uint32_t> Shader::compileSourceToSpirv(VkShaderStageFlagBits stage, 
     return shaderData;
 }
 
-void Shader::loadShaderModule(VkShaderStageFlagBits stage, const std::vector<uint32_t>& codeData)
+void Shader::loadShaderModule(VkShaderStageFlagBits stage, const std::vector<u32>& codeData)
 {
     VkShaderModuleCreateInfo shaderInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
-    shaderInfo.codeSize = codeData.size() * sizeof(uint32_t);
+    shaderInfo.codeSize = codeData.size() * sizeof(u32);
     shaderInfo.pCode = codeData.data();
 
     VkShaderModule newModule;
@@ -362,7 +362,7 @@ std::string Shader::getShaderFileFinalNameForStage(VkShaderStageFlagBits stage)
     return path + filename + shaderStageToFileExtention(stage) + ".spv";
 }
 
-void Shader::Reflect(VkShaderStageFlagBits stage, std::vector<uint32_t>& data)
+void Shader::Reflect(VkShaderStageFlagBits stage, std::vector<u32>& data)
 {
     std::unique_ptr<spirv_cross::CompilerGLSL> compiler = std::make_unique<spirv_cross::CompilerGLSL>(data);
 
@@ -375,7 +375,7 @@ void Shader::Reflect(VkShaderStageFlagBits stage, std::vector<uint32_t>& data)
     for (auto& resource : resources.push_constant_buffers) {
         
         const auto& bufferType = compiler->get_type(resource.base_type_id);
-        uint32_t bufferSize = compiler->get_declared_struct_size(bufferType);
+        u32 bufferSize = compiler->get_declared_struct_size(bufferType);
         std::vector<Uniform> pushData(bufferType.member_types.size());
 
         if (pushData.size() == 0) {

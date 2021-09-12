@@ -92,7 +92,7 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 	vkFreeCommandBuffers(device, gf3dDevice.GetCommandPool(), 1, &cmd);
 	vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
-	vertexCount = static_cast<uint32_t>(vertices.size());
+	vertexCount = static_cast<u32>(vertices.size());
 	isAllocated = true;
 }
 

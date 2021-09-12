@@ -3,14 +3,15 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "defines.hpp"
 
 struct Uniform
 {
-	uint32_t offset = 0;
-	uint32_t size = 0;
-	uint32_t type = 0;
-	uint32_t vecsize = 1;
-	uint32_t column = 1;
+	u32 offset = 0;
+	u32 size = 0;
+	u32 type = 0;
+	u32 vecsize = 1;
+	u32 column = 1;
 };
 
 class Shader
@@ -20,7 +21,7 @@ public:
 	void destroy();
 	std::map<VkShaderStageFlagBits, VkShaderModule> getShaderModules() const { return shaderModules; }
 	std::vector<VkPushConstantRange> getPushConstantRanges() const { return pushConstantRanges; }
-	uint32_t getPushDataSize();
+	u32 getPushDataSize();
 
 	Uniform getUniform(const std::string& name) const 
 	{
@@ -39,10 +40,10 @@ private:
 	std::map<VkShaderStageFlagBits, std::string> getShaderSources(const std::string& source);
 	void readPreCompiledFiles();
 	void compileShadersToSpv();
-	std::vector<uint32_t> compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source);
-	void loadShaderModule(VkShaderStageFlagBits stage, const std::vector<uint32_t>& codeData);
+	std::vector<u32> compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source);
+	void loadShaderModule(VkShaderStageFlagBits stage, const std::vector<u32>& codeData);
 	std::string getShaderFileFinalNameForStage(VkShaderStageFlagBits stage);
-	void Reflect(VkShaderStageFlagBits stage, std::vector<uint32_t>& data);
+	void Reflect(VkShaderStageFlagBits stage, std::vector<u32>& data);
 private:
 	VkDevice device;
 	std::string filepath;

@@ -24,7 +24,7 @@ public:
 	const VkQueue GetComputeQueue() { return computeQueue; }
 	const VkQueue GetTransferQueue() { return transferQueue; }
 	const VkCommandPool GetCommandPool() { return commandPool; }
-	const uint32_t GetQueueIndex (VkQueueFlags queueFlag);
+	const u32 GetQueueIndex (VkQueueFlags queueFlag);
 private:
 	void createInstance();
 	void setupDebugCallback();
@@ -32,7 +32,7 @@ private:
 	void createLogicalDevice();
 	void createMemoryAllocator();
 	void createCommandPool();
-	uint32_t findQueueFamilyIndex(VkQueueFlags queueFlag);
+	u32 findQueueFamilyIndex(VkQueueFlags queueFlag);
 private:
 	VkInstance instance = 0;
 	VkDebugUtilsMessengerEXT callback = 0;
@@ -52,9 +52,9 @@ private:
 	} physicalDeviceInfo;
 
 	struct QueueIndices{
-		uint32_t graphics;
-		uint32_t compute;
-		uint32_t transfer;
+		u32 graphics;
+		u32 compute;
+		u32 transfer;
 	} queueIndices;
 
 	Gf3dWindow* gf3dWindow;

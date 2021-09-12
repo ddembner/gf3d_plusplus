@@ -10,18 +10,18 @@ public:
 	~Swapchain() {}
 	void init(Gf3dDevice* device);
 	void cleanup();
-	uint32_t imageCount() const { return bufferImageCount; }
+	u32 imageCount() const { return bufferImageCount; }
 	VkFormat getColorFormat() const { return colorFormat; }
 	VkExtent2D getExtent() const { return extent; }
 	VkSwapchainKHR getSwapchain() const { return swapchain; }
 	VkRenderPass getRenderPass() const { return renderPass; }
-	VkFramebuffer getFrameBuffer(uint32_t index) { return frameBuffers[index]; }
+	VkFramebuffer getFrameBuffer(u32 index) { return frameBuffers[index]; }
 	void recreate();
 private:
 	void selectPresentMode();
 	VkCompositeAlphaFlagBitsKHR selectCompositeAlphaFlags(VkSurfaceCapabilitiesKHR surfaceCapabilities);
 	VkSurfaceTransformFlagBitsKHR selectSurfaceTransformFlags(VkSurfaceCapabilitiesKHR surfaceCapabilities);
-	uint32_t getNumberOfImagesForBuffers(VkSurfaceCapabilitiesKHR surfaceCapabilities);
+	u32 getNumberOfImagesForBuffers(VkSurfaceCapabilitiesKHR surfaceCapabilities);
 	VkSurfaceFormatKHR getSurfaceFormat();
 	VkFormat findDepthFormat();
 	void createSwapchain();
@@ -35,7 +35,7 @@ private:
 	VkPresentModeKHR presentMode;
 	VkSwapchainKHR swapchain;
 	VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE;
-	uint32_t bufferImageCount = 0;
+	u32 bufferImageCount = 0;
 	VkFormat colorFormat = VK_FORMAT_UNDEFINED;
 	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 	VkRenderPass renderPass;

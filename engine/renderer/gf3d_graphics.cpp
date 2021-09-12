@@ -24,13 +24,13 @@ void Gf3dGraphics::cleanup()
 	vkDestroyDescriptorSetLayout(device, globalLayout, nullptr);
 	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
-	for (uint32_t i = 0; i < MAX_FRAMES_INFLIGHT; i++) {
+	for (u32 i = 0; i < MAX_FRAMES_INFLIGHT; i++) {
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
 		vkDestroySemaphore(device, renderCompleteSemaphores[i], nullptr);
 		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
 
-	vkFreeCommandBuffers(device, gf3dDevice->GetCommandPool(), static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+	vkFreeCommandBuffers(device, gf3dDevice->GetCommandPool(), static_cast<u32>(commandBuffers.size()), commandBuffers.data());
 	swapchain.cleanup();
 }
 
@@ -42,7 +42,7 @@ void Gf3dGraphics::createCommandBuffers()
 	
 	VkCommandBufferAllocateInfo allocInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
 	allocInfo.commandPool = gf3dDevice->GetCommandPool();
-	allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+	allocInfo.commandBufferCount = static_cast<u32>(commandBuffers.size());
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
 	VK_CHECK(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()));
@@ -62,7 +62,7 @@ void Gf3dGraphics::createSyncObjects()
 	VkFenceCreateInfo fenceInfo = { VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (uint32_t i = 0; i < MAX_FRAMES_INFLIGHT; i++) {
+	for (u32 i = 0; i < MAX_FRAMES_INFLIGHT; i++) {
 		VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]));
 		VK_CHECK(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderCompleteSemaphores[i]));
 		VK_CHECK(vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]));
@@ -88,7 +88,7 @@ void Gf3dGraphics::createDescriptorPool()
 	std::vector<VkDescriptorPoolSize> poolSizes = { {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10} };
 
 	VkDescriptorPoolCreateInfo createInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
-	createInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	createInfo.poolSizeCount = static_cast<u32>(poolSizes.size());
 	createInfo.pPoolSizes = poolSizes.data();
 	createInfo.maxSets = 10;
 	createInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;

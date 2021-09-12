@@ -1,5 +1,6 @@
 #include "gf3d_validations.h"
 #include "core/gf3d_logger.h"
+#include "defines.hpp"
 
 //Makes it so the validation layer is only on when debugging
 #if NDEBUG
@@ -24,7 +25,7 @@ std::vector<const char*> getValidationLayers() {
 
 bool checkValidationLayerSupport() {
 
-	uint32_t layerCount;
+	u32 layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 	std::vector<VkLayerProperties> availableLayers(layerCount);
