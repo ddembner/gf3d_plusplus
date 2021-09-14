@@ -6,7 +6,7 @@
 class Logger : NonCopyable
 {
 public:
-	static void init();
+	static void init(const char* filename = "gf3d.log");
 	static void shutdown();
 	static std::shared_ptr<spdlog::logger>& getLogger() { return logger; }
 private:

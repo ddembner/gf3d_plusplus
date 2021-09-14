@@ -5,7 +5,7 @@ gf3d::LinearAllocator::~LinearAllocator()
 {
 	if (mPtr != nullptr) {
 		LOGGER_WARN("Allocator went out of scope without being freed. Destructor has freed the memory of size {0}", mTotalSize);
-		this->free();
+		this->deallocate();
 	}
 }
 
@@ -38,10 +38,12 @@ void* gf3d::LinearAllocator::allocate(const u64 size)
 	return nullptr;
 }
 
-void gf3d::LinearAllocator::free()
+void gf3d::LinearAllocator::deallocate()
 {
 	std::free(mPtr);
 	mPtr = nullptr;
+	mAllocated = 0;
+	mTotalSize = 0;
 }
 
 void gf3d::LinearAllocator::reset()

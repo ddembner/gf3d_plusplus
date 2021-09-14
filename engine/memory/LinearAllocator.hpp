@@ -15,7 +15,7 @@ namespace gf3d
 
 		void* allocate(const u64 size) override;
 
-		void free() override;
+		void deallocate() override;
 
 		/// <summary>
 		/// Sets the total memory allocated from this allocator to 0 and sets the memory contents to 0

@@ -19,6 +19,7 @@ set(gf3d_INCLUDE_PATHS
 add_subdirectory(third_party/glfw)
 add_subdirectory(engine)
 add_subdirectory(application)
+add_subdirectory(tests)
 
 if(WIN32)
 	#TODO: make application the default startup
