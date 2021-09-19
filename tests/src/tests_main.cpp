@@ -1,6 +1,7 @@
 #include "test_macros.hpp"
 #include "test_manager.hpp"
 #include "test_linear_allocator.hpp"
+#include "test_vector.hpp"
 
 int main()
 {
@@ -8,6 +9,7 @@ int main()
 	TestManager testManager;
 	
 	RegisterLinearTests(testManager);
+	RegisterVectorTests(testManager);
 
 	testManager.runTests();
 	return 0;

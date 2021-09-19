@@ -4,6 +4,7 @@ set(tests_SOURCE_FILES
 	"src/tests_main.cpp"
 	"src/test_manager.cpp"
 	"src/test_linear_allocator.cpp"
+	"src/test_vector.cpp"
 )
 
 set(tests_INCLUDE_PATHS

@@ -4,7 +4,6 @@
 gf3d::LinearAllocator::~LinearAllocator()
 {
 	if (mPtr != nullptr) {
-		LOGGER_WARN("Allocator went out of scope without being freed. Destructor has freed the memory of size {0}", mTotalSize);
 		this->deallocate();
 	}
 }
