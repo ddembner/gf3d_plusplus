@@ -92,7 +92,7 @@ u8 VectorReserve()
 	std::vector<TestObject> stdNumbers;
 	gf3d::vector<TestObject> gf3dNumbers;
 
-	stdNumbers.reserve(5);
+	stdNumbers.resize(5);
 	gf3dNumbers.reserve(5);
 
 	should_be_equal(5, gf3dNumbers.capacity());

@@ -1,5 +1,6 @@
 #pragma once
 #include "defines.hpp"
+#include "core/gf3d_assert.hpp"
 
 namespace gf3d 
 {
@@ -35,6 +36,9 @@ public:
 	inline u64 max_size() const noexcept { return 0xffffffffffffffff / sizeof(T); }
 
 	void reserve(const u64 newCapacity);
+	T& emplace_back(const T&& value);
+	void push_back(const T& value);
+	void push_back(const T&& value);
 
 	T& vector<T>::operator[](u64 index) noexcept;
 
@@ -58,18 +62,28 @@ template<class T>
 inline void vector<T>::reserve(const u64 newCapacity)
 {
 	if (newCapacity > capacity()) {
-		if (newCapacity > max_size()) {
-			LOGGER_ERROR("Cannot allocate larger than max allocation size");
-			return;
-		}
+		GFASSERT(newCapacity < max_size(), "Cannot allocate larger than max allocation size");
 	}
 	
 	reallocate(newCapacity);
 }
 
 template<class T>
+inline T& vector<T>::emplace_back(const T&& value)
+{
+	
+}
+
+template<class T>
+inline void vector<T>::push_back(const T& value)
+{
+	
+}
+
+template<class T>
 inline T& vector<T>::operator[](u64 index) noexcept
 {
+	GFASSERT(index < mSize, "Index out of range");
 	return mData[index];
 }
 
