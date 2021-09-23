@@ -12,5 +12,8 @@ int main()
 	RegisterVectorTests(testManager);
 
 	testManager.runTests();
+
+	Logger::shutdown();
+	
 	return 0;
 }

@@ -24,10 +24,11 @@ public:
 
 	~vector()
 	{
+		for (u64 i = 0; i < mSize; i++) {
+			mData[i].~T();
+		}
 		std::free(mData);
 		mData = nullptr;
-		mCapacity = 0;
-		mSize = 0;
 	}
 
 	inline T* data() const noexcept { return mData; }
@@ -36,11 +37,24 @@ public:
 	inline u64 max_size() const noexcept { return 0xffffffffffffffff / sizeof(T); }
 
 	void reserve(const u64 newCapacity);
-	T& emplace_back(const T&& value);
+	void clear() noexcept;
 	void push_back(const T& value);
 	void push_back(const T&& value);
 
-	T& vector<T>::operator[](u64 index) noexcept;
+	template<typename... Args>
+	T& emplace_back(Args&&... args)
+	{
+		if(mSize >= mCapacity) {
+			reallocate(mCapacity + mCapacity / 2);
+		}
+
+		mData[mSize] = T(std::forward<Args>(args)...);
+
+		mSize++;
+		return mData[mSize - 1];
+	}
+
+	T& operator[](u64 index) noexcept;
 
 private:
 	void reallocate(const u64 newCapacity);
@@ -54,7 +68,13 @@ private:
 template<class T>
 inline void vector<T>::reallocate(const u64 newCapacity)
 {
-	mData = reinterpret_cast<T*>(std::malloc(sizeof(T) * newCapacity));
+	T* newData = reinterpret_cast<T*>(std::malloc(sizeof(T) * newCapacity));
+
+	for (u64 i = 0; i < mSize; i++) {
+		newData[i] = std::move(mData[i]);
+	}
+
+	mData = newData;
 	mCapacity = newCapacity;
 }
 
@@ -69,9 +89,13 @@ inline void vector<T>::reserve(const u64 newCapacity)
 }
 
 template<class T>
-inline T& vector<T>::emplace_back(const T&& value)
+inline void vector<T>::clear() noexcept
 {
+	for (u32 i = 0; i < mSize; i++) {
+		mData[i].~T();
+	}
 	
+	mSize = 0;
 }
 
 template<class T>

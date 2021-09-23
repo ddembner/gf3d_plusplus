@@ -7,12 +7,48 @@ struct TestObject
 {
 	u32 x, y, z;
 
-	TestObject() : x(0), y(1), z(2) {
+	TestObject() : x(0), y(0), z(0) 
+	{
 		// Default
+		// LOGGER_DEBUG("Construct");
 	}
 
-	~TestObject() {
+	TestObject(u32 scalar) : x(scalar), y(scalar), z(scalar) 
+	{
+		// LOGGER_DEBUG("Construct");
+	}
+
+	TestObject(u32 _x, u32 _y, u32 _z) : x(_x), y(_y), z(_z) 
+	{
+		// LOGGER_DEBUG("Construct");
+	}
+
+	~TestObject() 
+	{
 		// Destructor
+		LOGGER_DEBUG("Destroy");
+	}
+
+	TestObject(const TestObject& other)
+		: x(other.x), y(other.y), z(other.z)
+	{
+		//Copy
+		LOGGER_DEBUG("Copy");
+	}
+
+	TestObject(TestObject&& other)
+		: x(other.x), y(other.y), z(other.z)
+	{
+		LOGGER_DEBUG("Move");
+	}
+
+	TestObject& operator=(TestObject&& other) 
+	{
+		LOGGER_DEBUG("Move");
+		x = std::move(other.x);
+		y = std::move(other.y);
+		z = std::move(other.z);
+		return *this;
 	}
 };
 
@@ -35,15 +71,9 @@ u8 VectorCreateAndDestroy()
 	should_be_equal(stdNumbers.capacity(), gf3dNumbers.capacity());
 	should_be_equal(stdNumbers.size(), gf3dNumbers.size());
 
-	stdNumbers.~vector();
 	gf3dNumbers.~vector();
 
-	should_be_equal(reinterpret_cast<void*>(stdNumbers.data()), reinterpret_cast<void*>(gf3dNumbers.data()));
 	should_be_equal(nullptr, reinterpret_cast<void*>(gf3dNumbers.data()));
-	should_be_equal(stdNumbers.capacity(), gf3dNumbers.capacity());
-	should_be_equal(stdNumbers.size(), gf3dNumbers.size());
-	should_be_equal(0, gf3dNumbers.capacity());
-	should_be_equal(0, gf3dNumbers.size());
 
 	return TEST_PASS;
 }
@@ -73,16 +103,16 @@ u8 VectorObjectConstruct()
 	gf3d::vector<TestObject> gf3dNumbers(3);
 
 	should_be_equal(0, gf3dNumbers[0].x);
-	should_be_equal(1, gf3dNumbers[0].y);
-	should_be_equal(2, gf3dNumbers[0].z);
+	should_be_equal(0, gf3dNumbers[0].y);
+	should_be_equal(0, gf3dNumbers[0].z);
 
 	should_be_equal(0, gf3dNumbers[1].x);
-	should_be_equal(1, gf3dNumbers[1].y);
-	should_be_equal(2, gf3dNumbers[1].z);
+	should_be_equal(0, gf3dNumbers[1].y);
+	should_be_equal(0, gf3dNumbers[1].z);
 
 	should_be_equal(0, gf3dNumbers[2].x);
-	should_be_equal(1, gf3dNumbers[2].y);
-	should_be_equal(2, gf3dNumbers[2].z);
+	should_be_equal(0, gf3dNumbers[2].y);
+	should_be_equal(0, gf3dNumbers[2].z);
 
 	return TEST_PASS;
 }
@@ -92,7 +122,8 @@ u8 VectorReserve()
 	std::vector<TestObject> stdNumbers;
 	gf3d::vector<TestObject> gf3dNumbers;
 
-	stdNumbers.resize(5);
+	// stdNumbers.resize(5);
+	// stdNumbers.emplace_back()
 	gf3dNumbers.reserve(5);
 
 	should_be_equal(5, gf3dNumbers.capacity());
