@@ -45,17 +45,20 @@ public:
 	inline T* begin() const noexcept { return mData; } // TODO: Make iterator
 
 	void reserve(const u64 newCapacity);
+	void resize(const u64 newSize);
 	void clear() noexcept;
 	void push_back(const T& value);
 	void push_back(T&& value);
 	void pop_back();
+	void shrink_to_fit();
+	T& operator[](u64 index) noexcept;
 
 	template<typename... Args>
 	T& emplace_back(Args&&... args)
 	{
 		u64 newSize = mSize + 1;
 		
-		if (newSize >= mCapacity) {
+		if (newSize > mCapacity) {
 
 			u64 growth = mCapacity + mCapacity / 2;
 			if (growth < newSize)
@@ -64,12 +67,11 @@ public:
 				reallocate(growth);
 		}
 
-		new(&mData[mSize]) T(std::forward<Args>(args)...);
+		new(&mData[mSize]) T(static_cast<Args&&>(args)...);
 		mSize = newSize;
 		return mData[mSize - 1];
 	}
 
-	T& operator[](u64 index) noexcept;
 
 private:
 	void reallocate(const u64 newCapacity);
@@ -78,7 +80,7 @@ private:
 	template<typename... Args>
 	inline void construct_copy_in_place(T& object, Args&&... args)
 	{
-		::new (reinterpret_cast<void*>(&object)) T(std::forward<Args>(args)...);
+		::new (reinterpret_cast<void*>(&object)) T(static_cast<Args&&>(args)...);
 	}
 
 private:
@@ -95,9 +97,11 @@ inline void vector<T>::reallocate(const u64 newCapacity)
 	GFASSERT(newData, "Could not get contiguous memory for vector");
 
 	for (u64 i = 0; i < mSize; i++) {
-		newData[i] = std::move(mData[i]);
+		::new (&newData[i]) T(std::move(mData[i]));
 		mData[i].~T();
 	}
+
+	::operator delete(mData);
 
 	mData = newData;
 	mCapacity = newCapacity;
@@ -109,6 +113,36 @@ inline void vector<T>::reserve(const u64 newCapacity)
 	if (newCapacity > capacity()) {
 		GFASSERT(newCapacity < max_size(), "Cannot allocate larger than max allocation size");
 		reallocate(newCapacity);
+	}
+}
+
+template<class T>
+inline void vector<T>::resize(const u64 newSize)
+{
+	if (newSize < mSize) { // trim
+		T* newData = reinterpret_cast<T*>(::operator new(sizeof(T) * newSize));
+		
+		for (u64 i = 0; i < newSize; i++) // Move elements needed
+			::new (&newData[i]) T(static_cast<T&&>(mData[i]));
+
+		clear();
+
+		::operator delete(mData, sizeof(T) * mCapacity);
+
+		mData = newData;
+		mCapacity = newSize;
+		mSize = newSize;
+		return;
+	}
+
+	if (newSize > mSize) { // append to current vector
+
+		if (newSize > mCapacity) {
+			reallocate(newSize); // reallocates and moves old data into new vector
+		}
+		for (; mSize < newSize; mSize++) {
+			::new (&mData[mSize]) T();
+		}
 	}
 }
 
@@ -140,6 +174,14 @@ inline void vector<T>::pop_back()
 	GFASSERT(mSize > 0, "Attempting pop on empty vector");
 	mData[mSize - 1].~T();
 	mSize--;
+}
+
+template<class T>
+inline void vector<T>::shrink_to_fit()
+{
+	if (mCapacity > mSize) {
+		reallocate(mSize);
+	}
 }
 
 template<class T>

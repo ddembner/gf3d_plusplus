@@ -218,6 +218,40 @@ u8 VectorPopBack()
 	return TEST_PASS;
 }
 
+u8 VectorShrinkToFit()
+{
+	gf3d::vector<TestObject> gf3dNumbers;
+	gf3dNumbers.reserve(5);
+	gf3dNumbers.emplace_back();
+	gf3dNumbers.emplace_back();
+	gf3dNumbers.emplace_back();
+	gf3dNumbers.shrink_to_fit();
+
+	should_not_be_equal(5, gf3dNumbers.capacity());
+	should_be_equal(3, gf3dNumbers.size());
+	should_be_equal(3, gf3dNumbers.capacity());
+
+	return TEST_PASS;
+}
+
+u8 VectorResize()
+{
+	gf3d::vector<TestObject> gf3dNumbers;
+	std::vector<TestObject> stdNumbers;
+
+	gf3dNumbers.resize(5);
+	
+	should_be_equal(5, gf3dNumbers.size());
+	should_be_equal(5, gf3dNumbers.capacity());
+
+	gf3dNumbers.resize(3);
+	
+	should_be_equal(3, gf3dNumbers.size());
+	should_be_equal(3, gf3dNumbers.capacity());
+	
+	return TEST_PASS;
+}
+
 void RegisterVectorTests(TestManager& manager)
 {
 	manager.registerTest(VectorCreateAndDestroy, "vector create and destroy");
@@ -225,4 +259,6 @@ void RegisterVectorTests(TestManager& manager)
 	manager.registerTest(VectorObjectConstruct, "vector using object constructor and destructor");
 	manager.registerTest(VectorReserve, "vector reserve");
 	manager.registerTest(VectorPopBack, "vector pop back");
+	manager.registerTest(VectorShrinkToFit, "vector shrink to fit");
+	manager.registerTest(VectorResize, "vector resize");
 }
