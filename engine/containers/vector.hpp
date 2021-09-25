@@ -38,11 +38,17 @@ public:
 		mData = nullptr;
 	}
 
+	typedef T* iterator;
+	typedef const T* const_iterator;
+
 	inline T* data() const noexcept { return mData; }
 	inline u64 capacity() const noexcept { return mCapacity; }
 	inline u64 size() const noexcept { return mSize; }
 	inline u64 max_size() const noexcept { return 0xffffffffffffffff / sizeof(T); }
-	inline T* begin() const noexcept { return mData; } // TODO: Make iterator
+	inline iterator begin() noexcept { return &mData[0]; }
+	inline iterator end() noexcept { return &mData[mSize]; }
+	inline iterator begin() const noexcept { return &mData[0]; }
+	inline iterator end() const noexcept { return &mData[mSize]; }
 
 	void reserve(const u64 newCapacity);
 	void resize(const u64 newSize);
@@ -51,6 +57,7 @@ public:
 	void push_back(T&& value);
 	void pop_back();
 	void shrink_to_fit();
+	void swap(vector<T>& other);
 	T& operator[](u64 index) noexcept;
 
 	template<typename... Args>
@@ -181,6 +188,26 @@ inline void vector<T>::shrink_to_fit()
 {
 	if (mCapacity > mSize) {
 		reallocate(mSize);
+	}
+}
+
+template<class T>
+inline void vector<T>::swap(vector<T>& other)
+{
+	if (this != &other) {
+
+		vector<T> temp = other;
+		other.mData = mData;
+		other.mCapacity = mCapacity;
+		other.mSize = mSize;
+
+		mSize = temp.mSize;
+		mCapacity = temp.mCapacity;
+		mData = temp.mData;
+
+		temp.mData = nullptr;
+		temp.mSize = 0;
+		temp.mCapacity = 0;
 	}
 }
 

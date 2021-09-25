@@ -32,7 +32,7 @@ struct TestObject
 		: x(other.x), y(other.y), z(other.z)
 	{
 		//Copy
-		LOGGER_DEBUG("Copy");
+		// LOGGER_DEBUG("Copy");
 		pNum = new int;
 		*pNum = *other.pNum;
 	}
@@ -40,7 +40,7 @@ struct TestObject
 	TestObject(TestObject&& other) noexcept
 		: x(other.x), y(other.y), z(other.z)
 	{
-		LOGGER_DEBUG("Move");
+		// LOGGER_DEBUG("Move");
 		pNum = other.pNum;
 		other.pNum = nullptr;
 	}
@@ -48,13 +48,13 @@ struct TestObject
 	~TestObject() 
 	{
 		// Destructor
-		LOGGER_DEBUG("Destroy");
+		// LOGGER_DEBUG("Destroy");
 		delete pNum;
 	}
 
 	TestObject& operator=(const TestObject& other) noexcept
 	{
-		LOGGER_DEBUG("Copy Assignment");
+		// LOGGER_DEBUG("Copy Assignment");
 		x = other.x;
 		y = other.y;
 		z = other.z;
@@ -64,7 +64,7 @@ struct TestObject
 
 	TestObject& operator=(TestObject&& other) noexcept
 	{
-		LOGGER_DEBUG("Move");
+		// LOGGER_DEBUG("Move");
 		x = std::move(other.x);
 		y = std::move(other.y);
 		z = std::move(other.z);
@@ -252,6 +252,34 @@ u8 VectorResize()
 	return TEST_PASS;
 }
 
+u8 VectorSwap()
+{
+	gf3d::vector<TestObject> gf3dNumbersA(3, TestObject(1, 2, 3));
+	gf3d::vector<TestObject> gf3dNumbersB(5, TestObject(4));
+
+	gf3dNumbersA.swap(gf3dNumbersB);
+
+	should_be_equal(5, gf3dNumbersA.size());
+	should_be_equal(3, gf3dNumbersB.size());
+	should_be_equal(5, gf3dNumbersA.capacity());
+	should_be_equal(3, gf3dNumbersB.capacity());
+	should_not_be_equal(reinterpret_cast<void*>(gf3dNumbersA.data()), reinterpret_cast<void*>(gf3dNumbersB.data()));
+	
+	return TEST_PASS;
+}
+
+u8 VectorForLoop()
+{
+	gf3d::vector<int> nums(5);
+	for (u64 i = 0; i < nums.size(); i++)
+		nums[i] = i;
+
+	for (auto& i : nums)
+		should_be_equal(i, *(nums.begin() + i));
+
+	return TEST_PASS;
+}
+
 void RegisterVectorTests(TestManager& manager)
 {
 	manager.registerTest(VectorCreateAndDestroy, "vector create and destroy");
@@ -261,4 +289,6 @@ void RegisterVectorTests(TestManager& manager)
 	manager.registerTest(VectorPopBack, "vector pop back");
 	manager.registerTest(VectorShrinkToFit, "vector shrink to fit");
 	manager.registerTest(VectorResize, "vector resize");
+	manager.registerTest(VectorSwap, "vector swap");
+	manager.registerTest(VectorForLoop, "vector for loop");
 }
