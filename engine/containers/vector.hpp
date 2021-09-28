@@ -104,7 +104,7 @@ inline void vector<T>::reallocate(const u64 newCapacity)
 	GFASSERT(newData, "Could not get contiguous memory for vector");
 
 	for (u64 i = 0; i < mSize; i++) {
-		::new (&newData[i]) T(std::move(mData[i]));
+		::new (&newData[i]) T(static_cast<T&&>(mData[i]));
 		mData[i].~T();
 	}
 
