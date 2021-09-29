@@ -5,6 +5,7 @@ set(tests_SOURCE_FILES
 	"src/test_manager.cpp"
 	"src/test_linear_allocator.cpp"
 	"src/test_vector.cpp"
+	"src/test_forward_list.cpp"
 )
 
 set(tests_INCLUDE_PATHS
