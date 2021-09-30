@@ -6,18 +6,16 @@
 
 u8 ForwardCreateAndDestroy()
 {
-	LOGGER_TRACE("==== forward start ====");
-	std::forward_list<TestObject> stdNum;
-	gf3d::forward_list<TestObject> gf3dNum;
+	gf3d::forward_list<int> gf3dNumDefault;
 
-	// expect_to_be_true(gf3dNum.begin() == gf3dNum.end());
+	expect_to_be_true(gf3dNumDefault.begin() == gf3dNumDefault.end());
 
-	auto before = stdNum.before_begin();
-	auto gf3dBegin = gf3dNum.before_begin();
-	LOGGER_DEBUG(before->x);
-	LOGGER_DEBUG(gf3dBegin->x);
+	LOGGER_DEBUG("==== list start ====");
 
-	// should_be_equal(7, *stdNum.begin());
+	std::forward_list<int> stdNumSize(3);
+	gf3d::forward_list<int> gf3dNumSize(3);
+
+	expect_to_be_false(gf3dNumSize.begin() == gf3dNumSize.end());
 
 	return TEST_PASS;
 }

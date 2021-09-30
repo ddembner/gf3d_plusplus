@@ -47,7 +47,7 @@ struct TestObject
 	~TestObject()
 	{
 		// Destructor
-		// LOGGER_DEBUG("Destroy");
+		LOGGER_DEBUG("Destroy");
 		delete pNum;
 	}
 

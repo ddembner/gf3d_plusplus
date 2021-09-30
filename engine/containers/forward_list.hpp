@@ -17,6 +17,10 @@ namespace gf3d
 		struct flist_node : base_flist_node
 		{
 			T data;
+			void deallocate()
+			{
+				data.~T();
+			}
 		};
 
 	public:
@@ -28,16 +32,25 @@ namespace gf3d
 			flist_iterator(base_flist_node* n) noexcept
 				: node(n) { }
 
-			T& operator*() const { return static_cast<flist_node*>(node)->data; }
+			T& operator*() const 
+			{ 
+				return static_cast<flist_node*>(node)->data; 
+			}
 
-			friend bool operator==(const base_flist_node& a, const base_flist_node& b)
-				{ return a.node == b.node; } 
+			bool operator==(const flist_iterator& other) const noexcept
+			{ 
+				return node == other.node; 
+			}
 
-			friend bool operator!=(const base_flist_node& a, const base_flist_node& b)
-				{ return !(a.node == b.node); } 
+			bool operator!=(const flist_iterator& other) const noexcept
+			{
+				return !(*this == other);
+			}
 
 			T* operator->() const
-				{ return &static_cast<flist_node*>(static_cast<void*>((node)))->data; }
+			{ 
+				return &static_cast<flist_node*>(static_cast<void*>((node)))->data; 
+			}
 
 		private:
 			base_flist_node* node;
@@ -47,18 +60,42 @@ namespace gf3d
 		typedef base_flist_node base_node;
 		typedef flist_node node;
 
-		forward_list() noexcept = default;
+		forward_list() noexcept;
 
-		forward_list(u64 size);
+		forward_list(u64 size) noexcept;
 
-		forward_list(u64 size, const T& value);
+		forward_list(u64 size, const T& value) noexcept;
 
 		~forward_list();
 
 		iterator before_begin() noexcept { return iterator(&mBeforeBegin); }
-		iterator begin() noexcept { return iterator(mBeforeBegin->pNext); }
+		iterator begin() noexcept { return iterator(mBeforeBegin.pNext); }
 
 		iterator end() noexcept { return iterator(nullptr); }
+
+		void clear() noexcept;
+
+	private:
+		template<class... Args>
+		void append_n(u64 count, const Args&... args)
+		{
+			if (count <= 0) {
+				return;
+			}
+
+			node* newNode = new node;
+			::new(&newNode->data) T(static_cast<Args&&>(args)...);
+			mBeforeBegin.pNext = newNode;
+			--count;
+
+
+			for (; count > 0; --count) {
+				newNode = new node;
+				::new(&newNode->data) T(static_cast<Args&&>(args)...);
+				newNode->pNext = mBeforeBegin.pNext;
+				mBeforeBegin.pNext = newNode;
+			}
+		}
 
 	private:
 
@@ -66,16 +103,22 @@ namespace gf3d
 	};
 
 	template<class T>
-	inline forward_list<T>::forward_list(u64 size)
+	inline forward_list<T>::forward_list() noexcept
 	{
-		
+
 	}
 
 	template<class T>
-	inline forward_list<T>::forward_list(u64 size, const T& value)
+	inline forward_list<T>::forward_list(u64 size) noexcept
+	{
+		append_n(size);
+	}
+
+	template<class T>
+	inline forward_list<T>::forward_list(u64 size, const T& value) noexcept
 	{
 		if (size > 0) {
-			node* mHead = reinterpret_cast<node*>(::operator new(sizeof(node) * size)); // allocate memory
+			
 
 			for (u64 i = 0; i < size; i++) {
 				
@@ -86,6 +129,19 @@ namespace gf3d
 	template<class T>
 	inline forward_list<T>::~forward_list()
 	{
+		clear();
+	}
 
+	template<class T>
+	inline void forward_list<T>::clear() noexcept
+	{
+		node* nextPtr;
+		node* nodePtr = static_cast<flist_node*>(mBeforeBegin.pNext);
+
+		for (; nodePtr != nullptr; nodePtr = nextPtr) {
+			nextPtr = static_cast<flist_node*>(nodePtr->pNext);
+			nodePtr->deallocate();
+			::operator delete(nodePtr);
+		}
 	}
 }
