@@ -10,12 +10,24 @@ u8 ForwardCreateAndDestroy()
 
 	expect_to_be_true(gf3dNumDefault.begin() == gf3dNumDefault.end());
 
-	LOGGER_DEBUG("==== list start ====");
-
-	std::forward_list<int> stdNumSize(3);
-	gf3d::forward_list<int> gf3dNumSize(3);
+	gf3d::forward_list<int> gf3dNumSize(1);
 
 	expect_to_be_false(gf3dNumSize.begin() == gf3dNumSize.end());
+
+	return TEST_PASS;
+}
+
+u8 ForwardValueCreate()
+{
+	gf3d::forward_list<int> gf3dNumValue(2, 3);
+	u64 count = 0;
+
+	for (auto it = gf3dNumValue.begin(); it != gf3dNumValue.end(); ++it) {
+		should_be_equal(3, *it);
+		count++;
+	}
+
+	should_be_equal(2, count);
 
 	return TEST_PASS;
 }
@@ -23,4 +35,5 @@ u8 ForwardCreateAndDestroy()
 void RegisterForwardListTests(TestManager& manager)
 {
 	manager.registerTest(ForwardCreateAndDestroy, "Create and destroy forward list");
+	manager.registerTest(ForwardValueCreate, "Create using object initialization");
 }

@@ -2,6 +2,15 @@
 
 #include <defines.hpp>
 
+#define LOG_CONSTRUCTOR_DESTRUCTOR 0
+
+#if LOG_CONSTRUCTOR_DESTRUCTOR
+#define LOG_TEST_OBJECT_FUNCTION(msg)	LOGGER_DEBUG(msg)
+#else
+#define LOG_TEST_OBJECT_FUNCTION(msg) (void(0))		
+#endif // LOG_CONSTRUCTOR_DESTRUCTOR
+
+
 struct TestObject
 {
 	u32 x, y, z;
@@ -11,19 +20,19 @@ struct TestObject
 	{
 		pNum = new int;
 		// Default
-		// LOGGER_DEBUG("Default");
+		LOG_TEST_OBJECT_FUNCTION("Default");
 	}
 
 	TestObject(u32 scalar) : x(scalar), y(scalar), z(scalar)
 	{
 		pNum = new int;
-		// LOGGER_DEBUG("Scalar");
+		LOG_TEST_OBJECT_FUNCTION("Scalar");
 	}
 
 	TestObject(u32 _x, u32 _y, u32 _z) : x(_x), y(_y), z(_z)
 	{
 		pNum = new int;
-		// LOGGER_DEBUG("Construct");
+		LOG_TEST_OBJECT_FUNCTION("Construct");
 	}
 
 
@@ -31,7 +40,7 @@ struct TestObject
 		: x(other.x), y(other.y), z(other.z)
 	{
 		//Copy
-		// LOGGER_DEBUG("Copy");
+		LOG_TEST_OBJECT_FUNCTION("Copy");
 		pNum = new int;
 		*pNum = *other.pNum;
 	}
@@ -39,7 +48,7 @@ struct TestObject
 	TestObject(TestObject&& other) noexcept
 		: x(other.x), y(other.y), z(other.z)
 	{
-		// LOGGER_DEBUG("Move");
+		LOG_TEST_OBJECT_FUNCTION("Move");
 		pNum = other.pNum;
 		other.pNum = nullptr;
 	}
@@ -47,13 +56,13 @@ struct TestObject
 	~TestObject()
 	{
 		// Destructor
-		LOGGER_DEBUG("Destroy");
+		LOG_TEST_OBJECT_FUNCTION("Destroy");
 		delete pNum;
 	}
 
 	TestObject& operator=(const TestObject& other) noexcept
 	{
-		// LOGGER_DEBUG("Copy Assignment");
+		LOG_TEST_OBJECT_FUNCTION("Copy Assignment");
 		x = other.x;
 		y = other.y;
 		z = other.z;
@@ -63,7 +72,7 @@ struct TestObject
 
 	TestObject& operator=(TestObject&& other) noexcept
 	{
-		// LOGGER_DEBUG("Move");
+		LOG_TEST_OBJECT_FUNCTION("Move");
 		x = static_cast<int&&>(other.x);
 		y = static_cast<int&&>(other.y);
 		z = static_cast<int&&>(other.z);

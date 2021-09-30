@@ -37,6 +37,12 @@ namespace gf3d
 				return static_cast<flist_node*>(node)->data; 
 			}
 
+			flist_iterator& operator++() noexcept
+			{
+				node = node->pNext;
+				return *this;
+			}
+
 			bool operator==(const flist_iterator& other) const noexcept
 			{ 
 				return node == other.node; 
@@ -77,7 +83,7 @@ namespace gf3d
 
 	private:
 		template<class... Args>
-		void append_n(u64 count, const Args&... args)
+		void append_n(u64 count, Args&&... args)
 		{
 			if (count <= 0) {
 				return;
@@ -117,13 +123,7 @@ namespace gf3d
 	template<class T>
 	inline forward_list<T>::forward_list(u64 size, const T& value) noexcept
 	{
-		if (size > 0) {
-			
-
-			for (u64 i = 0; i < size; i++) {
-				
-			}
-		}
+		append_n(size, value);
 	}
 
 	template<class T>
