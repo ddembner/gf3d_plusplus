@@ -75,7 +75,7 @@ u8 ForwardPushFront()
 
 u8 ForwardObjectTest()
 {
-	std::forward_list<TestObject> objects(2, TestObject(1, 2, 3));
+	gf3d::forward_list<TestObject> objects(2, TestObject(1, 2, 3));
 
 	should_be_equal(3, objects.begin()->z);
 
@@ -89,14 +89,38 @@ u8 ForwardObjectTest()
 
 	should_be_equal(0, objects.begin()->y);
 
+	objects.clear();
+
+	expect_to_be_true(objects.is_empty());
+
+	return TEST_PASS;
+}
+
+u8 ForwardCopyAssignment()
+{
+	/*std::forward_list<int> listSource;
+	gf3d::forward_list<int> listDestination;
+
+	listSource.emplace_front(3);
+	listSource.emplace_front(2);
+	listSource.emplace_front(1);
+
+	listDestination = listSource;
+
+	*listDestination.begin() = 4;
+
+	should_be_equal(4, *listDestination.begin());
+	should_not_be_equal(4, *listSource.begin());*/
+
 	return TEST_PASS;
 }
 
 void RegisterForwardListTests(TestManager& manager)
 {
 	manager.registerTest(ForwardCreateAndDestroy, "Create and destroy forward list");
-	manager.registerTest(ForwardValueCreate, "Create using object initialization");
-	manager.registerTest(ForwardEmplaceFront, "Emplace object to front of list");
-	manager.registerTest(ForwardPushFront, "Push object to front of list");
-	manager.registerTest(ForwardObjectTest, "Test for objects");
+	manager.registerTest(ForwardValueCreate, "Create using object initialization in forward list");
+	manager.registerTest(ForwardEmplaceFront, "Emplace object to front of forward list");
+	manager.registerTest(ForwardPushFront, "Push object to front of forward list");
+	manager.registerTest(ForwardObjectTest, "Test for object behavior in forward list");
+	manager.registerTest(ForwardCopyAssignment, "Copy assignment for forward list");
 }

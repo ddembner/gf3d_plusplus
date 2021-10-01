@@ -1,5 +1,6 @@
 #pragma once
 #include "defines.hpp"
+#include "core/gf3d_assert.hpp"
 
 namespace gf3d
 {
@@ -74,10 +75,13 @@ namespace gf3d
 
 		~forward_list();
 
+		forward_list& operator=(const forward_list& other);
+		forward_list& operator=(const forward_list&& other) noexcept;
+
 		iterator before_begin() noexcept { return iterator(&mBeforeBegin); }
 		iterator begin() noexcept { return iterator(mBeforeBegin.pNext); }
-
 		iterator end() noexcept { return iterator(nullptr); }
+		bool is_empty() const noexcept { return mBeforeBegin.pNext == nullptr; }
 
 		void clear() noexcept;
 
@@ -171,6 +175,23 @@ namespace gf3d
 	}
 
 	template<class T>
+	inline forward_list<T>& forward_list<T>::operator=(const forward_list<T>& other)
+	{
+		if (mBeforeBegin.pNext != nullptr)
+			clear();
+
+		node* newNode;
+		node* previousNode;
+
+		for (; ) {
+			node* newNode = static_cast<node*>(::operator new(sizeof(T)));
+			newNode->data = data;
+			previousNode = newNode;
+		}
+		return *this;
+	}
+
+	template<class T>
 	inline void forward_list<T>::clear() noexcept
 	{
 		node* nextPtr;
@@ -181,5 +202,7 @@ namespace gf3d
 			nodePtr->deallocate();
 			::operator delete(nodePtr);
 		}
+
+		mBeforeBegin.pNext = nullptr;
 	}
 }
