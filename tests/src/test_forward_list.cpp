@@ -19,7 +19,8 @@ u8 ForwardCreateAndDestroy()
 
 u8 ForwardValueCreate()
 {
-	gf3d::forward_list<int> gf3dNumValue(2, 3);
+	const u64 total = 100;
+	std::forward_list<int> gf3dNumValue(total, 3);
 	u64 count = 0;
 
 	for (auto it = gf3dNumValue.begin(); it != gf3dNumValue.end(); ++it) {
@@ -27,7 +28,66 @@ u8 ForwardValueCreate()
 		count++;
 	}
 
-	should_be_equal(2, count);
+	should_be_equal(total, count);
+
+	return TEST_PASS;
+}
+
+u8 ForwardEmplaceFront()
+{
+	gf3d::forward_list<int> numList;
+
+	numList.emplace_front(1);
+
+	should_be_equal(1, *numList.begin());
+
+	numList.emplace_front(4);
+
+	should_be_equal(4, *numList.begin());
+
+	int& num = numList.emplace_front(7);
+
+	should_be_equal(7, *numList.begin());
+
+	num = 3;
+
+	should_be_equal(3, *numList.begin());
+
+	return TEST_PASS;
+}
+
+u8 ForwardPushFront()
+{
+	gf3d::forward_list<int> numList;
+
+	int num = 1;
+
+	numList.push_front(num);
+
+	should_be_equal(1, *numList.begin());
+
+	numList.push_front(2);
+
+	should_be_equal(2, *numList.begin());
+
+	return TEST_PASS;
+}
+
+u8 ForwardObjectTest()
+{
+	std::forward_list<TestObject> objects(2, TestObject(1, 2, 3));
+
+	should_be_equal(3, objects.begin()->z);
+
+	objects.emplace_front(TestObject(7));
+
+	should_be_equal(7, objects.begin()->x);
+
+	TestObject obj;
+
+	objects.push_front(obj);
+
+	should_be_equal(0, objects.begin()->y);
 
 	return TEST_PASS;
 }
@@ -36,4 +96,7 @@ void RegisterForwardListTests(TestManager& manager)
 {
 	manager.registerTest(ForwardCreateAndDestroy, "Create and destroy forward list");
 	manager.registerTest(ForwardValueCreate, "Create using object initialization");
+	manager.registerTest(ForwardEmplaceFront, "Emplace object to front of list");
+	manager.registerTest(ForwardPushFront, "Push object to front of list");
+	manager.registerTest(ForwardObjectTest, "Test for objects");
 }
