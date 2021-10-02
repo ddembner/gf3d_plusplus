@@ -98,7 +98,7 @@ u8 ForwardObjectTest()
 
 u8 ForwardCopyAssignment()
 {
-	/*std::forward_list<int> listSource;
+	gf3d::forward_list<int> listSource;
 	gf3d::forward_list<int> listDestination;
 
 	listSource.emplace_front(3);
@@ -110,7 +110,7 @@ u8 ForwardCopyAssignment()
 	*listDestination.begin() = 4;
 
 	should_be_equal(4, *listDestination.begin());
-	should_not_be_equal(4, *listSource.begin());*/
+	should_not_be_equal(4, *listSource.begin());
 
 	return TEST_PASS;
 }

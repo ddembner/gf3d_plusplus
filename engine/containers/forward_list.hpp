@@ -75,12 +75,16 @@ namespace gf3d
 
 		~forward_list();
 
+		void assign(iterator _begin, iterator _end);
+
 		forward_list& operator=(const forward_list& other);
 		forward_list& operator=(const forward_list&& other) noexcept;
 
 		iterator before_begin() noexcept { return iterator(&mBeforeBegin); }
 		iterator begin() noexcept { return iterator(mBeforeBegin.pNext); }
+		iterator begin() const noexcept { return iterator(mBeforeBegin.pNext); }
 		iterator end() noexcept { return iterator(nullptr); }
+		iterator end() const noexcept { return iterator(nullptr); }
 		bool is_empty() const noexcept { return mBeforeBegin.pNext == nullptr; }
 
 		void clear() noexcept;
@@ -175,19 +179,27 @@ namespace gf3d
 	}
 
 	template<class T>
-	inline forward_list<T>& forward_list<T>::operator=(const forward_list<T>& other)
+	inline void forward_list<T>::assign(iterator _begin, iterator _end)
 	{
-		if (mBeforeBegin.pNext != nullptr)
-			clear();
-
-		node* newNode;
-		node* previousNode;
-
-		for (; ) {
-			node* newNode = static_cast<node*>(::operator new(sizeof(T)));
-			newNode->data = data;
+		node* previousNode = static_cast<node*>(&mBeforeBegin);
+		for (; _begin != _end; ++_begin) {
+			node* newNode = static_cast<node*>(::operator new(sizeof(node)));
+			newNode->data = *_begin;
+			previousNode->pNext = newNode;
 			previousNode = newNode;
 		}
+	}
+
+	template<class T>
+	inline forward_list<T>& forward_list<T>::operator=(const forward_list<T>& other)
+	{
+		if (this != &other) {
+			// if (begin() != end())
+			// 	clear();
+
+			assign(other.begin(), other.end());
+		}
+		
 		return *this;
 	}
 
