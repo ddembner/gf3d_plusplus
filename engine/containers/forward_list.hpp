@@ -12,11 +12,15 @@ namespace gf3d
 		struct base_flist_node
 		{
 			base_flist_node() : pNext(nullptr) { }
+			base_flist_node(const base_flist_node& other) = delete;
+			base_flist_node& operator=(const base_flist_node& other) = delete;
 			base_flist_node* pNext;
 		};
 
 		struct flist_node : base_flist_node
 		{
+			flist_node(const base_flist_node& other) = delete;
+			flist_node& operator=(const base_flist_node& other) = delete;
 			T data;
 			void deallocate()
 			{
@@ -78,7 +82,7 @@ namespace gf3d
 		void assign(iterator _begin, iterator _end);
 
 		forward_list& operator=(const forward_list& other);
-		forward_list& operator=(const forward_list&& other) noexcept;
+		forward_list& operator=(forward_list&& other) noexcept;
 
 		iterator before_begin() noexcept { return iterator(&mBeforeBegin); }
 		iterator begin() noexcept { return iterator(mBeforeBegin.pNext); }
@@ -150,6 +154,15 @@ namespace gf3d
 		}
 
 	private:
+		void assign_move(forward_list& other) noexcept
+		{
+			clear();
+
+			mBeforeBegin.pNext = other.mBeforeBegin.pNext;
+			other.mBeforeBegin.pNext = nullptr;
+		}
+
+	private:
 
 		base_node mBeforeBegin;
 	};
@@ -214,6 +227,16 @@ namespace gf3d
 			assign(other.begin(), other.end());
 		}
 		
+		return *this;
+	}
+
+	template<class T>
+	inline forward_list<T>& forward_list<T>::operator=(forward_list<T>&& other) noexcept
+	{
+		if (this != &other) {
+			assign_move(other);
+		}
+
 		return *this;
 	}
 

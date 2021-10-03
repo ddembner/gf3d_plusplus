@@ -112,7 +112,28 @@ u8 ForwardCopyAssignment()
 		should_be_equal(i, *it);
 		i++;
 	}
-	
+
+	return TEST_PASS;
+}
+
+u8 ForwardMoveAssignment()
+{
+	gf3d::forward_list<i32> listSource;
+	gf3d::forward_list<i32> listDestination(6);
+
+	listSource.emplace_front(3);
+	listSource.emplace_front(2);
+	listSource.emplace_front(1);
+
+	listDestination = static_cast<gf3d::forward_list<i32>&&>(listSource);
+
+	i32 i = 1;
+	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+		should_be_equal(i, *it);
+		i++;
+	}
+
+	expect_to_be_true(listSource.begin() == listSource.end());
 
 	return TEST_PASS;
 }
@@ -125,4 +146,5 @@ void RegisterForwardListTests(TestManager& manager)
 	manager.registerTest(ForwardPushFront, "Push object to front of forward list");
 	manager.registerTest(ForwardObjectTest, "Test for object behavior in forward list");
 	manager.registerTest(ForwardCopyAssignment, "Copy assignment for forward list");
+	manager.registerTest(ForwardMoveAssignment, "Move assignment for forward list");
 }
