@@ -77,6 +77,10 @@ namespace gf3d
 
 		forward_list(u64 size, const T& value) noexcept;
 
+		forward_list(const forward_list& other) noexcept;
+					 
+		forward_list(forward_list&&) noexcept;
+
 		~forward_list();
 
 		void assign(iterator _begin, iterator _end);
@@ -90,7 +94,10 @@ namespace gf3d
 		iterator end() noexcept { return iterator(nullptr); }
 		iterator end() const noexcept { return iterator(nullptr); }
 		bool is_empty() const noexcept { return mBeforeBegin.pNext == nullptr; }
+		T& front() { return *begin(); }
+		T& front() const { return *begin(); }
 
+		void pop_front();
 		void clear() noexcept;
 
 	public:
@@ -186,6 +193,19 @@ namespace gf3d
 	}
 
 	template<class T>
+	inline forward_list<T>::forward_list(const forward_list& other) noexcept
+	{
+		assign(other.begin(), other.end());
+	}
+
+	template<class T>
+	inline forward_list<T>::forward_list(forward_list&& other) noexcept
+	{
+		mBeforeBegin.pNext = other.mBeforeBegin.pNext;
+		other.mBeforeBegin.pNext = nullptr;
+	}
+
+	template<class T>
 	inline forward_list<T>::~forward_list()
 	{
 		clear();
@@ -238,6 +258,17 @@ namespace gf3d
 		}
 
 		return *this;
+	}
+
+	template<class T>
+	inline void forward_list<T>::pop_front()
+	{
+		node* nodePtr = static_cast<node*>(mBeforeBegin.pNext);
+		base_node* nextPtr = nodePtr->pNext;
+		nodePtr->deallocate();
+		::operator delete(nodePtr);
+		mBeforeBegin.pNext = nextPtr;
+
 	}
 
 	template<class T>

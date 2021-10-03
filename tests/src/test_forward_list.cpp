@@ -96,6 +96,46 @@ u8 ForwardObjectTest()
 	return TEST_PASS;
 }
 
+u8 ForwardCopyConstructor()
+{
+	gf3d::forward_list<i32> listSource;
+
+	listSource.emplace_front(3);
+	listSource.emplace_front(2);
+	listSource.emplace_front(1);
+
+	gf3d::forward_list<i32> listDestination = listSource;
+
+	i32 i = 1;
+	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+		should_be_equal(i, *it);
+		i++;
+	}
+
+	return TEST_PASS;
+}
+
+u8 ForwardMoveConstructor()
+{
+	gf3d::forward_list<i32> listSource;
+
+	listSource.emplace_front(3);
+	listSource.emplace_front(2);
+	listSource.emplace_front(1);
+
+	gf3d::forward_list<i32> listDestination = static_cast<gf3d::forward_list<i32>&&>(listSource);
+
+	i32 i = 1;
+	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+		should_be_equal(i, *it);
+		i++;
+	}
+
+	expect_to_be_true(listSource.begin() == listSource.end());
+
+	return TEST_PASS;
+}
+
 u8 ForwardCopyAssignment()
 {
 	gf3d::forward_list<i32> listSource;
@@ -138,6 +178,20 @@ u8 ForwardMoveAssignment()
 	return TEST_PASS;
 }
 
+u8 ForwardFront()
+{
+	gf3d::forward_list<int> numbers;
+
+	numbers.emplace_front(2);
+	numbers.emplace_front(1);
+
+	numbers.pop_front();
+
+	should_be_equal(2, numbers.front());
+
+	return TEST_PASS;
+}
+
 void RegisterForwardListTests(TestManager& manager)
 {
 	manager.registerTest(ForwardCreateAndDestroy, "Create and destroy forward list");
@@ -145,6 +199,9 @@ void RegisterForwardListTests(TestManager& manager)
 	manager.registerTest(ForwardEmplaceFront, "Emplace object to front of forward list");
 	manager.registerTest(ForwardPushFront, "Push object to front of forward list");
 	manager.registerTest(ForwardObjectTest, "Test for object behavior in forward list");
+	manager.registerTest(ForwardCopyConstructor, "Copy constructor for forward list");
+	manager.registerTest(ForwardMoveConstructor, "Move constructor for forward list");
 	manager.registerTest(ForwardCopyAssignment, "Copy assignment for forward list");
 	manager.registerTest(ForwardMoveAssignment, "Move assignment for forward list");
+	manager.registerTest(ForwardFront, "front methods for forward list");
 }
