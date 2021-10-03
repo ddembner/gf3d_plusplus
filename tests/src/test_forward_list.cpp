@@ -6,11 +6,11 @@
 
 u8 ForwardCreateAndDestroy()
 {
-	gf3d::forward_list<int> gf3dNumDefault;
+	gf3d::forward_list<i32> gf3dNumDefault;
 
 	expect_to_be_true(gf3dNumDefault.begin() == gf3dNumDefault.end());
 
-	gf3d::forward_list<int> gf3dNumSize(1);
+	gf3d::forward_list<i32> gf3dNumSize(1);
 
 	expect_to_be_false(gf3dNumSize.begin() == gf3dNumSize.end());
 
@@ -20,7 +20,7 @@ u8 ForwardCreateAndDestroy()
 u8 ForwardValueCreate()
 {
 	const u64 total = 100;
-	std::forward_list<int> gf3dNumValue(total, 3);
+	std::forward_list<i32> gf3dNumValue(total, 3);
 	u64 count = 0;
 
 	for (auto it = gf3dNumValue.begin(); it != gf3dNumValue.end(); ++it) {
@@ -35,7 +35,7 @@ u8 ForwardValueCreate()
 
 u8 ForwardEmplaceFront()
 {
-	gf3d::forward_list<int> numList;
+	gf3d::forward_list<i32> numList;
 
 	numList.emplace_front(1);
 
@@ -45,7 +45,7 @@ u8 ForwardEmplaceFront()
 
 	should_be_equal(4, *numList.begin());
 
-	int& num = numList.emplace_front(7);
+	i32& num = numList.emplace_front(7);
 
 	should_be_equal(7, *numList.begin());
 
@@ -58,9 +58,9 @@ u8 ForwardEmplaceFront()
 
 u8 ForwardPushFront()
 {
-	gf3d::forward_list<int> numList;
+	gf3d::forward_list<i32> numList;
 
-	int num = 1;
+	i32 num = 1;
 
 	numList.push_front(num);
 
@@ -98,8 +98,8 @@ u8 ForwardObjectTest()
 
 u8 ForwardCopyAssignment()
 {
-	gf3d::forward_list<int> listSource;
-	gf3d::forward_list<int> listDestination;
+	gf3d::forward_list<i32> listSource;
+	gf3d::forward_list<i32> listDestination(6);
 
 	listSource.emplace_front(3);
 	listSource.emplace_front(2);
@@ -107,10 +107,12 @@ u8 ForwardCopyAssignment()
 
 	listDestination = listSource;
 
-	*listDestination.begin() = 4;
-
-	should_be_equal(4, *listDestination.begin());
-	should_not_be_equal(4, *listSource.begin());
+	i32 i = 1;
+	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+		should_be_equal(i, *it);
+		i++;
+	}
+	
 
 	return TEST_PASS;
 }

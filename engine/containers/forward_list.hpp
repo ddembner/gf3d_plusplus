@@ -182,11 +182,28 @@ namespace gf3d
 	inline void forward_list<T>::assign(iterator _begin, iterator _end)
 	{
 		node* previousNode = static_cast<node*>(&mBeforeBegin);
-		for (; _begin != _end; ++_begin) {
+		for (; _begin != _end; ++_begin) { // Copies the data
+			if (previousNode->pNext != nullptr) {
+				static_cast<node*>(previousNode->pNext)->data = *_begin;
+				previousNode = static_cast<node*>(previousNode->pNext);
+				continue;
+			}
 			node* newNode = static_cast<node*>(::operator new(sizeof(node)));
-			newNode->data = *_begin;
+			newNode->pNext = nullptr;
+			::new(&newNode->data) T(*_begin);
 			previousNode->pNext = newNode;
 			previousNode = newNode;
+		}
+
+		node* orphanNode = static_cast<node*>(previousNode->pNext);
+		node* nextNode;
+		for (; orphanNode != nullptr;) { // Destroy all orphan nodes
+			nextNode = static_cast<node*>(orphanNode->pNext);
+			orphanNode->deallocate();
+			::operator delete(orphanNode);
+			orphanNode = nextNode;
+			previousNode->pNext = nullptr;
+			previousNode = orphanNode;
 		}
 	}
 
@@ -194,9 +211,6 @@ namespace gf3d
 	inline forward_list<T>& forward_list<T>::operator=(const forward_list<T>& other)
 	{
 		if (this != &other) {
-			// if (begin() != end())
-			// 	clear();
-
 			assign(other.begin(), other.end());
 		}
 		

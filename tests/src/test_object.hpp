@@ -66,7 +66,7 @@ struct TestObject
 		x = other.x;
 		y = other.y;
 		z = other.z;
-		pNum = other.pNum;
+		*pNum = *other.pNum;
 		return *this;
 	}
 
