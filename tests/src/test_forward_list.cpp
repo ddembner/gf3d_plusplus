@@ -192,6 +192,29 @@ u8 ForwardFront()
 	return TEST_PASS;
 }
 
+u8 ForwardInsertAfter()
+{
+	gf3d::forward_list<TestObject> numbers;
+
+	numbers.emplace_front(2);
+	numbers.emplace_front(1);
+
+	for (auto& it = numbers.begin(); it != numbers.end(); ++it) {
+		if (it->z == 2)
+			numbers.insert_after(it, 3);
+	}
+
+	i32 count = 0;
+	for (auto& it = numbers.begin(); it != numbers.end(); ++it) {
+		count++;
+		should_be_equal(count, it->y);
+	}
+
+	should_be_equal(3, count);
+
+	return TEST_PASS;
+}
+
 void RegisterForwardListTests(TestManager& manager)
 {
 	manager.registerTest(ForwardCreateAndDestroy, "Create and destroy forward list");
@@ -203,5 +226,6 @@ void RegisterForwardListTests(TestManager& manager)
 	manager.registerTest(ForwardMoveConstructor, "Move constructor for forward list");
 	manager.registerTest(ForwardCopyAssignment, "Copy assignment for forward list");
 	manager.registerTest(ForwardMoveAssignment, "Move assignment for forward list");
-	manager.registerTest(ForwardFront, "front methods for forward list");
+	manager.registerTest(ForwardFront, "Front methods for forward list");
+	manager.registerTest(ForwardInsertAfter, "Insert after method for forward list");
 }

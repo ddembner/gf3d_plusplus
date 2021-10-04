@@ -35,7 +35,7 @@ namespace gf3d
 		public:
 
 			flist_iterator(base_flist_node* n) noexcept
-				: node(n) { }
+				: node(static_cast<flist_node*>(n)) { }
 
 			T& operator*() const 
 			{ 
@@ -44,7 +44,7 @@ namespace gf3d
 
 			flist_iterator& operator++() noexcept
 			{
-				node = node->pNext;
+				node = static_cast<flist_node*>(node->pNext);
 				return *this;
 			}
 
@@ -63,11 +63,12 @@ namespace gf3d
 				return &static_cast<flist_node*>(static_cast<void*>((node)))->data; 
 			}
 
-		private:
-			base_flist_node* node;
+		public:
+			flist_node* node;
 		};
 
 		typedef flist_iterator iterator;
+		typedef const flist_iterator const_iterator;
 		typedef base_flist_node base_node;
 		typedef flist_node node;
 
@@ -96,6 +97,8 @@ namespace gf3d
 		bool is_empty() const noexcept { return mBeforeBegin.pNext == nullptr; }
 		T& front() { return *begin(); }
 		T& front() const { return *begin(); }
+		iterator insert_after(const_iterator position, T&& value) 
+			{ return emplace_after(position, static_cast<T&&>(value)); }
 
 		void pop_front();
 		void clear() noexcept;
@@ -122,6 +125,18 @@ namespace gf3d
 			mBeforeBegin.pNext = newNode;
 			newNode->pNext = beginPtr;
 			return newNode->data;
+		}
+
+	public:
+
+		template<class... Args>
+		iterator emplace_after(const_iterator position, Args&&... args)
+		{
+			node* newNode = static_cast<node*>(::operator new(sizeof(node)));
+			::new(&newNode->data) T(static_cast<Args&&>(args)...);
+			newNode->pNext = position.node->pNext;
+			position.node->pNext = newNode;
+			return iterator(newNode);
 		}
 
 	public:
