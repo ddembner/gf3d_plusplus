@@ -1,7 +1,7 @@
 #include "core/gf3d_logger.h"
 #include "gf3d_window.h"
 
-void Gf3dWindow::init(const int Width, const int Height, const std::string& Title)
+void Gf3dWindow::init(const i32 Width, const i32 Height, const std::string& Title)
 {
 	width = Width;
 	height = Height;
@@ -40,7 +40,7 @@ void Gf3dWindow::setFPSWindowTitle(size_t fpsCount)
 	glfwSetWindowTitle(glfw_window, fpsTitle.c_str());
 }
 
-void Gf3dWindow::windowResizeCallback(GLFWwindow* window, int width, int height)
+void Gf3dWindow::windowResizeCallback(GLFWwindow* window, i32 width, i32 height)
 {
 	auto appWindow = reinterpret_cast<Gf3dWindow*>(glfwGetWindowUserPointer(window));
 	appWindow->width = width;

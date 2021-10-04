@@ -1,15 +1,16 @@
 #include "gf3d_logger.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include "gf3d_assert.hpp"
 
 std::shared_ptr<spdlog::logger> Logger::logger;
 
-void Logger::init()
+void Logger::init(const char* filename)
 {
 	auto colorSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 	colorSink->set_pattern("%^[%s:%#] %v%$");
 
-	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("gf3d.log", true);
+	auto fileSink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filename, true);
 	fileSink->set_pattern("[%T] [%l] [%s:%#] %v");
 
 	spdlog::sinks_init_list sinks = { colorSink, fileSink };
@@ -26,4 +27,9 @@ void Logger::shutdown()
 {
 	logger->flush();
 	LOGGER_INFO("====Program End====");
+}
+
+void gf3d::ReportAssertionFailure(const char* expression, const char* filename, i64 line, const char* message)
+{
+	LOGGER_CRITICAL("Assertion Failer: {0}, message: {1}, in file: {2}, line: {3}", expression, message, filename, line);
 }

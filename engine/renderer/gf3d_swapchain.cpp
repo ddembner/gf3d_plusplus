@@ -66,7 +66,7 @@ void Swapchain::selectPresentMode()
 	VkPhysicalDevice physicalDevice = gf3dDevice->GetPhysicalDevice();
 	VkSurfaceKHR surface = gf3dDevice->GetSurface();
 
-	uint32_t presentCount;
+	u32 presentCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentCount, nullptr);
 	std::vector<VkPresentModeKHR> presentModes(presentCount);
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentCount, presentModes.data());
@@ -121,10 +121,10 @@ VkSurfaceTransformFlagBitsKHR Swapchain::selectSurfaceTransformFlags(VkSurfaceCa
 	return surfaceCapabilities.currentTransform;
 }
 
-uint32_t Swapchain::getNumberOfImagesForBuffers(VkSurfaceCapabilitiesKHR surfaceCapabilities)
+u32 Swapchain::getNumberOfImagesForBuffers(VkSurfaceCapabilitiesKHR surfaceCapabilities)
 {
 	//2 is the standard minimum and adding 1 for triple buffering
-	uint32_t numberOfImages = surfaceCapabilities.minImageCount + 1;
+	u32 numberOfImages = surfaceCapabilities.minImageCount + 1;
 	if (surfaceCapabilities.maxImageCount > 0 && numberOfImages > surfaceCapabilities.maxImageCount) {
 		numberOfImages = surfaceCapabilities.maxImageCount;
 	}
@@ -137,7 +137,7 @@ VkSurfaceFormatKHR Swapchain::getSurfaceFormat()
 	VkPhysicalDevice physicalDevice = gf3dDevice->GetPhysicalDevice();
 	VkSurfaceKHR surface = gf3dDevice->GetSurface();
 
-	uint32_t formatCount;
+	u32 formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
 	std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data());
@@ -199,7 +199,7 @@ void Swapchain::createSwapchain()
 
 	VkSurfaceTransformFlagBitsKHR preTransform = selectSurfaceTransformFlags(surfaceCapabilities);
 
-	uint32_t numImages = getNumberOfImagesForBuffers(surfaceCapabilities);
+	u32 numImages = getNumberOfImagesForBuffers(surfaceCapabilities);
 
 	VkSwapchainCreateInfoKHR swapchainInfo = { VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR };
 	swapchainInfo.surface = surface;
@@ -236,7 +236,7 @@ void Swapchain::createSwapchainImages()
 
 	swapchainImageViews.resize(bufferImageCount);
 	
-	for (uint32_t i = 0; i < bufferImageCount; i++) {
+	for (u32 i = 0; i < bufferImageCount; i++) {
 
 		VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;

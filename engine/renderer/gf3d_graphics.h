@@ -20,15 +20,15 @@ private:
 	std::vector<VkFence> inFlightFences;
 	std::unordered_map<std::string, Mesh> meshes;
 	struct {
-		uint32_t graphics;
-		uint32_t compute;
-		uint32_t transfer;
+		u32 graphics;
+		u32 compute;
+		u32 transfer;
 	} queueIndices;
 	VkDescriptorPool descriptorPool;
 	VkDescriptorSetLayout globalLayout;
 
-	const uint32_t MAX_FRAMES_INFLIGHT = 2;
-	uint32_t currentImageIndex;
+	const u32 MAX_FRAMES_INFLIGHT = 2;
+	u32 currentImageIndex;
 	int currentFrame = 0;
 	bool isFrameInProgress = false;
 

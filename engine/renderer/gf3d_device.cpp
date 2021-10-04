@@ -35,7 +35,7 @@ void Gf3dDevice::cleanup()
 	vkDestroyInstance(instance, nullptr);
 }
 
-const uint32_t Gf3dDevice::GetQueueIndex(VkQueueFlags queueFlag)
+const u32 Gf3dDevice::GetQueueIndex(VkQueueFlags queueFlag)
 {
 	switch (queueFlag)
 	{
@@ -69,14 +69,14 @@ void Gf3dDevice::createInstance()
 	std::vector<const char*> validationLayers = getValidationLayers();
 	if (isValidationLayersEnabled()) {
 
-		instanceInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		instanceInfo.enabledLayerCount = static_cast<u32>(validationLayers.size());
 		instanceInfo.ppEnabledLayerNames = validationLayers.data();
 	}
 	else {
 		instanceInfo.enabledLayerCount = 0;
 	}
 
-	uint32_t glfwExtensionCount = 0;
+	u32 glfwExtensionCount = 0;
 	const char** glfwExtensions;
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
@@ -85,7 +85,7 @@ void Gf3dDevice::createInstance()
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
 
-	instanceInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	instanceInfo.enabledExtensionCount = static_cast<u32>(extensions.size());
 	instanceInfo.ppEnabledExtensionNames = extensions.data();
 
 	VK_CHECK(vkCreateInstance(&instanceInfo, nullptr, &instance));
@@ -112,14 +112,14 @@ void Gf3dDevice::setupDebugCallback()
 
 void Gf3dDevice::findPhysicalDevice()
 {
-	uint32_t deviceCount;
+	u32 deviceCount;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 	assert(deviceCount > 0);
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-	for (uint32_t i = 0; i < devices.size(); i++) {
+	for (u32 i = 0; i < devices.size(); i++) {
 
 		vkGetPhysicalDeviceProperties(devices[i], &physicalDeviceInfo.deviceProperties);
 		if (physicalDeviceInfo.deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
@@ -177,9 +177,9 @@ void Gf3dDevice::createLogicalDevice()
 	LOGGER_DEBUG("Transfer queue index: {}", queueIndices.transfer);
 
 	VkDeviceCreateInfo deviceInfo = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-	deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
+	deviceInfo.queueCreateInfoCount = static_cast<u32>(queueInfos.size());
 	deviceInfo.pQueueCreateInfos = queueInfos.data();
-	deviceInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+	deviceInfo.enabledExtensionCount = static_cast<u32>(deviceExtensions.size());
 	deviceInfo.ppEnabledExtensionNames = deviceExtensions.data();
 	deviceInfo.pEnabledFeatures = &enabledDeviceFeatures;
 
@@ -221,9 +221,9 @@ void Gf3dDevice::createCommandPool()
 	}
 }
 
-uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
+u32 Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 {
-	uint32_t propertyCount;
+	u32 propertyCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, nullptr);
 	std::vector<VkQueueFamilyProperties> queueFamilyProperties(propertyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, queueFamilyProperties.data());
@@ -231,8 +231,8 @@ uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 	//Get dedicated compute queue
 	if (queueFlag & VK_QUEUE_COMPUTE_BIT) {
 
-		uint32_t queueIndex = 0;
-		for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilyProperties.size()); i++) {
+		u32 queueIndex = 0;
+		for (u32 i = 0; i < static_cast<u32>(queueFamilyProperties.size()); i++) {
 			VkBool32 presentSupport;
 			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
 			if (presentSupport) {
@@ -250,7 +250,7 @@ uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 	//Get dedicated transfer queue
 	if (queueFlag & VK_QUEUE_TRANSFER_BIT) {
 
-		for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilyProperties.size()); i++) {
+		for (u32 i = 0; i < static_cast<u32>(queueFamilyProperties.size()); i++) {
 
 			if ((queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT) && !(queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !(queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)) {
 				return i;
@@ -259,7 +259,7 @@ uint32_t Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 	}
 
 	//Get the index from any queue that supports flag
-	for (uint32_t i = 0; i < queueFamilyProperties.size(); i++) {
+	for (u32 i = 0; i < queueFamilyProperties.size(); i++) {
 
 		if (queueFamilyProperties[i].queueFlags & queueFlag) {
 			return i;

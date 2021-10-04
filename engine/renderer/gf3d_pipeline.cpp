@@ -107,7 +107,7 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	VkPipelineVertexInputStateCreateInfo vertexInput = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
 	vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(bindings.size());
 	vertexInput.pVertexBindingDescriptions = bindings.data();
-	vertexInput.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
+	vertexInput.vertexAttributeDescriptionCount = static_cast<u32>(attributes.size());
 	vertexInput.pVertexAttributeDescriptions = attributes.data();
 
 	VkDynamicState dynamicState[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };

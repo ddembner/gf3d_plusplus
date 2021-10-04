@@ -29,14 +29,14 @@ void Application::init()
 void Application::update()
 {
 	isDonePlaying = window.windowClosed() || glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE);
-	float aspect = window.getAspectRatio();
+	f32 aspect = window.getAspectRatio();
 	//cam.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
 	cam.setPerspectiveProjection(aspect, 0.1f, 100.f);
 	cam.setViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f));
 	//cam.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
 	for (auto& gameObject : gameObjects) {
-		gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y + 0.01f, glm::two_pi<float>());
-		gameObject.transform.rotation.x = glm::mod(gameObject.transform.rotation.x + 0.005f, glm::two_pi<float>());
+		gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y + 0.01f, glm::two_pi<f32>());
+		gameObject.transform.rotation.x = glm::mod(gameObject.transform.rotation.x + 0.005f, glm::two_pi<f32>());
 		auto finalTransform = cam.getViewProjectionMatrix() * gameObject.transform.mat4();
 		gameObject.material->pushUpdate("mvp", &finalTransform);
 	}

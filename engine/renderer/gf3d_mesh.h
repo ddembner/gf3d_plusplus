@@ -26,9 +26,9 @@ public:
 	void allocateMesh(Gf3dDevice& gf3dDevice);
 	void bind(VkCommandBuffer cmd);
 	void draw(VkCommandBuffer cmd);
-	uint32_t getVertexCount() const { return vertexCount; }
+	u32 getVertexCount() const { return vertexCount; }
 private:
-	uint32_t vertexCount = 0;
+	u32 vertexCount = 0;
 };
 
 class MeshFactory
