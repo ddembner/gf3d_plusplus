@@ -210,6 +210,36 @@ u8 VectorForLoop()
 	return TEST_PASS;
 }
 
+u8 VectorCopyAndMove()
+{
+	gf3d::vector<TestObject> srcVector;
+	gf3d::vector<TestObject> destVector;
+	
+	srcVector.emplace_back();
+	srcVector.emplace_back(3);
+	srcVector.emplace_back(4, 5, 6);
+	srcVector.emplace_back(4, 5, 6);
+	srcVector.emplace_back(4, 5, 6);
+	srcVector.emplace_back(4, 5, 6);
+	srcVector.emplace_back(4, 5, 6);
+
+	destVector = srcVector;
+
+	should_be_equal(7, destVector.size());
+	should_be_equal(7, destVector.capacity());
+
+	gf3d::vector<TestObject> srcVector2(3, TestObject(1, 2, 3));
+	gf3d::vector<TestObject> destVector2(4);
+
+	destVector2 = static_cast<gf3d::vector<TestObject>&&>(srcVector2);
+
+	should_be_equal(3, destVector2.size());
+	should_be_equal(3, destVector2.capacity());
+	expect_to_be_true(srcVector2.data() == nullptr);
+
+	return TEST_PASS;
+}
+
 void RegisterVectorTests(TestManager& manager)
 {
 	manager.registerTest(VectorCreateAndDestroy, "vector create and destroy");
@@ -221,4 +251,5 @@ void RegisterVectorTests(TestManager& manager)
 	manager.registerTest(VectorResize, "vector resize");
 	manager.registerTest(VectorSwap, "vector swap");
 	manager.registerTest(VectorForLoop, "vector for loop");
+	manager.registerTest(VectorCopyAndMove, "vector copy and move");
 }

@@ -31,6 +31,22 @@ public:
 		}
 	}
 
+	vector(const vector& other) : mCapacity(other.mSize), mSize(other.mSize)
+	{
+		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+
+		for (u64 i = 0; i < mSize; i++) {
+			construct_copy_in_place(mData[i], other.mData[i]);
+		}
+	}
+
+	constexpr vector(vector&& other) noexcept : mCapacity(other.mSize), mSize(other.mSize), mData(other.mData)
+	{
+		other.mSize = 0;
+		other.mCapacity = 0;
+		other.mData = nullptr;
+	}
+
 	~vector()
 	{
 		clear();
@@ -59,6 +75,8 @@ public:
 	void shrink_to_fit();
 	void swap(vector<T>& other);
 	T& operator[](u64 index) noexcept;
+	constexpr vector& operator=(const vector& other);
+	constexpr vector& operator=(vector&& other) noexcept;
 
 	template<typename... Args>
 	T& emplace_back(Args&&... args)
@@ -196,19 +214,75 @@ inline void vector<T>::swap(vector<T>& other)
 {
 	if (this != &other) {
 
-		vector<T> temp = other;
+		
+		T* otherData = other.mData;
+		u64 otherCapacity = other.mCapacity;
+		u64 otherSize = other.mSize;
+
 		other.mData = mData;
 		other.mCapacity = mCapacity;
 		other.mSize = mSize;
 
-		mSize = temp.mSize;
-		mCapacity = temp.mCapacity;
-		mData = temp.mData;
-
-		temp.mData = nullptr;
-		temp.mSize = 0;
-		temp.mCapacity = 0;
+		mSize = otherSize;
+		mCapacity = otherCapacity;
+		mData = otherData;
 	}
+}
+
+template<class T>
+inline constexpr vector<T>& vector<T>::operator=(const vector<T>& other)
+{
+	if (this != &other) {
+		u64 newSize = other.mSize;
+
+		if (newSize > mSize) {
+			if (newSize > mCapacity) {
+				clear();
+				reserve(newSize);
+			}
+
+			for (u64 i = 0; i < mSize; i++) {
+				mData[i] = other.mData[i];
+			}
+
+			for (u64 i = mSize; i < newSize; i++) {
+				emplace_back(other.mData[i]);
+			}
+		}
+		else {
+			for (u64 i = 0; i < other.mSize; i++) {
+				mData[i] = other.mData[i];
+			}
+
+			for (u64 i = other.mSize; i < mSize; i++) {
+				mData[i].~T();
+			}
+		}
+		
+		mSize = newSize;
+	}
+
+
+	return *this;
+}
+
+template<class T>
+inline constexpr vector<T>& vector<T>::operator=(vector<T>&& other) noexcept
+{
+	if (this != &other) {
+		clear();
+		::operator delete(mData, sizeof(T) * mCapacity);
+		
+		mSize = other.mSize;
+		mCapacity = other.mCapacity;
+		mData = other.mData;
+
+		other.mSize = 0;
+		other.mCapacity = 0;
+		other.mData = nullptr;
+	}
+
+	return *this;
 }
 
 template<class T>
