@@ -444,5 +444,4 @@ void Shader::Reflect(VkShaderStageFlagBits stage, gf3d::vector<u32>& data)
         }
     }
 
-    compiler.release();
 }
