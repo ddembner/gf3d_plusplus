@@ -2,9 +2,9 @@
 #include "gf3d_mesh.h"
 #include "vulkan_functions.h"
 
-std::vector<VkVertexInputAttributeDescription> Mesh::Vertex::getAttributeDescription()
+gf3d::vector<VkVertexInputAttributeDescription> Mesh::Vertex::getAttributeDescription()
 {
-	std::vector<VkVertexInputAttributeDescription> attributes(2);
+	gf3d::vector<VkVertexInputAttributeDescription> attributes(2);
 
 	//Position
 	attributes[0].binding = 0;
@@ -21,9 +21,9 @@ std::vector<VkVertexInputAttributeDescription> Mesh::Vertex::getAttributeDescrip
 	return attributes;
 }
 
-std::vector<VkVertexInputBindingDescription> Mesh::Vertex::getBindingDescription()
+gf3d::vector<VkVertexInputBindingDescription> Mesh::Vertex::getBindingDescription()
 {
-	std::vector<VkVertexInputBindingDescription> bindings(1);
+	gf3d::vector<VkVertexInputBindingDescription> bindings(1);
 	bindings[0].binding = 0;
 	bindings[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 	bindings[0].stride = sizeof(Vertex);

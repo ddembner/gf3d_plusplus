@@ -1,9 +1,9 @@
 #pragma once
+#include "defines.hpp"
+#include "containers/vector.hpp"
 #include <vulkan/vulkan.h>
 #include <string>
 #include <map>
-#include <vector>
-#include "defines.hpp"
 
 struct Uniform
 {
@@ -20,7 +20,7 @@ public:
 	Shader(VkDevice _device, const std::string& pathToFile);
 	void destroy();
 	std::map<VkShaderStageFlagBits, VkShaderModule> getShaderModules() const { return shaderModules; }
-	std::vector<VkPushConstantRange> getPushConstantRanges() const { return pushConstantRanges; }
+	gf3d::vector<VkPushConstantRange> getPushConstantRanges() const { return pushConstantRanges; }
 	u32 getPushDataSize();
 
 	Uniform getUniform(const std::string& name) const 
@@ -40,17 +40,17 @@ private:
 	std::map<VkShaderStageFlagBits, std::string> getShaderSources(const std::string& source);
 	void readPreCompiledFiles();
 	void compileShadersToSpv();
-	std::vector<u32> compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source);
-	void loadShaderModule(VkShaderStageFlagBits stage, const std::vector<u32>& codeData);
+	gf3d::vector<u32> compileSourceToSpirv(VkShaderStageFlagBits stage, const std::string& source);
+	void loadShaderModule(VkShaderStageFlagBits stage, const gf3d::vector<u32>& codeData);
 	std::string getShaderFileFinalNameForStage(VkShaderStageFlagBits stage);
-	void Reflect(VkShaderStageFlagBits stage, std::vector<u32>& data);
+	void Reflect(VkShaderStageFlagBits stage, gf3d::vector<u32>& data);
 private:
 	VkDevice device;
 	std::string filepath;
 	std::map<VkShaderStageFlagBits, std::string> shaderSources;
 	std::map<VkShaderStageFlagBits, VkShaderModule> shaderModules;
-	std::vector<VkPushConstantRange> pushConstantRanges;
-	std::map<VkShaderStageFlagBits, std::vector<Uniform>> pushMemberData;
+	gf3d::vector<VkPushConstantRange> pushConstantRanges;
+	std::map<VkShaderStageFlagBits, gf3d::vector<Uniform>> pushMemberData;
 	std::map<std::string, Uniform> uniforms;
 };
 

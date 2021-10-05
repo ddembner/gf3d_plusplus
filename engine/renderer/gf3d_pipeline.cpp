@@ -49,7 +49,7 @@ void Pipeline::submitPush(const VkCommandBuffer& cmd)
 
 void Pipeline::createPipelineLayout(VkDevice device)
 {
-	std::vector<VkPushConstantRange> pushRanges = shader.getPushConstantRanges();
+	gf3d::vector<VkPushConstantRange> pushRanges = shader.getPushConstantRanges();
 
 	VkPipelineLayoutCreateInfo createInfo = { VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO };
 	createInfo.pushConstantRangeCount = pushRanges.size();
@@ -59,7 +59,7 @@ void Pipeline::createPipelineLayout(VkDevice device)
 
 void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 {
-	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+	gf3d::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 	shaderStages.reserve(shader.getShaderModules().size());
 
 	for (auto&& [stage, module] : shader.getShaderModules()) {
@@ -101,8 +101,8 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	blendInfo.pAttachments = &colorBlendAttachment;
 	blendInfo.logicOp = VK_LOGIC_OP_COPY;
 
-	std::vector<VkVertexInputBindingDescription> bindings = Mesh::Vertex::getBindingDescription();
-	std::vector<VkVertexInputAttributeDescription> attributes = Mesh::Vertex::getAttributeDescription();
+	gf3d::vector<VkVertexInputBindingDescription> bindings = Mesh::Vertex::getBindingDescription();
+	gf3d::vector<VkVertexInputAttributeDescription> attributes = Mesh::Vertex::getAttributeDescription();
 	
 	VkPipelineVertexInputStateCreateInfo vertexInput = { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
 	vertexInput.vertexBindingDescriptionCount = static_cast<uint32_t>(bindings.size());

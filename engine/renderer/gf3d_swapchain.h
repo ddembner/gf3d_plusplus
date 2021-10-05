@@ -1,7 +1,7 @@
 #pragma once
-#include <vector>
 #include "gf3d_device.h"
 #include "vulkan_types.h"
+#include "containers/vector.hpp"
 
 class Swapchain
 {
@@ -39,10 +39,10 @@ private:
 	VkFormat colorFormat = VK_FORMAT_UNDEFINED;
 	VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 	VkRenderPass renderPass;
-	std::vector<VkFramebuffer> frameBuffers;
+	gf3d::vector<VkFramebuffer> frameBuffers;
 
-	std::vector<VkImage> swapchainImages;
-	std::vector<VkImageView> swapchainImageViews;
+	gf3d::vector<VkImage> swapchainImages;
+	gf3d::vector<VkImageView> swapchainImageViews;
 	AllocatedImage depthAllocatedImage;
 	VkImageView depthImageView;
 };

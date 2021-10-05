@@ -1,8 +1,8 @@
 #ifndef __GF3D_VALIDATIONS_H__
 #define __GF3D_VALIDATIONS_H__
 
+#include "containers/vector.hpp"
 #include <vulkan/vulkan.h>
-#include <vector>
 
 /**
 * Checks if validation layer is on
@@ -20,7 +20,7 @@ bool checkValidationLayerSupport();
 * Gets all the validation layers
 * @return vector of all validation layers defined
 */
-std::vector<const char*> getValidationLayers();
+gf3d::vector<const char*> getValidationLayers();
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 

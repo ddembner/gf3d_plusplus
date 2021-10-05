@@ -2,11 +2,16 @@
 #include "defines.hpp"
 #include "core/gf3d_assert.hpp"
 
+#include <initializer_list>
+
 namespace gf3d 
 {
 template<class T>
 class vector
 {
+public:
+	typedef T* iterator;
+	typedef const T* const_iterator;
 public:
 
 	vector() : mData(nullptr), mCapacity(0), mSize(0)
@@ -47,15 +52,32 @@ public:
 		other.mData = nullptr;
 	}
 
+	constexpr vector(iterator _First, iterator _Last) : mCapacity(_Last - _First), mSize(_Last - _First)
+	{
+		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+
+		for (u64 i = 0; _First != _Last; i++, ++_First) {
+			construct_copy_in_place(mData[i], *_First);
+		}
+	}
+
+	constexpr vector(std::initializer_list<T> list) : mCapacity(list.size()), mSize(list.size()) 
+	{
+		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+
+		u64 i = 0;
+		for (auto it = list.begin(); it != list.end(); ++it) {
+			construct_copy_in_place(mData[i], *it);
+			i++;
+		}
+	}
+
 	~vector()
 	{
 		clear();
 		::operator delete(mData, sizeof(T) * mCapacity);
 		mData = nullptr;
 	}
-
-	typedef T* iterator;
-	typedef const T* const_iterator;
 
 	inline T* data() const noexcept { return mData; }
 	inline u64 capacity() const noexcept { return mCapacity; }
@@ -77,6 +99,7 @@ public:
 	T& operator[](u64 index) noexcept;
 	constexpr vector& operator=(const vector& other);
 	constexpr vector& operator=(vector&& other) noexcept;
+	constexpr vector& operator=(std::initializer_list<T> list) noexcept;
 
 	template<typename... Args>
 	T& emplace_back(Args&&... args)
@@ -282,6 +305,46 @@ inline constexpr vector<T>& vector<T>::operator=(vector<T>&& other) noexcept
 		other.mData = nullptr;
 	}
 
+	return *this;
+}
+
+template<class T>
+inline constexpr vector<T>& vector<T>::operator=(std::initializer_list<T> list) noexcept
+{
+	u64 newSize = list.size();
+
+	if (newSize > mSize) {
+		if (newSize > mCapacity) {
+			clear();
+			reserve(newSize);
+		}
+
+		auto it = list.begin();
+		for (u64 i = 0; i < mSize; i++) {
+			mData[i] = *it;
+			++it;
+		}
+
+		it = list.begin();
+		for (u64 i = mSize; i < newSize; i++) {
+			emplace_back(*it);
+			++it;
+		}
+	}
+	else {
+		auto it = list.begin();
+		for (u64 i = 0; i < list.size(); i++) {
+			mData[i] = *it;
+			++it;
+		}
+
+		for (u64 i = list.size(); i < mSize; i++) {
+			mData[i].~T();
+		}
+	}
+
+	mSize = newSize;
+	
 	return *this;
 }
 

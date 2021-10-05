@@ -1,8 +1,8 @@
 #pragma once
 #include "gf3d_device.h"
-#include <vector>
-#include <unordered_map>
 #include "vulkan_types.h"
+#include "containers/vector.hpp"
+#include <unordered_map>
 
 class Mesh
 {
@@ -15,11 +15,11 @@ public:
 		glm::vec3 position;
 		glm::vec3 color;
 
-		static std::vector<VkVertexInputAttributeDescription> getAttributeDescription();
-		static std::vector<VkVertexInputBindingDescription> getBindingDescription();
+		static gf3d::vector<VkVertexInputAttributeDescription> getAttributeDescription();
+		static gf3d::vector<VkVertexInputBindingDescription> getBindingDescription();
 	};
 	AllocatedBuffer allocatedBuffer;
-	std::vector<Vertex> vertices;
+	gf3d::vector<Vertex> vertices;
 	bool isAllocated = false;
 public:
 	void destroy(const VmaAllocator& allocator);

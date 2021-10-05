@@ -85,7 +85,7 @@ void Gf3dGraphics::recreateSwapChain()
 void Gf3dGraphics::createDescriptorPool()
 {
 	auto device = gf3dDevice->GetDevice();
-	std::vector<VkDescriptorPoolSize> poolSizes = { {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10} };
+	gf3d::vector<VkDescriptorPoolSize> poolSizes = { {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10} };
 
 	VkDescriptorPoolCreateInfo createInfo = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
 	createInfo.poolSizeCount = static_cast<u32>(poolSizes.size());
@@ -274,7 +274,7 @@ void Gf3dGraphics::endRenderPass(VkCommandBuffer cmd)
 	vkCmdEndRenderPass(cmd);
 }
 
-void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects)
+void Gf3dGraphics::renderObjects(VkCommandBuffer cmd, gf3d::vector<GameObject>& gameObjects)
 {
 	Material* lastMaterial = nullptr;
 	for (auto& gameObject : gameObjects) {

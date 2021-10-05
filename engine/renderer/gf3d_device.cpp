@@ -1,8 +1,8 @@
-#include <vector>
 #include "core/gf3d_logger.h"
 #include "gf3d_device.h"
 #include "gf3d_validations.h"
 #include "vulkan_functions.h"
+#include "containers/vector.hpp"
 
 void Gf3dDevice::init(Gf3dWindow* window)
 {
@@ -66,7 +66,7 @@ void Gf3dDevice::createInstance()
 	instanceInfo.pNext = nullptr;
 	instanceInfo.pApplicationInfo = &appInfo;
 
-	std::vector<const char*> validationLayers = getValidationLayers();
+	gf3d::vector<const char*> validationLayers = getValidationLayers();
 	if (isValidationLayersEnabled()) {
 
 		instanceInfo.enabledLayerCount = static_cast<u32>(validationLayers.size());
@@ -79,7 +79,7 @@ void Gf3dDevice::createInstance()
 	u32 glfwExtensionCount = 0;
 	const char** glfwExtensions;
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	gf3d::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 	if (isValidationLayersEnabled()) {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -116,7 +116,7 @@ void Gf3dDevice::findPhysicalDevice()
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 	assert(deviceCount > 0);
 
-	std::vector<VkPhysicalDevice> devices(deviceCount);
+	gf3d::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
 	for (u32 i = 0; i < devices.size(); i++) {
@@ -143,8 +143,8 @@ void Gf3dDevice::findPhysicalDevice()
 void Gf3dDevice::createLogicalDevice()
 {
 	const float queuePriority = 1.0f;
-	std::vector<VkDeviceQueueCreateInfo> queueInfos;
-	std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	gf3d::vector<VkDeviceQueueCreateInfo> queueInfos;
+	gf3d::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
 
 	queueIndices.graphics = findQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
@@ -225,7 +225,7 @@ u32 Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 {
 	u32 propertyCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, nullptr);
-	std::vector<VkQueueFamilyProperties> queueFamilyProperties(propertyCount);
+	gf3d::vector<VkQueueFamilyProperties> queueFamilyProperties(propertyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, queueFamilyProperties.data());
 
 	//Get dedicated compute queue
