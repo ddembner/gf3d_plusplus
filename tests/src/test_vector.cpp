@@ -50,6 +50,18 @@ u8 VectorIndex()
 	return TEST_PASS;
 }
 
+u8 VectorInitializerList()
+{
+	gf3d::vector<u32> numbers(2);
+
+	numbers = { 0, 1, 2, 3, 4 };
+
+	for (u32 i = 0; i < numbers.size(); i++)
+		should_be_equal(i, numbers[i]);
+
+	return TEST_PASS;
+}
+
 u8 VectorObjectConstruct()
 {
 	//Testing default constructor
@@ -244,6 +256,7 @@ void RegisterVectorTests(TestManager& manager)
 {
 	manager.registerTest(VectorCreateAndDestroy, "vector create and destroy");
 	manager.registerTest(VectorIndex, "vector c array like indexing");
+	manager.registerTest(VectorInitializerList, "vector construct with initializer list");
 	manager.registerTest(VectorObjectConstruct, "vector using object constructor and destructor");
 	manager.registerTest(VectorReserve, "vector reserve");
 	manager.registerTest(VectorPopBack, "vector pop back");
