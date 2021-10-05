@@ -10,6 +10,9 @@ template<class T>
 class vector
 {
 public:
+	typedef T* iterator;
+	typedef const T* const_iterator;
+public:
 
 	vector() : mData(nullptr), mCapacity(0), mSize(0)
 	{
@@ -49,6 +52,15 @@ public:
 		other.mData = nullptr;
 	}
 
+	constexpr vector(iterator _First, iterator _Last) : mCapacity(_Last - _First), mSize(_Last - _First)
+	{
+		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+
+		for (u64 i = 0; _First != _Last; i++, ++_First) {
+			construct_copy_in_place(mData[i], *_First);
+		}
+	}
+
 	constexpr vector(std::initializer_list<T> list) : mCapacity(list.size()), mSize(list.size()) 
 	{
 		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
@@ -66,9 +78,6 @@ public:
 		::operator delete(mData, sizeof(T) * mCapacity);
 		mData = nullptr;
 	}
-
-	typedef T* iterator;
-	typedef const T* const_iterator;
 
 	inline T* data() const noexcept { return mData; }
 	inline u64 capacity() const noexcept { return mCapacity; }

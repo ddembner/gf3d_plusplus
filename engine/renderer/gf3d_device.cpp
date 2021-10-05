@@ -79,8 +79,7 @@ void Gf3dDevice::createInstance()
 	u32 glfwExtensionCount = 0;
 	const char** glfwExtensions;
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-	//gf3d::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	gf3d::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 	if (isValidationLayersEnabled()) {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
