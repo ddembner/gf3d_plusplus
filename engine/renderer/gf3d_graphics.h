@@ -13,11 +13,11 @@ public:
 	VkRenderPass getSwapchainRenderPass() const { return swapchain.getRenderPass(); }
 private:
 	Swapchain swapchain;
-	std::vector<VkCommandBuffer> commandBuffers;
-	std::vector<VkSemaphore> imageAvailableSemaphores;
-	std::vector<VkSemaphore> renderCompleteSemaphores;
-	std::vector<VkFence> imagesInFlight;
-	std::vector<VkFence> inFlightFences;
+	gf3d::vector<VkCommandBuffer> commandBuffers;
+	gf3d::vector<VkSemaphore> imageAvailableSemaphores;
+	gf3d::vector<VkSemaphore> renderCompleteSemaphores;
+	gf3d::vector<VkFence> imagesInFlight;
+	gf3d::vector<VkFence> inFlightFences;
 	std::unordered_map<std::string, Mesh> meshes;
 	struct {
 		u32 graphics;
@@ -48,14 +48,14 @@ private:
 		VkDescriptorSet globalSet;
 	};
 
-	std::vector<PerFrameData> frameData;
+	gf3d::vector<PerFrameData> frameData;
 
 public:
 	VkCommandBuffer beginFrame();
 	void endFrame();
 	void beginRenderPass(VkCommandBuffer cmd);
 	void endRenderPass(VkCommandBuffer cmd);
-	void renderObjects(VkCommandBuffer cmd, std::vector<GameObject>& gameObjects);
+	void renderObjects(VkCommandBuffer cmd, gf3d::vector<GameObject>& gameObjects);
 	void updateCameraDescriptor(Camera& camera);
 private:
 	void initVulkan();

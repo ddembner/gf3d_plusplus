@@ -28,6 +28,6 @@ private:
 	Gf3dDevice gf3dDevice;
 	Gf3dGraphics renderer;
 	std::unique_ptr<MaterialSystem> materialSystem;
-	std::vector<GameObject> gameObjects;
+	gf3d::vector<GameObject> gameObjects;
 	Camera cam;
 };

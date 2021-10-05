@@ -68,7 +68,7 @@ void Swapchain::selectPresentMode()
 
 	u32 presentCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentCount, nullptr);
-	std::vector<VkPresentModeKHR> presentModes(presentCount);
+	gf3d::vector<VkPresentModeKHR> presentModes(presentCount);
 	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentCount, presentModes.data());
 
 	VkPhysicalDeviceProperties deviceProperties;
@@ -96,7 +96,7 @@ VkCompositeAlphaFlagBitsKHR Swapchain::selectCompositeAlphaFlags(VkSurfaceCapabi
 {
 	VkCompositeAlphaFlagBitsKHR alphaFlag = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
-	std::vector< VkCompositeAlphaFlagBitsKHR> alphaFlagBits = {
+	gf3d::vector< VkCompositeAlphaFlagBitsKHR> alphaFlagBits = {
 		VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 		VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
 		VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
@@ -139,7 +139,7 @@ VkSurfaceFormatKHR Swapchain::getSurfaceFormat()
 
 	u32 formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
-	std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
+	gf3d::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
 	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, surfaceFormats.data());
 
 	for (auto& surfaceFormat : surfaceFormats) {
@@ -156,7 +156,7 @@ VkFormat Swapchain::findDepthFormat()
 {
 	VkPhysicalDevice physicalDevice = gf3dDevice->GetPhysicalDevice();
 	
-	std::vector<VkFormat> depthFormats = { 
+	gf3d::vector<VkFormat> depthFormats = { 
 		VK_FORMAT_D32_SFLOAT, 
 		VK_FORMAT_D32_SFLOAT_S8_UINT, 
 		VK_FORMAT_D24_UNORM_S8_UINT 

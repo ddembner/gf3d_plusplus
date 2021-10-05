@@ -10,7 +10,7 @@ const bool enableValidations = true;
 #endif // NDEBUG
 
 //Enter all validation layers wanted here.
-const std::vector<const char*> validationLayers = {
+const gf3d::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
@@ -19,7 +19,7 @@ bool isValidationLayersEnabled() {
 	return enableValidations;
 }
 
-std::vector<const char*> getValidationLayers() {
+gf3d::vector<const char*> getValidationLayers() {
 	return validationLayers;
 }
 
@@ -28,7 +28,7 @@ bool checkValidationLayerSupport() {
 	u32 layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-	std::vector<VkLayerProperties> availableLayers(layerCount);
+	gf3d::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 	for (const char* layerName : validationLayers) {
