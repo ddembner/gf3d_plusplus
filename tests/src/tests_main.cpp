@@ -3,6 +3,7 @@
 #include "test_linear_allocator.hpp"
 #include "test_vector.hpp"
 #include "test_forward_list.hpp"
+#include "test_vec2.hpp"
 
 int main()
 {
@@ -12,6 +13,7 @@ int main()
 	RegisterLinearTests(testManager);
 	RegisterVectorTests(testManager);
 	RegisterForwardListTests(testManager);
+	RegisterVec2Tests(testManager);
 
 	testManager.runTests();
 
