@@ -2,6 +2,12 @@
 
 #include "defines.hpp"
 #include "core/gf3d_assert.hpp"
+#include "vec3.hpp"
+#include "vec4.hpp"
+
+/*
+* NOTE: this matrix will be using row major.
+*/
 
 namespace gf3d
 {
@@ -75,9 +81,10 @@ namespace gf3d
 			return result;
 		}
 
-		// NOTE: indexing starts as 0 and so [0][0] eqauls _11 from the union.
+		// [row][column]
 		inline constexpr f32* operator[](u64 index)
 		{
+			GFASSERT(index < 5, "index out of range");
 			return &elements[index * 4];
 		}
 
@@ -177,6 +184,24 @@ namespace gf3d
 			o[14] = d * ((t18 * m[6] + t23 * m[14] + t15 * m[2]) - (t22 * m[14] + t14 * m[2] + t19 * m[6]));
 			o[15] = d * ((t22 * m[10] + t16 * m[2] + t21 * m[6]) - (t20 * m[6] + t23 * m[10] + t17 * m[2]));
 
+			return result;
+		}
+
+		inline static mat4 translate(const vec3& position)
+		{
+			mat4 result;
+			result._41 = position.x;
+			result._42 = position.y;
+			result._43 = position.z;
+			return result;
+		}
+
+		inline static mat4 scale(const vec3& scale)
+		{
+			mat4 result;
+			result._11 = scale.x;
+			result._22 = scale.y;
+			result._33 = scale.z;
 			return result;
 		}
 	};

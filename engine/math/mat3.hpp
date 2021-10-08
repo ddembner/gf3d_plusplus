@@ -117,6 +117,40 @@ namespace gf3d
 		{
 			return _11 * (_22 * _33 - _23 * _32) - _12 * (_21 * _33 - _23 * _31) + _13 * (_21 * _32 - _22 * _31);
 		}
+
+		inline mat3 inverse() const
+		{
+			mat3 result;
+			f32 d = determinant();
+
+			if (fcmp(d, 0.f)) {
+				return mat3(0);
+			}
+			
+			d = 1.f / d;
+
+			result._11 = _22 * _33 - _23 * _32;
+			result._12 = _13 * _32 - _12 * _33;
+			result._13 = _12 * _23 - _13 * _22;
+			result._21 = _23 * _31 - _21 * _33;
+			result._22 = _11 * _33 - _13 * _31;
+			result._23 = _13 * _21 - _11 * _23;
+			result._31 = _21 * _32 - _22 * _31;
+			result._32 = _12 * _31 - _11 * _32;
+			result._33 = _11 * _22 - _12 * _21;
+
+			result._11 *= d;
+			result._12 *= d;
+			result._13 *= d;
+			result._21 *= d;
+			result._22 *= d;
+			result._23 *= d;
+			result._31 *= d;
+			result._32 *= d;
+			result._33 *= d;
+
+			return result;
+		}
 	};
 
 } // namespace gf3d
