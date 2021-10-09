@@ -4,6 +4,7 @@
 #include "core/gf3d_assert.hpp"
 #include "vec3.hpp"
 #include "vec4.hpp"
+#include "trigonometric_functions.hpp"
 
 /*
 * NOTE: this matrix will be using row major.
@@ -82,7 +83,7 @@ namespace gf3d
 		}
 
 		// [row][column]
-		inline constexpr f32* operator[](u64 index)
+		inline f32* operator[](u64 index)
 		{
 			GFASSERT(index < 5, "index out of range");
 			return &elements[index * 4];
@@ -202,6 +203,52 @@ namespace gf3d
 			result._11 = scale.x;
 			result._22 = scale.y;
 			result._33 = scale.z;
+			return result;
+		}
+
+		inline static mat4 eulerAngleXYZ(f32 yaw, f32 pitch, f32 roll)
+		{
+			const f32 s1 = gf3d::sin(yaw);
+			const f32 c1 = gf3d::cos(yaw);
+			const f32 s2 = gf3d::sin(pitch);
+			const f32 c2 = gf3d::cos(pitch);
+			const f32 s3 = gf3d::sin(roll);
+			const f32 c3 = gf3d::cos(roll);
+
+			mat4 result;
+			result._11 = c2 * c3;
+			result._12 = s1 * s3 + c1 * c3 * s2;
+			result._13 = c3 * s1 * s2 - c1 * s3;
+			result._21 = -s2;
+			result._22 = c1 * c2;
+			result._23 = c2 * s1;
+			result._31 = c2 * s3;
+			result._32 = c1 * s2 * s3 - c3 * s1;
+			result._33 = c1 * c3 + s1 * s2 * s3;
+
+			return result;
+		}
+
+		inline static mat4 eulerAngleYXZ(f32 yaw, f32 pitch, f32 roll)
+		{
+			const f32 s1 = gf3d::sin(yaw);
+			const f32 c1 = gf3d::cos(yaw);
+			const f32 s2 = gf3d::sin(pitch);
+			const f32 c2 = gf3d::cos(pitch);
+			const f32 s3 = gf3d::sin(roll);
+			const f32 c3 = gf3d::cos(roll);
+
+			mat4 result;
+			result._11 = c1 * c3 + s1 * s2 * s3;
+			result._12 = c2 * s3;
+			result._13 = c1 * s2 * s3 - c3 * s1;
+			result._21 = c3 * s1 * s2 - c1 * s3;
+			result._22 = c2 * c3;
+			result._23 = c1 * c3 * s2 + s1 * s3;
+			result._31 = c2 * s1;
+			result._32 = -s2;
+			result._33 = c1 * c2;
+
 			return result;
 		}
 	};

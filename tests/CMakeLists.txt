@@ -6,7 +6,6 @@ set(tests_SOURCE_FILES
 	"src/test_linear_allocator.cpp"
 	"src/test_vector.cpp"
 	"src/test_forward_list.cpp"
-	"src/test_vec2.cpp"
 )
 
 set(tests_INCLUDE_PATHS

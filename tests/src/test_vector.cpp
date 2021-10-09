@@ -14,7 +14,6 @@ u8 VectorCreateAndDestroy()
 	should_be_equal(stdNumbersEmpty.size(), gf3dNumbersEmpty.size());
 	should_be_equal(0, gf3dNumbersEmpty.capacity());
 	should_be_equal(0, gf3dNumbersEmpty.size());
-
 	std::vector<u32> stdNumbers(3);
 	gf3d::vector<u32> gf3dNumbers(3);
 
