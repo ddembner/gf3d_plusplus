@@ -217,6 +217,29 @@ namespace gf3d
 
 			mat4 result;
 			result._11 = c2 * c3;
+			result._12 = c1 * s3 + c3 * s1 * s2;
+			result._13 = s1 * s3 - c1 * c3 * s2;
+			result._21 = -c2 * s3;
+			result._22 = c1 * c3 - s1 * s2 * s3;
+			result._23 = c3 * s1 + c1 * s2 * s3;
+			result._31 = s2;
+			result._32 = -c2 * s1;
+			result._33 = c1 * c2;
+
+			return result;
+		}
+
+		inline static mat4 eulerAngleXZY(f32 yaw, f32 pitch, f32 roll)
+		{
+			const f32 s1 = gf3d::sin(yaw);
+			const f32 c1 = gf3d::cos(yaw);
+			const f32 s2 = gf3d::sin(pitch);
+			const f32 c2 = gf3d::cos(pitch);
+			const f32 s3 = gf3d::sin(roll);
+			const f32 c3 = gf3d::cos(roll);
+
+			mat4 result;
+			result._11 = c2 * c3;
 			result._12 = s1 * s3 + c1 * c3 * s2;
 			result._13 = c3 * s1 * s2 - c1 * s3;
 			result._21 = -s2;
@@ -248,6 +271,75 @@ namespace gf3d
 			result._31 = c2 * s1;
 			result._32 = -s2;
 			result._33 = c1 * c2;
+
+			return result;
+		}
+
+		inline static mat4 eulerAngleYZX(f32 yaw, f32 pitch, f32 roll)
+		{
+			const f32 s1 = gf3d::sin(yaw);
+			const f32 c1 = gf3d::cos(yaw);
+			const f32 s2 = gf3d::sin(pitch);
+			const f32 c2 = gf3d::cos(pitch);
+			const f32 s3 = gf3d::sin(roll);
+			const f32 c3 = gf3d::cos(roll);
+
+			mat4 result;
+			result._11 = c1 * c2;
+			result._12 = s2;
+			result._13 = -c2 * s1;
+			result._21 = s1 * s3 - c1 * c3 * s2;
+			result._22 = c2 * c3;
+			result._23 = c1 * s3 + c3 * s1 * s2;
+			result._31 = c3 * s1 + c1 * s2 * s3;
+			result._32 = -c2 * s3;
+			result._33 = c1 * c3 - s1 * s2 * s3;
+
+			return result;
+		}
+
+		inline static mat4 eulerAngleZYX(f32 yaw, f32 pitch, f32 roll)
+		{
+			const f32 s1 = gf3d::sin(yaw);
+			const f32 c1 = gf3d::cos(yaw);
+			const f32 s2 = gf3d::sin(pitch);
+			const f32 c2 = gf3d::cos(pitch);
+			const f32 s3 = gf3d::sin(roll);
+			const f32 c3 = gf3d::cos(roll);
+
+			mat4 result;
+			result._11 = c1 * c2;
+			result._12 = c2 * s1;
+			result._13 = -s2;
+			result._21 = c1 * s2 * s3 - c3 * s1;
+			result._22 = c1 * c3 + s1 * s2 * s3;
+			result._23 = c2 * s3;
+			result._31 = s1 * s3 + c1 * c3 * s2;
+			result._32 = c3 * s1 * s2 - c1 * s3;
+			result._33 = c2 * c3;
+
+			return result;
+		}
+
+		inline static mat4 eulerAngleZXY(f32 yaw, f32 pitch, f32 roll)
+		{
+			const f32 s1 = gf3d::sin(yaw);
+			const f32 c1 = gf3d::cos(yaw);
+			const f32 s2 = gf3d::sin(pitch);
+			const f32 c2 = gf3d::cos(pitch);
+			const f32 s3 = gf3d::sin(roll);
+			const f32 c3 = gf3d::cos(roll);
+
+			mat4 result;
+			result._11 = c1 * c3 - s1 * s2 * s3;
+			result._12 = c3 * s1 + c1 * s2 * s3;
+			result._13 = -c2 * s3;
+			result._21 = -c2 * s1;
+			result._22 = c1 * c2;
+			result._23 = s2;
+			result._31 = c1 * s3 + c3 * s1 * s2;
+			result._32 = s1 * s3 - c1 * c3 * s2;
+			result._33 = c2 * c3;
 
 			return result;
 		}

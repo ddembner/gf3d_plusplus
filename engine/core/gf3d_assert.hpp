@@ -21,7 +21,7 @@ namespace gf3d
 #ifndef NDEBUG
 #define GFASSERT(condition, message)										\
 	if(!(condition)) {														\
-		ReportAssertionFailure(#condition, __FILE__, __LINE__, message);	\
+		gf3d::ReportAssertionFailure(#condition, __FILE__, __LINE__, message);	\
 		debug_break();														\
 	}
 #else
