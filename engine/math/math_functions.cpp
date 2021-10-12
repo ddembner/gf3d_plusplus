@@ -43,4 +43,9 @@ namespace gf3d
 			x > 0.f ? 1.f : -1.f;
 	}
 
+	f32 mod(f32 x, f32 y)
+	{
+		return std::fmodf(x, y);
+	}
+
 } // namespace gf3d

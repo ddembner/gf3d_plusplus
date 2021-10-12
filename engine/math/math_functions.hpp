@@ -18,4 +18,6 @@ namespace gf3d
 	i32 sign(i32 x);
 
 	f32 sign(f32 x);
+
+	f32 mod(f32 x, f32 y);
 } // namespace gf3d

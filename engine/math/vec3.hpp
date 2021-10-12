@@ -170,7 +170,7 @@ namespace gf3d
 			vec3 result = vec3();
 			result.x = y * other.z - z * other.y;
 			result.y = z * other.x - x * other.z;
-			result.z = x * other.y - y * other.z;
+			result.z = x * other.y - y * other.x;
 			return result;
 		}
 

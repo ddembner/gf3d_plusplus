@@ -2,6 +2,12 @@
 #include "application.h"
 #include <spdlog/stopwatch.h>
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 void Application::run()
 {	
 	init();
@@ -32,12 +38,16 @@ void Application::update()
 	f32 aspect = window.getAspectRatio();
 	//cam.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
 	cam.setPerspectiveProjection(aspect, 0.1f, 100.f);
-	cam.setViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f));
-	//cam.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
+	//cam.setViewDirection(gf3d::vec3(0.f), gf3d::vec3(0.f, 0.f, 1.f));
+	cam.setViewTarget(gf3d::vec3(-1.f, -2.f, -2.f), gf3d::vec3(0.f, 0.f, 2.5f));
+
+	glm::mat4 mat = glm::lookAtLH(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f), glm::vec3(0.f, 1.f, 0.f));
+
 	for (auto& gameObject : gameObjects) {
-		gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y + 0.01f, glm::two_pi<f32>());
-		gameObject.transform.rotation.x = glm::mod(gameObject.transform.rotation.x + 0.005f, glm::two_pi<f32>());
-		auto finalTransform = cam.getViewProjectionMatrix() * gameObject.transform.mat4();
+		gameObject.transform.eulerAngles.y = gf3d::mod(gameObject.transform.eulerAngles.y + 0.01f, gf3d::two_pi());
+		gameObject.transform.eulerAngles.x = gf3d::mod(gameObject.transform.eulerAngles.x + 0.005f, gf3d::two_pi());
+		//auto finalTransform = cam.getViewProjectionMatrix() * gameObject.transform.mat4();
+		auto finalTransform = gameObject.transform.mat4() * cam.getViewMatrix() * cam.getProjectionMatrix();
 		gameObject.material->pushUpdate("mvp", &finalTransform);
 	}
 }
@@ -136,7 +146,7 @@ void Application::initScene()
 	//newObj.material->pushUpdate("color", &newObj.color);
 
 	newObj.transform.position.z = 2.5f;
-	newObj.transform.scale *= 0.5f;
+	newObj.transform.scale = newObj.transform.scale * 0.5f;
 
 	gameObjects.push_back(std::move(newObj));
 
