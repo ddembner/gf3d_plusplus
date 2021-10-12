@@ -20,7 +20,9 @@ namespace gf3d
 			f32 elements[3];
 		};
 
-		vec3() = default;
+		inline constexpr vec3()
+			: x(0.f), y(0.f), z(0.f)
+		{}
 
 		inline constexpr vec3(f32 scalar)
 			: x(scalar), y(scalar), z(scalar)

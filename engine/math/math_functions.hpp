@@ -15,5 +15,7 @@ namespace gf3d
 
 	bool fcmp(f32 x, f32 y);
 
+	i32 sign(i32 x);
 
+	f32 sign(f32 x);
 } // namespace gf3d
