@@ -343,6 +343,67 @@ namespace gf3d
 
 			return result;
 		}
+
+		// note: Left handed
+		inline static mat4 orthographic(f32 left, f32 right, f32 top, f32 bottom, f32 zNear, f32 zFar)
+		{
+			mat4 result = mat4();
+			result._11 = 2.f / (right - left);
+			result._22 = 2.f / (bottom - top);
+			result._33 = 1.f / (zFar - zNear);
+			result._41 = -(right + left) / (right - left);
+			result._42 = -(bottom + top) / (bottom - top);
+			result._43 = -zNear / (zFar - zNear);
+			return result;
+		}
+
+		/// <summary>
+		/// Constructs the perspective matrix using left-handed coordinate
+		/// </summary>
+		/// <param name="fov">- field of view of camera in degrees</param>
+		/// <param name="aspect">- aspect ratio</param>
+		/// <param name="zNear">- near clipping plane distance</param>
+		/// <param name="zFar">- far clipping plane distance</param>
+		/// <returns>perspective matrix</returns>
+		inline static mat4 perspective(f32 fov, f32 aspect, f32 zNear, f32 zFar)
+		{
+			const float tanHalfFovy = tan(radians(fov) / 2.f);
+			mat4 result = mat4(0.0);
+			result._11 = 1.f / (aspect * tanHalfFovy);
+			result._22 = 1.f / (tanHalfFovy);
+			result._33 = zFar / (zFar - zNear);
+			result._34 = 1.f;
+			result._43 = -(zFar * zNear) / (zFar - zNear);
+			return result;
+		}
+
+		inline static mat4 lookAt(const vec3& position, const vec3& target, const vec3& up)
+		{
+			const vec3 zaxis = (target - position).normalized();
+			const vec3 xaxis = up.cross(zaxis).normalized();
+			const vec3 yaxis = zaxis.cross(xaxis);
+
+			return mat4(
+				xaxis.x, yaxis.x, zaxis.x, 0.f,
+				xaxis.y, yaxis.y, zaxis.y, 0.f,
+				xaxis.z, yaxis.z, zaxis.z, 0.f,
+				-xaxis.dot(position), -yaxis.dot(position), -zaxis.dot(position), 1.f
+			);
+		}
+
+		inline static mat4 lookDirection(const vec3& position, const vec3& direction, const vec3& up)
+		{
+			const vec3 zaxis = (direction).normalized();
+			const vec3 xaxis = up.cross(zaxis).normalized();
+			const vec3 yaxis = zaxis.cross(xaxis);
+
+			return mat4(
+				xaxis.x, yaxis.x, zaxis.x, 0.f,
+				xaxis.y, yaxis.y, zaxis.y, 0.f,
+				xaxis.z, yaxis.z, zaxis.z, 0.f,
+				-xaxis.dot(position), -yaxis.dot(position), -zaxis.dot(position), 1.f
+			);
+		}
 	};
 
 } // namespace gf3d

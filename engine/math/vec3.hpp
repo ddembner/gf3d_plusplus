@@ -165,7 +165,7 @@ namespace gf3d
 			return *this * (1.f / magnitude());
 		}
 
-		inline constexpr vec3 cross(const vec3& other)
+		inline constexpr vec3 cross(const vec3& other) const
 		{
 			vec3 result = vec3();
 			result.x = y * other.z - z * other.y;
