@@ -38,10 +38,8 @@ void Application::update()
 	f32 aspect = window.getAspectRatio();
 	//cam.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 1);
 	cam.setPerspectiveProjection(aspect, 0.1f, 100.f);
-	//cam.setViewDirection(gf3d::vec3(0.f), gf3d::vec3(0.f, 0.f, 1.f));
-	cam.setViewTarget(gf3d::vec3(-1.f, -2.f, -2.f), gf3d::vec3(0.f, 0.f, 2.5f));
-
-	glm::mat4 mat = glm::lookAtLH(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f), glm::vec3(0.f, 1.f, 0.f));
+	cam.setViewDirection(gf3d::vec3(0.f), gf3d::vec3(0.5f, 0.f, 1.f));
+	//cam.setViewTarget(gf3d::vec3(-1.f, -2.f, 2.f), gf3d::vec3(0.f, 0.f, 2.5f));
 
 	for (auto& gameObject : gameObjects) {
 		gameObject.transform.eulerAngles.y = gf3d::mod(gameObject.transform.eulerAngles.y + 0.01f, gf3d::two_pi());

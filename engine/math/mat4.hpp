@@ -380,8 +380,8 @@ namespace gf3d
 		inline static mat4 lookAt(const vec3& position, const vec3& target, const vec3& up)
 		{
 			const vec3 zaxis = (target - position).normalized();
-			const vec3 xaxis = zaxis.cross(up).normalized();
-			const vec3 yaxis = xaxis.cross(zaxis);
+			const vec3 xaxis = up.cross(zaxis).normalized();
+			const vec3 yaxis = zaxis.cross(xaxis);
 
 			return mat4(
 				xaxis.x, yaxis.x, zaxis.x, 0.f,
