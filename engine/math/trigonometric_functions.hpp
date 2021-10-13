@@ -16,6 +16,8 @@ namespace gf3d
 	
 	float atan(f32 x);
 
+	float atan(f32 y, f32 x);
+
 	inline constexpr float degrees(float radians)
 	{
 		return radians * 57.2957795130823208768f;

@@ -35,9 +35,9 @@ namespace gf3d
 		return std::atanf(x);
 	}
 
-	float atan(f32 x, f32 y)
+	float atan(f32 y, f32 x)
 	{
-		return std::atan2f(x, y);
+		return std::atan2f(y, x);
 	}
 
 } // namespace gf3d

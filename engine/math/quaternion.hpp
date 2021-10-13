@@ -28,15 +28,19 @@ namespace gf3d
 			: x(_x), y(_y), z(_z), w(_w)
 		{}
 
+		/// <summary>
+		/// construct quaternion with euler angles with ZXY ordering
+		/// </summary>
+		/// <param name="euler">vec3 euler angles in degrees</param>
 		inline quaternion(const vec3& euler)
 		{
-			vec3 s = vec3(sin(euler.x * 0.5f), sin(euler.y * 0.5f), sin(euler.z * 0.5f));
-			vec3 c = vec3(cos(euler.x * 0.5f), cos(euler.y * 0.5f), cos(euler.z * 0.5f));
+			vec3 s = vec3(sin(radians(euler.x) * 0.5f), sin(radians(euler.y) * 0.5f), sin(radians(euler.z) * 0.5f));
+			vec3 c = vec3(cos(radians(euler.x) * 0.5f), cos(radians(euler.y) * 0.5f), cos(radians(euler.z) * 0.5f));
 
 			x = s.x * c.y * c.z - c.x * s.y * s.z;
 			y = c.x * s.y * c.z + s.x * c.y * s.z;
-			z = c.x * c.y * s.z - s.x * s.y * c.z;
-			w = c.x * c.y * c.z + s.x * s.y * s.z;
+			z = c.x * c.y * s.z + s.x * s.y * c.z;
+			w = c.x * c.y * c.z - s.x * s.y * s.z;
 		}
 
 		inline static constexpr quaternion identity()
@@ -66,26 +70,28 @@ namespace gf3d
 			return quaternion(-x, -y, -z, w);
 		}
 
+		// ZXY
 		inline vec3 eulerAngles() const
 		{
 			vec3 result;
 
-			// pitch
-			f32 _xp = 2 * (w * x + y * z);
-			f32 _yp = w * w - x * x - y * y + z * z;
-			result.x = atan(_xp / _yp);
-
 			// yaw
-			f32 sinp = 2 * (w * y - z * x);
+			f32 sinp = 2 * (y * z + w * x);
 			if (abs(sinp) >= 1)
-				result.y = (pi() / 2) * sign(sinp); // use 90 degrees if out of range
+				result.x = (pi() / 2) * sign(sinp); // use 90 degrees if out of range
 			else
-				result.y = asin(sinp);
+				result.x = asin(sinp);
+
+
+			// pitch
+			f32 _xp = -2 * (x * z - w * y);
+			f32 _yp = w * w - x * x - y * y + z * z;
+			result.y = atan(_xp, _yp);
 
 			// roll
-			f32 siny_cosp = 2 * (w * z + x * y);
-			f32 cosy_cosp = 1 - 2 * (y * y + z * z);
-			result.z = atan(siny_cosp / cosy_cosp);
+			f32 siny_cosp = -2 * (x * y - w * z);
+			f32 cosy_cosp = w * w  - x * x + y * y - z * z;
+			result.z = atan(siny_cosp, cosy_cosp);
 
 			return result;
 		}
