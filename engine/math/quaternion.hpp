@@ -43,6 +43,16 @@ namespace gf3d
 			w = c.x * c.y * c.z - s.x * s.y * s.z;
 		}
 
+		inline constexpr quaternion operator*(const quaternion& other) const
+		{
+			return {
+				w * other.x + x * other.w + y * other.z - z * other.y,
+				w * other.y + y * other.w + z * other.x - x * other.z,
+				w * other.z + z * other.w + x * other.y - y * other.x,
+				w * other.w - x * other.x - y * other.y - z * other.z
+			};
+		}
+
 		inline static constexpr quaternion identity()
 		{
 			return quaternion(0, 0, 0, 1);
@@ -81,17 +91,17 @@ namespace gf3d
 				result.x = (pi() / 2) * sign(sinp); // use 90 degrees if out of range
 			else
 				result.x = asin(sinp);
-
+			result.x = degrees(result.x);
 
 			// pitch
 			f32 _xp = -2 * (x * z - w * y);
 			f32 _yp = w * w - x * x - y * y + z * z;
-			result.y = atan(_xp, _yp);
+			result.y = degrees(atan(_xp, _yp));
 
 			// roll
 			f32 siny_cosp = -2 * (x * y - w * z);
 			f32 cosy_cosp = w * w  - x * x + y * y - z * z;
-			result.z = atan(siny_cosp, cosy_cosp);
+			result.z = degrees(atan(siny_cosp, cosy_cosp));
 
 			return result;
 		}
@@ -99,8 +109,6 @@ namespace gf3d
 		inline mat3 toMat3() const
 		{
 			mat3 mat;
-
-			quaternion normal = normalized();
 
 			mat._11 = 1.0f - 2.0f * y * y - 2.0f * z * z;
 			mat._12 = 2.0f * x * y - 2.0f * z * w;
@@ -120,8 +128,6 @@ namespace gf3d
 		inline mat4 toMat4() const
 		{
 			mat4 mat = mat4();
-
-			quaternion normal = normalized();
 
 			mat._11 = 1.0f - 2.0f * y * y - 2.0f * z * z;
 			mat._12 = 2.0f * x * y - 2.0f * z * w;

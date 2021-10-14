@@ -9,37 +9,41 @@ struct Transform
 {
 	gf3d::vec3 position{};
 	gf3d::vec3 scale{ 1.f, 1.f, 1.f };
-	gf3d::vec3 eulerAngles{};
     gf3d::quaternion rotation{};
 
-	gf3d::mat4 mat4()
-	{
-        const float c3 = gf3d::cos(eulerAngles.z);
-        const float s3 = gf3d::sin(eulerAngles.z);
-        const float c2 = gf3d::cos(eulerAngles.x);
-        const float s2 = gf3d::sin(eulerAngles.x);
-        const float c1 = gf3d::cos(eulerAngles.y);
-        const float s1 = gf3d::sin(eulerAngles.y);
+    gf3d::mat4 mat4()
+    {
         return gf3d::mat4{
-            
-                scale.x * (c1 * c3 + s1 * s2 * s3),
-                scale.x * (c2 * s3),
-                scale.x * (c1 * s2 * s3 - c3 * s1),
+
+                scale.x * (1.0f - 2.0f * rotation.y * rotation.y - 2.0f * rotation.z * rotation.z),
+                scale.x * (2.0f * rotation.x * rotation.y - 2.0f * rotation.z * rotation.w),
+                scale.x * (2.0f * rotation.x * rotation.z + 2.0f * rotation.y * rotation.w),
                 0.0f,
-            
-                scale.y * (c3 * s1 * s2 - c1 * s3),
-                scale.y * (c2 * c3),
-                scale.y * (c1 * c3 * s2 + s1 * s3),
+
+                scale.y *  (2.0f * rotation.x * rotation.y + 2.0f * rotation.z * rotation.w),
+                scale.y * (1.0f - 2.0f * rotation.x * rotation.x - 2.0f * rotation.z * rotation.z),
+                scale.y * (2.0f * rotation.y * rotation.z - 2.0f * rotation.x * rotation.w),
                 0.0f,
-            
-            
-                scale.z * (c2 * s1),
-                scale.z * (-s2),
-                scale.z * (c1 * c2),
+
+
+                scale.z * (2.0f * rotation.x * rotation.z - 2.0f * rotation.y * rotation.w),
+                scale.z * (2.0f * rotation.y * rotation.z + 2.0f * rotation.x * rotation.w),
+                scale.z * (1.0f - 2.0f * rotation.x * rotation.x - 2.0f * rotation.y * rotation.y),
                 0.0f,
-            
-            position.x, position.y, position.z, 1.0f };
-	}
+
+                position.x, position.y, position.z, 1.0f 
+        };
+    }
+
+    inline void rotate(const gf3d::vec3& euler)
+    {
+        rotation = rotation * gf3d::quaternion(euler);
+    }
+
+    inline void rotate(const f32& x, const f32& y, const f32& z)
+    {
+        rotation = rotation * gf3d::quaternion(gf3d::vec3(x, y, z));
+    }
 };
 
 class GameObject : NonCopyable

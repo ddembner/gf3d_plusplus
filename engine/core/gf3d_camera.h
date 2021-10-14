@@ -15,7 +15,7 @@ public:
 	void OnUpdate();
 public:
 	//gf3d::vec3 position{};
-	float fieldOfView = 50.f;
+	float fieldOfView = 60.f;
 private:
 	gf3d::mat4 viewMatrix{ 1.f };
 	gf3d::mat4 projectionMatrix{ 1.f };
