@@ -13,22 +13,32 @@ struct Transform
 
     gf3d::mat4 mat4()
     {
+        const f32 xpow = rotation.x * rotation.x;
+        const f32 ypow = rotation.y * rotation.y;
+        const f32 zpow = rotation.z * rotation.z;
+        const f32 xy = rotation.x * rotation.y;
+        const f32 xz = rotation.x * rotation.z;
+        const f32 yz = rotation.y * rotation.z;
+        const f32 xw = rotation.x * rotation.w;
+        const f32 yw = rotation.y * rotation.w;
+        const f32 zw = rotation.z * rotation.w;
+
         return gf3d::mat4{
 
-                scale.x * (1.0f - 2.0f * rotation.y * rotation.y - 2.0f * rotation.z * rotation.z),
-                scale.x * (2.0f * rotation.x * rotation.y - 2.0f * rotation.z * rotation.w),
-                scale.x * (2.0f * rotation.x * rotation.z + 2.0f * rotation.y * rotation.w),
+                scale.x * (1.0f - 2.0f * ypow - 2.0f * zpow),
+                scale.x * (2.0f * xy - 2.0f * zw),
+                scale.x * (2.0f * xz + 2.0f * yw),
                 0.0f,
 
-                scale.y *  (2.0f * rotation.x * rotation.y + 2.0f * rotation.z * rotation.w),
-                scale.y * (1.0f - 2.0f * rotation.x * rotation.x - 2.0f * rotation.z * rotation.z),
-                scale.y * (2.0f * rotation.y * rotation.z - 2.0f * rotation.x * rotation.w),
+                scale.y *  (2.0f * xy + 2.0f * zw),
+                scale.y * (1.0f - 2.0f * xpow - 2.0f * zpow),
+                scale.y * (2.0f * yz - 2.0f * xw),
                 0.0f,
 
 
-                scale.z * (2.0f * rotation.x * rotation.z - 2.0f * rotation.y * rotation.w),
-                scale.z * (2.0f * rotation.y * rotation.z + 2.0f * rotation.x * rotation.w),
-                scale.z * (1.0f - 2.0f * rotation.x * rotation.x - 2.0f * rotation.y * rotation.y),
+                scale.z * (2.0f * xz - 2.0f * yw),
+                scale.z * (2.0f * yz + 2.0f * xw),
+                scale.z * (1.0f - 2.0f * xpow - 2.0f * ypow),
                 0.0f,
 
                 position.x, position.y, position.z, 1.0f 

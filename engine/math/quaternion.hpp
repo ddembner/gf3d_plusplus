@@ -43,6 +43,16 @@ namespace gf3d
 			w = c.x * c.y * c.z - s.x * s.y * s.z;
 		}
 
+		inline constexpr quaternion operator+(const quaternion& other) const
+		{
+			return {
+				x + other.x,
+				y + other.y,
+				z + other.z,
+				w + other.w
+			};
+		}
+
 		inline constexpr quaternion operator*(const quaternion& other) const
 		{
 			return {
@@ -50,6 +60,26 @@ namespace gf3d
 				w * other.y + y * other.w + z * other.x - x * other.z,
 				w * other.z + z * other.w + x * other.y - y * other.x,
 				w * other.w - x * other.x - y * other.y - z * other.z
+			};
+		}
+
+		inline constexpr quaternion operator*(const f32& scalar) const
+		{
+			return {
+				x * scalar,
+				y * scalar,
+				z * scalar,
+				w * scalar
+			};
+		}
+
+		inline constexpr quaternion operator/(const f32& scalar) const
+		{
+			return {
+				x / scalar,
+				y / scalar,
+				z / scalar,
+				w / scalar
 			};
 		}
 
@@ -78,6 +108,36 @@ namespace gf3d
 		inline quaternion inverse() const
 		{
 			return quaternion(-x, -y, -z, w);
+		}
+
+		inline f32 angle(const quaternion& other) const
+		{
+			quaternion result = inverse() * other;
+
+			return degrees(2.f * acos(result.w));
+		}
+
+		inline quaternion lerp(const quaternion& other, f32 t) const
+		{
+			return quaternion(x * (1 - t) + other.x * t, y * (1 - t) + other.y * t, z * (1 - t) + other.z * t, w * (1 - t) + other.w * t);
+		}
+
+		inline quaternion slerp(const quaternion& other, f32 t)
+		{
+			f32 dt = dot(other);
+			quaternion q2 = other;
+
+			if (dt < 0) {
+				dt = -dt;
+				q2 = q2 * -1.f;
+			}
+
+			if (dt < .99995f) {
+				f32 angle = acos(dt);
+				return ((*this * sin((1.f - t) * angle) + q2 * sin(t * angle)) / sin(angle));
+			}
+
+			return lerp(q2, t);
 		}
 
 		// ZXY
