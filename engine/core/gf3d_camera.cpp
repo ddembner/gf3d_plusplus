@@ -1,18 +1,12 @@
 #include "gf3d_camera.h"
 #include "gf3d_logger.h"
 
-void Camera::setOrthographicProjection(float left, float right, float top, float bottom, float zNear, float zFar)
+void Camera::setOrthographicProjection(f32 left, f32 right, f32 top, f32 bottom, f32 zNear, f32 zFar)
 {
-	projectionMatrix = gf3d::mat4{ 1.0f };
-	projectionMatrix[0][0] = 2.f / (right - left);
-	projectionMatrix[1][1] = 2.f / (bottom - top);
-	projectionMatrix[2][2] = 1.f / (zFar - zNear);
-	projectionMatrix[3][0] = -(right + left) / (right - left);
-	projectionMatrix[3][1] = -(bottom + top) / (bottom - top);
-	projectionMatrix[3][2] = -zNear / (zFar - zNear);
+	projectionMatrix = gf3d::mat4::orthographic(left, right, top, bottom, zNear, zFar);
 }
 
-void Camera::setPerspectiveProjection(float aspect, float zNear, float zFar)
+void Camera::setPerspectiveProjection(f32 aspect, f32 zNear, f32 zFar)
 {
 	
 	projectionMatrix = gf3d::mat4::perspective(fieldOfView, aspect, zNear, zFar);
