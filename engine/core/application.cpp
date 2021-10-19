@@ -34,10 +34,11 @@ void Application::update()
 	cam.setPerspectiveProjection(aspect, 0.1f, 100.f);
 	//cam.setViewDirection(gf3d::vec3(0.f), gf3d::vec3(0.5f, 0.f, 1.f));
 	//cam.setViewTarget(gf3d::vec3(-1.f, -2.f, 2.f), gf3d::vec3(0.f, 0.f, 2.5f));
-	cam.setView(gf3d::vec3(0.f, 0.f, 5.f), gf3d::quaternion(gf3d::vec3(0.f, 180.f, 0.f)));
+	cam.setView(gf3d::vec3(0.f, 0.f, 0.f), gf3d::quaternion(gf3d::vec3(0.f, 0.f, 0.f)));
 
 	for (auto& gameObject : gameObjects) {
-		//gameObject.transform.rotate(1.f, 1.f, 1.f);
+		gameObject.transform.rotate(0.f, 0.f, 1.f);
+		gameObject.transform.position += gameObject.transform.right() * 0.01f;
 		auto finalTransform = gameObject.transform.mat4() * cam.getViewMatrix() * cam.getProjectionMatrix();
 		gameObject.material->pushUpdate("mvp", &finalTransform);
 	}

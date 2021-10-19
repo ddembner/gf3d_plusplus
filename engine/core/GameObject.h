@@ -54,6 +54,33 @@ struct Transform
     {
         rotation = rotation * gf3d::quaternion(gf3d::vec3(x, y, z));
     }
+
+    inline gf3d::vec3 right() const
+    {
+        return gf3d::vec3(
+            1 - 2 * (rotation.y * rotation.y + rotation.z * rotation.z),
+            2 * (rotation.x * rotation.y + rotation.w * rotation.z),
+            2 * (rotation.x * rotation.z - rotation.w * rotation.y)
+        );
+    }
+
+    inline gf3d::vec3 up() const
+    {
+        return gf3d::vec3(
+            2 * (rotation.x * rotation.y - rotation.w * rotation.z),
+            1 - 2 * (rotation.x * rotation.x + rotation.z * rotation.z),
+            2 * (rotation.y * rotation.z + rotation.w * rotation.x)
+        );
+    }
+
+    inline gf3d::vec3 forward() const
+    {
+        return gf3d::vec3(
+            2 * (rotation.x * rotation.z + rotation.w * rotation.y), 
+            2 * (rotation.y * rotation.z - rotation.w * rotation.x),
+            1 - 2 * (rotation.x * rotation.x + rotation.y * rotation.y)
+        );
+    }
 };
 
 class GameObject : NonCopyable

@@ -72,6 +72,38 @@ namespace gf3d
 			return { x / scalar, y / scalar, z / scalar };
 		}
 
+		inline constexpr vec3 operator+=(const vec3& other)
+		{
+			x += other.x;
+			y += other.y;
+			z += other.z;
+			return *this;
+		}
+
+		inline constexpr vec3 operator-=(const vec3& other)
+		{
+			x -= other.x;
+			y -= other.y;
+			z -= other.z;
+			return *this;
+		}
+
+		inline constexpr vec3 operator*=(const vec3& other)
+		{
+			x *= other.x;
+			y *= other.y;
+			z *= other.z;
+			return *this;
+		}
+
+		inline constexpr vec3 operator/=(const vec3& other)
+		{
+			x /= other.x;
+			y /= other.y;
+			z /= other.z;
+			return *this;
+		}
+
 		inline bool operator==(const vec3& other) const
 		{
 			return fcmp(x, other.x) && fcmp(y, other.y) && fcmp(z, other.z);
