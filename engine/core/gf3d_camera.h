@@ -1,22 +1,23 @@
 #pragma once
-#include <glm/mat4x4.hpp>
+#include "math/mat4.hpp"
+#include "math/quaternion.hpp"
 
 class Camera
 {
 public:
-	void setOrthographicProjection(float left, float right, float top, float bottom, float zNear, float zFar);
-	void setPerspectiveProjection(float aspect, float zNear, float zFar);
-	void setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up = glm::vec3{ 0.f, -1.f, 0.f });
-	void setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up = glm::vec3{ 0.f, -1.f, 0.f });
-	void setViewYXZ(glm::vec3 position, glm::vec3 rotation);
-	const glm::mat4& getViewMatrix() const { return viewMatrix; }
-	const glm::mat4& getProjectionMatrix() const { return projectionMatrix; }
-	glm::mat4 getViewProjectionMatrix() const { return projectionMatrix * viewMatrix; }
+	void setOrthographicProjection(f32 left, f32 right, f32 top, f32 bottom, f32 zNear, f32 zFar);
+	void setPerspectiveProjection(f32 aspect, f32 zNear, f32 zFar);
+	void setViewDirection(const gf3d::vec3& position, const gf3d::vec3& direction, const gf3d::vec3& up = gf3d::vec3{ 0.f, 1.f, 0.f });
+	void setViewTarget(const gf3d::vec3& position, const gf3d::vec3& target, const gf3d::vec3& up = gf3d::vec3{ 0.f, 1.f, 0.f });
+	void setView(gf3d::vec3 position, gf3d::quaternion rotation);
+	const gf3d::mat4& getViewMatrix() const { return viewMatrix; }
+	const gf3d::mat4& getProjectionMatrix() const { return projectionMatrix; }
+	gf3d::mat4 getViewProjectionMatrix() const { return viewMatrix * projectionMatrix; }
 	void OnUpdate();
 public:
-	//glm::vec3 position{};
-	float fieldOfView = 60.f;
+	//gf3d::vec3 position{};
+	f32 fieldOfView = 60.f;
 private:
-	glm::mat4 viewMatrix{ 1.f };
-	glm::mat4 projectionMatrix{ 1.f };
+	gf3d::mat4 viewMatrix{ 1.f };
+	gf3d::mat4 projectionMatrix{ 1.f };
 };

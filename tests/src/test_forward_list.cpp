@@ -107,7 +107,7 @@ u8 ForwardCopyConstructor()
 	gf3d::forward_list<i32> listDestination = listSource;
 
 	i32 i = 1;
-	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+	for (auto it = listDestination.begin(); it != listDestination.end(); ++it) {
 		should_be_equal(i, *it);
 		i++;
 	}
@@ -126,7 +126,7 @@ u8 ForwardMoveConstructor()
 	gf3d::forward_list<i32> listDestination = static_cast<gf3d::forward_list<i32>&&>(listSource);
 
 	i32 i = 1;
-	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+	for (auto it = listDestination.begin(); it != listDestination.end(); ++it) {
 		should_be_equal(i, *it);
 		i++;
 	}
@@ -148,7 +148,7 @@ u8 ForwardCopyAssignment()
 	listDestination = listSource;
 
 	i32 i = 1;
-	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+	for (auto it = listDestination.begin(); it != listDestination.end(); ++it) {
 		should_be_equal(i, *it);
 		i++;
 	}
@@ -168,7 +168,7 @@ u8 ForwardMoveAssignment()
 	listDestination = static_cast<gf3d::forward_list<i32>&&>(listSource);
 
 	i32 i = 1;
-	for (auto& it = listDestination.begin(); it != listDestination.end(); ++it) {
+	for (auto it = listDestination.begin(); it != listDestination.end(); ++it) {
 		should_be_equal(i, *it);
 		i++;
 	}
@@ -199,13 +199,13 @@ u8 ForwardInsertAfter()
 	numbers.emplace_front(2);
 	numbers.emplace_front(1);
 
-	for (auto& it = numbers.begin(); it != numbers.end(); ++it) {
+	for (auto it = numbers.begin(); it != numbers.end(); ++it) {
 		if (it->z == 2)
 			numbers.insert_after(it, 3);
 	}
 
 	i32 count = 0;
-	for (auto& it = numbers.begin(); it != numbers.end(); ++it) {
+	for (auto it = numbers.begin(); it != numbers.end(); ++it) {
 		count++;
 		should_be_equal(count, it->y);
 	}

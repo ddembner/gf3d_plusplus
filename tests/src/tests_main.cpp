@@ -16,6 +16,5 @@ int main()
 	testManager.runTests();
 
 	Logger::shutdown();
-	
 	return 0;
 }

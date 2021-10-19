@@ -1,58 +1,55 @@
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-
 #include "gf3d_camera.h"
 #include "gf3d_logger.h"
 
-#include <glm/trigonometric.hpp>
-
-void Camera::setOrthographicProjection(float left, float right, float top, float bottom, float zNear, float zFar)
+void Camera::setOrthographicProjection(f32 left, f32 right, f32 top, f32 bottom, f32 zNear, f32 zFar)
 {
-	projectionMatrix = glm::mat4{ 1.0f };
-	projectionMatrix[0][0] = 2.f / (right - left);
-	projectionMatrix[1][1] = 2.f / (bottom - top);
-	projectionMatrix[2][2] = 1.f / (zFar - zNear);
-	projectionMatrix[3][0] = -(right + left) / (right - left);
-	projectionMatrix[3][1] = -(bottom + top) / (bottom - top);
-	projectionMatrix[3][2] = -zNear / (zFar - zNear);
+	projectionMatrix = gf3d::mat4::orthographic(left, right, top, bottom, zNear, zFar);
 }
 
-void Camera::setPerspectiveProjection(float aspect, float zNear, float zFar)
+void Camera::setPerspectiveProjection(f32 aspect, f32 zNear, f32 zFar)
 {
 	
-	const float tanHalfFovy = tan(glm::radians(fieldOfView) / 2.f);
-	projectionMatrix = glm::mat4{ 0.0f };
-	projectionMatrix[0][0] = 1.f / (aspect * tanHalfFovy);
-	projectionMatrix[1][1] = 1.f / (tanHalfFovy);
-	projectionMatrix[2][2] = zFar / (zFar - zNear);
-	projectionMatrix[2][3] = 1.f;
-	projectionMatrix[3][2] = -(zFar * zNear) / (zFar - zNear);
+	projectionMatrix = gf3d::mat4::perspective(fieldOfView, aspect, zNear, zFar);
 }
 
-void Camera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up)
+void Camera::setViewDirection(const gf3d::vec3& position, const gf3d::vec3& direction, const gf3d::vec3& up)
 {
-	const glm::vec3 f(glm::normalize(direction));
-	const glm::vec s(normalize(cross(f, up)));
-	const glm::vec u(cross(f, s));
-
-	viewMatrix = glm::mat4{ 1.f };
-	viewMatrix[0][0] = s.x;
-	viewMatrix[1][0] = s.y;
-	viewMatrix[2][0] = s.z;
-	viewMatrix[0][1] = u.x;
-	viewMatrix[1][1] = u.y;
-	viewMatrix[2][1] = u.z;
-	viewMatrix[0][2] = f.x;
-	viewMatrix[1][2] = f.y;
-	viewMatrix[2][2] = f.z;
-	viewMatrix[3][0] = -glm::dot(s, position);
-	viewMatrix[3][1] = -glm::dot(u, position);
-	viewMatrix[3][2] = -glm::dot(f, position);
+	viewMatrix = gf3d::mat4::lookDirection(position, direction, up);
 }
 
-void Camera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up)
+void Camera::setViewTarget(const gf3d::vec3& position, const gf3d::vec3& target, const gf3d::vec3& up)
 {
-	setViewDirection(position, target - position, up);
+	viewMatrix = gf3d::mat4::lookAt(position, target, up);
+}
+
+void Camera::setView(gf3d::vec3 position, gf3d::quaternion rotation)
+{   
+	const f32 xpow = rotation.x * rotation.x;
+    const f32 ypow = rotation.y * rotation.y;
+    const f32 zpow = rotation.z * rotation.z;
+    const f32 xy = rotation.x * rotation.y;
+    const f32 xz = rotation.x * rotation.z;
+    const f32 yz = rotation.y * rotation.z;
+    const f32 xw = rotation.x * rotation.w;
+    const f32 yw = rotation.y * rotation.w;
+    const f32 zw = rotation.z * rotation.w;
+
+    const gf3d::vec3 u{ 1.0f - 2.0f * ypow - 2.0f * zpow, 2.0f * xy - 2.0f * zw, 2.0f * xz + 2.0f * yw };
+    const gf3d::vec3 v{ 2.0f * xy + 2.0f * zw, 1.0f - 2.0f * xpow - 2.0f * zpow, 2.0f * yz - 2.0f * xw };
+    const gf3d::vec3 w{ 2.0f * xz - 2.0f * yw, 2.0f * yz + 2.0f * xw, 1.0f - 2.0f * xpow - 2.0f * ypow };
+
+	viewMatrix._11 = u.x;
+    viewMatrix._12 = v.x;
+    viewMatrix._13 = w.x;
+    viewMatrix._21 = u.y;
+    viewMatrix._22 = v.y;
+    viewMatrix._23 = w.y;
+    viewMatrix._31 = u.z;
+    viewMatrix._32 = v.z;
+    viewMatrix._33 = w.z;
+	viewMatrix._41 = -u.dot(position);
+	viewMatrix._42 = -v.dot(position);
+	viewMatrix._43 = -w.dot(position);
 }
 
 void Camera::OnUpdate()

@@ -75,7 +75,7 @@ public:
 	~vector()
 	{
 		clear();
-		::operator delete(mData, sizeof(T) * mCapacity);
+		::operator delete(mData);
 		mData = nullptr;
 	}
 
