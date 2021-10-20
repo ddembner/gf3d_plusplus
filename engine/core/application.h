@@ -1,4 +1,5 @@
 #pragma once
+#include "gf3d_time.hpp"
 #include "renderer/gf3d_graphics.h"
 #include "core/GameObject.h"
 #include "renderer/gf3d_material_system.h"
@@ -30,4 +31,5 @@ private:
 	std::unique_ptr<MaterialSystem> materialSystem;
 	gf3d::vector<GameObject> gameObjects;
 	Camera cam;
+	Time appTime;
 };
