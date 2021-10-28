@@ -6,16 +6,18 @@ void Application::run()
 {	
 	init();
 	while (!isDonePlaying) {
-		CalculateFPS();
+		appTime.update();
 		glfwPollEvents();
 		update();
 		render();
+		CalculateFPS();
 	}
 	cleanup();
 }
 
 void Application::init()
 {
+	appTime.init();
 	Logger::init();
 	window.init();
 	gf3dDevice.init(&window);
@@ -35,10 +37,9 @@ void Application::update()
 	//cam.setViewDirection(gf3d::vec3(0.f), gf3d::vec3(0.5f, 0.f, 1.f));
 	//cam.setViewTarget(gf3d::vec3(-1.f, -2.f, 2.f), gf3d::vec3(0.f, 0.f, 2.5f));
 	cam.setView(gf3d::vec3(0.f, 0.f, 0.f), gf3d::quaternion(gf3d::vec3(0.f, 0.f, 0.f)));
-
 	for (auto& gameObject : gameObjects) {
-		gameObject.transform.rotate(0.f, 0.f, 1.f);
-		gameObject.transform.position += gameObject.transform.right() * 0.01f;
+		gameObject.transform.rotate(0.f, .015f, 0.f);
+		gameObject.transform.position += gameObject.transform.forward() * appTime.deltaTime();
 		auto finalTransform = gameObject.transform.mat4() * cam.getViewMatrix() * cam.getProjectionMatrix();
 		gameObject.material->pushUpdate("mvp", &finalTransform);
 	}

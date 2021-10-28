@@ -76,7 +76,6 @@ void Swapchain::selectPresentMode()
 
 	//This is the only mode to be guaranteed under the standard
 	presentMode = VK_PRESENT_MODE_FIFO_KHR;
-	return;
 	
 	//Use fifo as it is more battery efficient for devices with integrated gpus
 	if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU) {
