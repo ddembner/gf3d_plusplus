@@ -8,12 +8,6 @@ void Application::run()
 	while (!isDonePlaying) {
 		appTime.update();
 		glfwPollEvents();
-		if (glfwGetKey(window.getWindow(), GLFW_KEY_RIGHT)) {
-			appTime.timeScale = 1.0;
-		}
-		if (glfwGetKey(window.getWindow(), GLFW_KEY_LEFT)) {
-			appTime.timeScale = 0.0;
-		}
 		update();
 		render();
 		CalculateFPS();
