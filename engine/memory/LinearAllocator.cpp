@@ -1,5 +1,6 @@
 #include "LinearAllocator.hpp"
 #include "core/gf3d_logger.h"
+#include "core/gf3d_memory.h"
 
 gf3d::LinearAllocator::~LinearAllocator()
 {
@@ -11,10 +12,10 @@ gf3d::LinearAllocator::~LinearAllocator()
 void gf3d::LinearAllocator::init(const u64 totalSize)
 {
 	if (mPtr != nullptr) {
-		std::free(mPtr);
+		delete mPtr;
 	}
 
-	mPtr = std::malloc(totalSize);
+	mPtr = ::operator new(totalSize);
 	mTotalSize = totalSize;
 }
 

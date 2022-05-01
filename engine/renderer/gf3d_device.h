@@ -32,7 +32,7 @@ private:
 	void createLogicalDevice();
 	void createMemoryAllocator();
 	void createCommandPool();
-	u32 findQueueFamilyIndex(VkQueueFlags queueFlag);
+	u32 findQueueFamilyIndex(VkQueueFlags queueFlag, bool singleQueue = true);
 private:
 	VkInstance instance = 0;
 	VkDebugUtilsMessengerEXT callback = 0;
