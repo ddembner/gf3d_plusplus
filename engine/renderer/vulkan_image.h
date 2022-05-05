@@ -2,10 +2,10 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 #include "defines.hpp"
+#include "gf3d_device.h"
 
 struct VulkanImage
 {
-	VmaAllocator allocator;
 	VkImage image;
 	VmaAllocation allocation;
 	VkImageView view;
@@ -13,13 +13,15 @@ struct VulkanImage
 	VulkanImage() = default;
 	
 	VulkanImage(
-		VmaAllocator allocator,
-		VkImageType imageType,
-		u32 width,
-		u32 height,
-		VkFormat format,
-		VkImageUsageFlags usage,
-		VkImageTiling tiling,
-		VmaMemoryUsage memoryUsage
+		Gf3dDevice* _gf3dDevice,
+		VkImageType _imageType,
+		u32 _width,
+		u32 _height,
+		VkFormat _format,
+		VkImageUsageFlags _usage,
+		VkImageTiling _tiling,
+		VmaMemoryUsage _memoryUsage
 	);
+
+	void destroy(Gf3dDevice* _gf3dDevice);
 };

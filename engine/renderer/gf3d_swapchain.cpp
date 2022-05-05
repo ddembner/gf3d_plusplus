@@ -48,9 +48,7 @@ void Swapchain::recreate()
 		vkDestroyImageView(device, swapchainImageViews[i], nullptr);
 	}
 
-	vkDestroyImageView(device, depthAllocatedImage.view, nullptr);
-
-	vmaDestroyImage(allocator, depthAllocatedImage.image, depthAllocatedImage.allocation);
+	depthAllocatedImage.destroy(gf3dDevice);
 
 	//vkDestroyRenderPass(device, renderPass, nullptr);
 
@@ -318,7 +316,7 @@ void Swapchain::createDepthResources()
 	VmaAllocator allocator = gf3dDevice->GetAllocator();
 
 	depthAllocatedImage = VulkanImage(
-		allocator,
+		gf3dDevice,
 		VK_IMAGE_TYPE_2D,
 		extent.width,
 		extent.height,
