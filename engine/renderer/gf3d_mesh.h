@@ -18,7 +18,7 @@ public:
 		static gf3d::vector<VkVertexInputAttributeDescription> getAttributeDescription();
 		static gf3d::vector<VkVertexInputBindingDescription> getBindingDescription();
 	};
-	AllocatedBuffer allocatedBuffer;
+	VulkanBuffer allocatedBuffer;
 	gf3d::vector<Vertex> vertices;
 	bool isAllocated = false;
 public:

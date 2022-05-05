@@ -27,7 +27,7 @@ void Swapchain::cleanup()
 		vkDestroyImageView(device, swapchainImageViews[i], nullptr);
 	}
 
-	vkDestroyImageView(device, depthImageView, nullptr);
+	vkDestroyImageView(device, depthAllocatedImage.view, nullptr);
 
 	vmaDestroyImage(allocator, depthAllocatedImage.image, depthAllocatedImage.allocation);
 
@@ -48,7 +48,7 @@ void Swapchain::recreate()
 		vkDestroyImageView(device, swapchainImageViews[i], nullptr);
 	}
 
-	vkDestroyImageView(device, depthImageView, nullptr);
+	vkDestroyImageView(device, depthAllocatedImage.view, nullptr);
 
 	vmaDestroyImage(allocator, depthAllocatedImage.image, depthAllocatedImage.allocation);
 
@@ -317,24 +317,15 @@ void Swapchain::createDepthResources()
 	VkDevice device = gf3dDevice->GetDevice();
 	VmaAllocator allocator = gf3dDevice->GetAllocator();
 
-	VkImageCreateInfo imageInfo = { VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO };
-	imageInfo.arrayLayers = 1;
-	imageInfo.extent = { extent.width, extent.height, 1 };
-	imageInfo.flags = 0;
-	imageInfo.format = depthFormat;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	imageInfo.mipLevels = 1;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-	imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-	VmaAllocationCreateInfo allocInfo = {};
-	allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-	allocInfo.requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	
-	vmaCreateImage(allocator, &imageInfo, &allocInfo, &depthAllocatedImage.image, &depthAllocatedImage.allocation, nullptr);
+	depthAllocatedImage = VulkanImage(
+		allocator,
+		VK_IMAGE_TYPE_2D,
+		extent.width,
+		extent.height,
+		depthFormat,
+		VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+		VK_IMAGE_TILING_OPTIMAL,
+		VMA_MEMORY_USAGE_GPU_ONLY);
 
 	VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
 	viewInfo.format = depthFormat;
@@ -346,7 +337,7 @@ void Swapchain::createDepthResources()
 	viewInfo.subresourceRange.levelCount = 1;
 	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-	VK_CHECK(vkCreateImageView(device, &viewInfo, nullptr, &depthImageView));
+	VK_CHECK(vkCreateImageView(device, &viewInfo, nullptr, &depthAllocatedImage.view));
 }
 
 void Swapchain::createFrameBuffers()
@@ -361,7 +352,7 @@ void Swapchain::createFrameBuffers()
 	framebufferInfo.attachmentCount = 2;
 	framebufferInfo.layers = 1;
 	for (size_t i = 0; i < frameBuffers.size(); i++) {
-		VkImageView attachments[2] = { swapchainImageViews[i], depthImageView };
+		VkImageView attachments[2] = { swapchainImageViews[i], depthAllocatedImage.view };
 		framebufferInfo.pAttachments = attachments;
 		VK_CHECK(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &frameBuffers[i]));
 	}

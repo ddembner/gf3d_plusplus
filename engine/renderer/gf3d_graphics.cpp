@@ -140,7 +140,10 @@ void Gf3dGraphics::createPerFrameData()
 	frameData.resize(MAX_FRAMES_INFLIGHT);
 
 	for (int i = 0; i < frameData.size(); i++) {
-		frameData[i].cameraBuffer = createBuffer(gf3dDevice->GetAllocator(), sizeof(GPUCameraData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+		frameData[i].cameraBuffer = createAllocatedBuffer(gf3dDevice->GetAllocator(), 
+			sizeof(GPUCameraData), 
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+			VMA_MEMORY_USAGE_CPU_TO_GPU);
 	}
 }
 

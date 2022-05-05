@@ -36,8 +36,9 @@ VkSurfaceKHR Gf3dWindow::createWindowSurface(VkInstance instance)
 
 void Gf3dWindow::setFPSWindowTitle(size_t fpsCount)
 {
-	std::string fpsTitle = title + " - FPS(" + std::to_string(fpsCount) + ')';
-	glfwSetWindowTitle(glfw_window, fpsTitle.c_str());
+	char buffer[256];
+	snprintf(buffer, 256, "%s - FPS(%zi)", title.c_str(), fpsCount);
+	glfwSetWindowTitle(glfw_window, buffer);
 }
 
 void Gf3dWindow::windowResizeCallback(GLFWwindow* window, i32 width, i32 height)

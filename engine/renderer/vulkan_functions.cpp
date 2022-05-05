@@ -1,6 +1,12 @@
 #include "vulkan_functions.h"
+#include "defines.hpp"
 
-AllocatedBuffer createBuffer(const VmaAllocator& allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage)
+VulkanBuffer createAllocatedBuffer(
+	VmaAllocator allocator, 
+	size_t allocSize, 
+	VkBufferUsageFlags 
+	usage, 
+	VmaMemoryUsage memoryUsage)
 {
 	VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
 	bufferInfo.usage = usage;
@@ -9,7 +15,7 @@ AllocatedBuffer createBuffer(const VmaAllocator& allocator, size_t allocSize, Vk
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = memoryUsage;
 
-	AllocatedBuffer newBuffer = {};
+	VulkanBuffer newBuffer = {};
 
 	VK_CHECK(vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &newBuffer.buffer, &newBuffer.allocation, nullptr));
 

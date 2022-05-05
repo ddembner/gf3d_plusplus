@@ -51,7 +51,11 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 	size_t size = vertices.size() * sizeof(Vertex);
 
 	//Create a buffer on the cpu
-	AllocatedBuffer stagingBuffer = createBuffer(allocator, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+	VulkanBuffer stagingBuffer = createAllocatedBuffer(
+		allocator, 
+		size, 
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+		VMA_MEMORY_USAGE_CPU_ONLY);
 
 	//Put the vertex data into the buffer
 	void* data;
@@ -60,7 +64,11 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 	vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 	//Create the buffer for the mesh on the gpu
-	allocatedBuffer = createBuffer(allocator, vertices.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	allocatedBuffer = createAllocatedBuffer(
+		allocator, 
+		vertices.size() * sizeof(Vertex), 
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
+		VMA_MEMORY_USAGE_GPU_ONLY);
 
 	//Copy from the cpu into the gpu
 	VkCommandBuffer cmd;

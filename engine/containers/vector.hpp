@@ -1,11 +1,15 @@
 #pragma once
 #include "defines.hpp"
 #include "core/gf3d_assert.hpp"
-
+#include "core/gf3d_memory.h"
 #include <initializer_list>
 
 namespace gf3d 
 {
+/// <summary>
+/// Dynamic Array Container 
+/// </summary>
+/// <typeparam name="T"></typeparam>
 template<class T>
 class vector
 {
@@ -21,7 +25,7 @@ public:
 
 	vector(const u64& size) : mCapacity(size), mSize(size)
 	{
-		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+		mData = reinterpret_cast<T*>(malloc(sizeof(T) * mCapacity, memory_type::eVector));
 		for (u64 i = 0; i < mSize; i++) {
 			new (mData + i) T();
 		}
@@ -29,7 +33,7 @@ public:
 
 	vector(const u64& size, const T& value) : mCapacity(size), mSize(size)
 	{
-		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+		mData = reinterpret_cast<T*>(malloc(sizeof(T) * mCapacity, memory_type::eVector));
 
 		for (u64 i = 0; i < mCapacity; i++) {
 			construct_copy_in_place(mData[i], value);
@@ -38,7 +42,7 @@ public:
 
 	vector(const vector& other) : mCapacity(other.mSize), mSize(other.mSize)
 	{
-		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+		mData = reinterpret_cast<T*>(malloc(sizeof(T) * mCapacity, memory_type::eVector));
 
 		for (u64 i = 0; i < mSize; i++) {
 			construct_copy_in_place(mData[i], other.mData[i]);
@@ -54,7 +58,7 @@ public:
 
 	constexpr vector(iterator _First, iterator _Last) : mCapacity(_Last - _First), mSize(_Last - _First)
 	{
-		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+		mData = reinterpret_cast<T*>(malloc(sizeof(T) * mCapacity, memory_type::eVector));
 
 		for (u64 i = 0; _First != _Last; i++, ++_First) {
 			construct_copy_in_place(mData[i], *_First);
@@ -63,7 +67,7 @@ public:
 
 	constexpr vector(std::initializer_list<T> list) : mCapacity(list.size()), mSize(list.size()) 
 	{
-		mData = reinterpret_cast<T*>(::operator new(sizeof(T) * mCapacity));
+		mData = reinterpret_cast<T*>(malloc(sizeof(T) * mCapacity, memory_type::eVector));
 
 		u64 i = 0;
 		for (auto it = list.begin(); it != list.end(); ++it) {
@@ -75,7 +79,7 @@ public:
 	~vector()
 	{
 		clear();
-		delete mData;
+		free(mData, sizeof(T) * mCapacity, memory_type::eVector);
 		mData = nullptr;
 	}
 
@@ -140,7 +144,7 @@ private:
 template<class T>
 inline void vector<T>::reallocate(const u64 newCapacity)
 {
-	T* newData = reinterpret_cast<T*>(::operator new(sizeof(T) * newCapacity));
+	T* newData = reinterpret_cast<T*>(malloc(sizeof(T) * newCapacity, memory_type::eVector));
 
 	GFASSERT(newData, "Could not get contiguous memory for vector");
 
@@ -149,7 +153,7 @@ inline void vector<T>::reallocate(const u64 newCapacity)
 		mData[i].~T();
 	}
 
-	::operator delete(mData);
+	free(mData, mCapacity * sizeof(T), memory_type::eVector);
 
 	mData = newData;
 	mCapacity = newCapacity;
@@ -168,14 +172,15 @@ template<class T>
 inline void vector<T>::resize(const u64 newSize)
 {
 	if (newSize < mSize) { // trim
-		T* newData = reinterpret_cast<T*>(::operator new(sizeof(T) * newSize));
+		T* newData = reinterpret_cast<T*>(malloc(sizeof(T) * newSize, memory_type::eVector));
+
 		
 		for (u64 i = 0; i < newSize; i++) // Move elements needed
 			::new (&newData[i]) T(static_cast<T&&>(mData[i]));
 
 		clear();
 
-		::operator delete(mData, sizeof(T) * mCapacity);
+		free(mData, mCapacity * sizeof(T), memory_type::eVector);
 
 		mData = newData;
 		mCapacity = newSize;
@@ -294,7 +299,7 @@ inline constexpr vector<T>& vector<T>::operator=(vector<T>&& other) noexcept
 {
 	if (this != &other) {
 		clear();
-		::operator delete(mData, sizeof(T) * mCapacity);
+		free(mData, mCapacity * sizeof(T), memory_type::eVector);
 		
 		mSize = other.mSize;
 		mCapacity = other.mCapacity;

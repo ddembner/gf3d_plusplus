@@ -2,7 +2,7 @@
 #include "gf3d_material.h"
 #include "gf3d_material_system.h"
 
-Material::Material(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath)
+Material::Material(VkDevice device, VkRenderPass renderPass, const char* shaderPath)
 	: pipeline(device, renderPass, shaderPath)
 {
 	
@@ -24,7 +24,7 @@ void Material::bindPipeline(VkCommandBuffer cmd, VkPipelineBindPoint pipelineBin
 	vkCmdBindPipeline(cmd, pipelineBindPoint, pipeline.getGraphicsPipeline());
 }
 
-void Material::pushUpdate(const std::string& name, void* data)
+void Material::pushUpdate(const char* name, void* data)
 {
 	pipeline.updatePush(name, data);
 }

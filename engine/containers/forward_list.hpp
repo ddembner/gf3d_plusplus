@@ -4,6 +4,10 @@
 
 namespace gf3d
 {
+	/// <summary>
+	/// Singly linked list container
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	template<class T>
 	class forward_list
 	{

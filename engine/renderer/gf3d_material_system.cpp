@@ -24,7 +24,7 @@ void MaterialSystem::destroy()
 	}
 }
 
-Material* MaterialSystem::create(const std::string& shaderPath)
+Material* MaterialSystem::create(const char* shaderPath)
 {
 	Material* newMat = find(shaderPath);
 

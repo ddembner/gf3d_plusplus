@@ -9,6 +9,7 @@ namespace gf3d
 		eAllocator,
 		eDynamic,
 		eNew,
+		eVector,
 		eMaxTypes
 	};
 

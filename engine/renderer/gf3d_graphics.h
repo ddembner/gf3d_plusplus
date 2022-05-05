@@ -44,7 +44,7 @@ private:
 
 	struct PerFrameData
 	{
-		AllocatedBuffer cameraBuffer;
+		VulkanBuffer cameraBuffer;
 		VkDescriptorSet globalSet;
 	};
 

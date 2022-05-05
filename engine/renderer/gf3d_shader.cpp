@@ -7,7 +7,7 @@
 #include <fstream>
 #include <filesystem>
 
-Shader::Shader(VkDevice _device, const std::string& pathToFile) : device(_device), filepath(pathToFile)
+Shader::Shader(VkDevice _device, const char* pathToFile) : device(_device), filepath(pathToFile)
 {
     std::string shaderFile = readFile();
     shaderSources = getShaderSources(shaderFile);

@@ -24,6 +24,8 @@ namespace gf3d
 			return "Dynamic";
 		case memory_type::eNew:
 			return "New";
+		case memory_type::eVector:
+			return "Vector";
 		default:
 			return "Not a memory type";
 		}
@@ -97,6 +99,8 @@ void operator delete(void* data, u64 size) noexcept
 	gf3d::free(data, size, gf3d::memory_type::eNew);
 }
 
+// Can't do array delete properly
+#if 0
 void* operator new[](std::size_t size) noexcept
 {
 	u64* data = reinterpret_cast<u64*>(gf3d::malloc(size + sizeof(u64), gf3d::memory_type::eNew));
@@ -111,3 +115,4 @@ void operator delete[](void* data) noexcept
 	data = reinterpret_cast<void*>(&pSize[-1]);
 	gf3d::free(data, size + sizeof(u64), gf3d::memory_type::eNew);
 }
+#endif

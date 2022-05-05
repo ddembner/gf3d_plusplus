@@ -1,23 +1,22 @@
 #include "core/gf3d_logger.h"
 #include "gf3d_pipeline.h"
-#include <fstream>
-#include <iostream>
-#include <vector>
 #include "vulkan_functions.h"
 #include "gf3d_mesh.h"
+#include "core/gf3d_memory.h"
 
-Pipeline::Pipeline(VkDevice device, VkRenderPass renderPass, const std::string& shaderPath)
+Pipeline::Pipeline(VkDevice device, VkRenderPass renderPass, const char* shaderPath)
 	: shader(device, shaderPath)
 	, pushSize(shader.getPushDataSize())
-	, pushData(std::make_unique<char[]>(pushSize))
+	, pushData(reinterpret_cast<u8*>(gf3d::malloc(pushSize, gf3d::memory_type::eDynamic)))
 {
-	std::memset(pushData.get(), 0, shader.getPushDataSize());
+	std::memset(pushData, 0, shader.getPushDataSize());
 	createPipelineLayout(device);
 	createGraphicsPipeline(device,renderPass);
 }
 
 Pipeline::~Pipeline()
 {
+	gf3d::free(pushData, pushSize, gf3d::memory_type::eDynamic);
 }
 
 void Pipeline::destroyPipeline(VkDevice device)
@@ -27,7 +26,7 @@ void Pipeline::destroyPipeline(VkDevice device)
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 }
 
-void Pipeline::updatePush(const std::string& name, void* data)
+void Pipeline::updatePush(const char* name, void* data)
 {
 	auto uniform = shader.getUniform(name);
 
@@ -36,14 +35,14 @@ void Pipeline::updatePush(const std::string& name, void* data)
 		return;
 	}
 
-	std::memcpy(pushData.get() + uniform.offset, data, uniform.size);
+	std::memcpy(pushData + uniform.offset, data, uniform.size);
 }
 
 void Pipeline::submitPush(const VkCommandBuffer& cmd)
 {
-	const auto& pushRanges = shader.getPushConstantRanges();
-	for (const auto& pushRange : pushRanges) {
-		vkCmdPushConstants(cmd, pipelineLayout, pushRange.stageFlags, pushRange.offset, pushRange.size, pushData.get() + pushRange.offset);
+	//const auto& pushRanges = shader.getPushConstantRanges();
+	for (const auto& pushRange : shader.getPushConstantRanges()) {
+		vkCmdPushConstants(cmd, pipelineLayout, pushRange.stageFlags, pushRange.offset, pushRange.size, pushData + pushRange.offset);
 	}
 }
 
