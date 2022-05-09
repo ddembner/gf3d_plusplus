@@ -325,17 +325,7 @@ void Swapchain::createDepthResources()
 		VK_IMAGE_TILING_OPTIMAL,
 		VMA_MEMORY_USAGE_GPU_ONLY);
 
-	VkImageViewCreateInfo viewInfo = { VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO };
-	viewInfo.format = depthFormat;
-	viewInfo.image = depthAllocatedImage.image;
-	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.baseMipLevel = 0;
-	viewInfo.subresourceRange.layerCount = 1;
-	viewInfo.subresourceRange.levelCount = 1;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-
-	VK_CHECK(vkCreateImageView(device, &viewInfo, nullptr, &depthAllocatedImage.view));
+	depthAllocatedImage.createImageView(gf3dDevice, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void Swapchain::createFrameBuffers()

@@ -35,21 +35,6 @@ void Gf3dDevice::cleanup()
 	vkDestroyInstance(instance, nullptr);
 }
 
-const u32 Gf3dDevice::GetQueueIndex(VkQueueFlags queueFlag)
-{
-	switch (queueFlag)
-	{
-	case VK_QUEUE_GRAPHICS_BIT:
-		return queueIndices.graphics;
-	case VK_QUEUE_COMPUTE_BIT:
-		return queueIndices.compute;
-	case VK_QUEUE_TRANSFER_BIT:
-		return queueIndices.transfer;
-	default:
-		return 0;
-	}
-}
-
 void Gf3dDevice::createInstance()
 {
 	VkApplicationInfo appInfo = {};

@@ -6,22 +6,34 @@
 
 struct VulkanImage
 {
-	VkImage image;
-	VmaAllocation allocation;
-	VkImageView view;
+	VkImage image = nullptr;
+	VmaAllocation allocation = nullptr;
+	VkImageView view = nullptr;
+	u32 width = 0;
+	u32 height = 0;
 
 	VulkanImage() = default;
 	
 	VulkanImage(
-		Gf3dDevice* _gf3dDevice,
-		VkImageType _imageType,
-		u32 _width,
-		u32 _height,
-		VkFormat _format,
-		VkImageUsageFlags _usage,
-		VkImageTiling _tiling,
-		VmaMemoryUsage _memoryUsage
+		Gf3dDevice* device,
+		VkImageType imageType,
+		u32 width,
+		u32 height,
+		VkFormat format,
+		VkImageUsageFlags usage,
+		VkImageTiling tiling,
+		VmaMemoryUsage memoryUsage
 	);
 
-	void destroy(Gf3dDevice* _gf3dDevice);
+	void createImageView(Gf3dDevice* device, VkFormat format, VkImageAspectFlags aspectFlags);
+
+	void destroy(Gf3dDevice* device);
+
+	void transitionLayout(
+		Gf3dDevice* device,
+		VkCommandBuffer commandBuffer,
+		VkFormat format,
+		VkImageLayout oldLayout,
+		VkImageLayout newLayout
+	);
 };

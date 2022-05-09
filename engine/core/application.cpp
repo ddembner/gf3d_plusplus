@@ -31,16 +31,40 @@ void Application::init()
 void Application::update()
 {
 	isDonePlaying = window.windowClosed() || glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE);
+
+	const f32 camSpeed = 5.f;
+	const f32 camRotSpeed = 25.f;
+	gf3d::vec3 camRotation;
+
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_W)) cam.transform.position += cam.transform.forward() * camSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_S)) cam.transform.position -= cam.transform.forward() * camSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_A)) cam.transform.position -= cam.transform.right() * camSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_D)) cam.transform.position += cam.transform.right() * camSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_Q)) cam.transform.position += cam.transform.up() * camSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_E)) cam.transform.position -= cam.transform.up() * camSpeed * appTime.deltaTime();
+
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_RIGHT)) camRotation.y += camRotSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_LEFT)) camRotation.y -= camRotSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_UP)) camRotation.x += camRotSpeed * appTime.deltaTime();
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_DOWN)) camRotation.x -= camRotSpeed * appTime.deltaTime();
+
+	if (glfwGetKey(window.getWindow(), GLFW_KEY_SPACE)) {
+		// Reset camera position/rotation
+		cam.transform.position = gf3d::vec3::zero();
+		cam.transform.rotation = gf3d::quaternion::identity();
+	}
+
+	cam.transform.rotate(camRotation);
+
 	f32 aspect = window.getAspectRatio();
 	//cam.setOrthographicProjection(-aspect, aspect, -1, 1, -1, 10);
 	cam.setPerspectiveProjection(aspect, 0.1f, 100.f);
 	//cam.setViewDirection(gf3d::vec3(0.f), gf3d::vec3(0.5f, 0.f, 1.f));
 	//cam.setViewTarget(gf3d::vec3(-1.f, -2.f, 2.f), gf3d::vec3(0.f, 0.f, 2.5f));
-	cam.setView(gf3d::vec3(0.f, 0.f, 0.f), gf3d::quaternion(gf3d::vec3(0.f, 0.f, 0.f)));
+	cam.setView(cam.transform.position, cam.transform.rotation);
 	for (auto& gameObject : gameObjects) {
-		gameObject.transform.rotate(0.f, .015f, 0.f);
-		gameObject.transform.position += gameObject.transform.forward() * appTime.deltaTime();
-		auto finalTransform = gameObject.transform.mat4() * cam.getViewMatrix() * cam.getProjectionMatrix();
+		gameObject.transform.rotate(0.f, 0.f, 100.f * appTime.deltaTime());
+		auto finalTransform = gameObject.transform.mat4() * cam.getViewProjectionMatrix();
 		gameObject.material->pushUpdate("mvp", &finalTransform);
 	}
 }
@@ -84,52 +108,12 @@ void Application::initScene()
 	GameObject newObj;
 	newObj.mesh.vertices = {
 		// left face (white)
-	  {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-	  {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-	  {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-	  {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-	  {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-	  {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-
-	  // right face (yellow)
-	  {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-	  {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-	  {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-	  {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-	  {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-	  {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-
-	  // top face (orange, remember y axis points down)
-	  {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-	  {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-	  {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-	  {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-	  {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-	  {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-
-	  // bottom face (red)
-	  {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-	  {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-	  {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-	  {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-	  {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-	  {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-
-	  // nose face (blue)
-	  {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-	  {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-	  {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-	  {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-	  {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-	  {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-
-	  // tail face (green)
-	  {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-	  {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-	  {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-	  {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-	  {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-	  {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+	  {{-.5f, -.5f, .0f}, {.9f, .9f, .9f}},
+	  {{-.5f, .5f, .0f}, {.9f, .9f, .9f}},
+	  {{.5f, .5f, .0f}, {.9f, .9f, .9f}},
+	  {{-.5f, -.5f, .0f}, {.9f, .9f, .9f}},
+	  {{.5f, .5f, .0f}, {.9f, .9f, .9f}},
+	  {{.5f, -.5f, .0f}, {.9f, .9f, .9f}},
 	};
 	newObj.mesh.allocateMesh(gf3dDevice);
 	newObj.color = { 0.1f, 0, 1, 1 };
@@ -138,13 +122,9 @@ void Application::initScene()
 
 	//newObj.material->pushUpdate("color", &newObj.color);
 
-	newObj.transform.position.z = 2.5f;
-	newObj.transform.scale = newObj.transform.scale * 0.5f;
-
+	//newObj.transform.rotate(0.f, -60.f, 0.f);
+	newObj.transform.position.z = 1.5f;
 	gameObjects.push_back(std::move(newObj));
-
-	//cam.position = glm::vec3( 0, 0, -1 );
-	//cam.OnUpdate();
 }
 
 void Application::destroyGameObjects()

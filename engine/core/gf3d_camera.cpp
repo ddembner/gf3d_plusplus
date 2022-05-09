@@ -27,12 +27,12 @@ void Camera::setView(gf3d::vec3 position, gf3d::quaternion rotation)
 	const f32 xpow = rotation.x * rotation.x;
     const f32 ypow = rotation.y * rotation.y;
     const f32 zpow = rotation.z * rotation.z;
-    const f32 xy = rotation.x * rotation.y;
-    const f32 xz = rotation.x * rotation.z;
-    const f32 yz = rotation.y * rotation.z;
-    const f32 xw = rotation.x * rotation.w;
-    const f32 yw = rotation.y * rotation.w;
-    const f32 zw = rotation.z * rotation.w;
+    const f32 xy = -rotation.x * rotation.y;
+    const f32 xz = -rotation.x * rotation.z;
+    const f32 yz = -rotation.y * rotation.z;
+    const f32 xw = -rotation.x * rotation.w;
+    const f32 yw = -rotation.y * rotation.w;
+    const f32 zw = -rotation.z * rotation.w;
 
     const gf3d::vec3 u{ 1.0f - 2.0f * ypow - 2.0f * zpow, 2.0f * xy - 2.0f * zw, 2.0f * xz + 2.0f * yw };
     const gf3d::vec3 v{ 2.0f * xy + 2.0f * zw, 1.0f - 2.0f * xpow - 2.0f * zpow, 2.0f * yz - 2.0f * xw };

@@ -1,6 +1,7 @@
 #pragma once
 #include "math/mat4.hpp"
 #include "math/quaternion.hpp"
+#include "GameObject.h"
 
 class Camera
 {
@@ -15,7 +16,8 @@ public:
 	gf3d::mat4 getViewProjectionMatrix() const { return viewMatrix * projectionMatrix; }
 	void OnUpdate();
 public:
-	//gf3d::vec3 position{};
+	Transform transform{};
+
 	f32 fieldOfView = 60.f;
 private:
 	gf3d::mat4 viewMatrix{ 1.f };

@@ -40,7 +40,6 @@ void Pipeline::updatePush(const char* name, void* data)
 
 void Pipeline::submitPush(const VkCommandBuffer& cmd)
 {
-	//const auto& pushRanges = shader.getPushConstantRanges();
 	for (const auto& pushRange : shader.getPushConstantRanges()) {
 		vkCmdPushConstants(cmd, pipelineLayout, pushRange.stageFlags, pushRange.offset, pushRange.size, pushData + pushRange.offset);
 	}
@@ -75,7 +74,7 @@ void Pipeline::createGraphicsPipeline(VkDevice device, VkRenderPass renderpass)
 	rasterizerInfo.rasterizerDiscardEnable = VK_FALSE;
 	rasterizerInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizerInfo.lineWidth = 1.0f;
-	rasterizerInfo.cullMode = VK_CULL_MODE_NONE;
+	rasterizerInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 	rasterizerInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizerInfo.depthBiasEnable = VK_FALSE;
 

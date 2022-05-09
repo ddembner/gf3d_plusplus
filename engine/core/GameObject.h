@@ -89,5 +89,5 @@ public:
 	Mesh mesh;
 	Material* material;
     Transform transform{};
-	glm::vec4 color;
+	gf3d::vec4 color;
 };

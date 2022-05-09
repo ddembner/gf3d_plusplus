@@ -2,6 +2,7 @@
 
 #include "core/gf3d_camera.h"
 #include "core/GameObject.h"
+#include "math/mat4.hpp"
 
 class Gf3dGraphics
 {
@@ -37,9 +38,9 @@ private:
 
 	struct GPUCameraData
 	{
-		glm::mat4 viewMatrix;
-		glm::mat4 projectionMatrix;
-		glm::mat4 viewProjectionMatrix;
+		gf3d::mat4 viewMatrix;
+		gf3d::mat4 projectionMatrix;
+		gf3d::mat4 viewProjectionMatrix;
 	};
 
 	struct PerFrameData

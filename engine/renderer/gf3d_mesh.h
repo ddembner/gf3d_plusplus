@@ -2,6 +2,7 @@
 #include "gf3d_device.h"
 #include "vulkan_types.h"
 #include "containers/vector.hpp"
+#include "math/vec3.hpp"
 #include <unordered_map>
 
 class Mesh
@@ -12,8 +13,8 @@ public:
 	Mesh(const std::string& path);
 	struct Vertex
 	{
-		glm::vec3 position;
-		glm::vec3 color;
+		gf3d::vec3 position;
+		gf3d::vec3 color;
 
 		static gf3d::vector<VkVertexInputAttributeDescription> getAttributeDescription();
 		static gf3d::vector<VkVertexInputBindingDescription> getBindingDescription();
