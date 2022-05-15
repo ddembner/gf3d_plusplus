@@ -22,8 +22,8 @@ void Application::init()
 	window.init();
 	gf3dDevice.init(&window);
 	renderer.init(&window, &gf3dDevice);
-	materialSystem = std::make_unique<MaterialSystem>();
-	materialSystem->init(&gf3dDevice, renderer.getSwapchainRenderPass());
+	materialSystem.init(&gf3dDevice, renderer.getSwapchainRenderPass());
+	textureSystem.init(&gf3dDevice, 65536);
 	initScene();
 	LOGGER_INFO("Initialized engine successfully");
 }
@@ -63,7 +63,7 @@ void Application::update()
 	//cam.setViewTarget(gf3d::vec3(-1.f, -2.f, 2.f), gf3d::vec3(0.f, 0.f, 2.5f));
 	cam.setView(cam.transform.position, cam.transform.rotation);
 	for (auto& gameObject : gameObjects) {
-		gameObject.transform.rotate(0.f, 0.f, 100.f * appTime.deltaTime());
+		//gameObject.transform.rotate(0.f, 0.f, 100.f * appTime.deltaTime());
 		auto finalTransform = gameObject.transform.mat4() * cam.getViewProjectionMatrix();
 		gameObject.material->pushUpdate("mvp", &finalTransform);
 	}
@@ -84,7 +84,8 @@ void Application::cleanup()
 {
 	vkDeviceWaitIdle(gf3dDevice.GetDevice());
 	destroyGameObjects();
-	materialSystem->destroy();
+	materialSystem.destroy();
+	textureSystem.cleanup();
 	renderer.cleanup();
 	gf3dDevice.cleanup();
 	window.cleanup();
@@ -118,7 +119,7 @@ void Application::initScene()
 	newObj.mesh.allocateMesh(gf3dDevice);
 	newObj.color = { 0.1f, 0, 1, 1 };
 
-	newObj.material = materialSystem->create(ASSETS_PATH "shaders/test.shader");
+	newObj.material = materialSystem.create(ASSETS_PATH "shaders/test.shader");
 
 	//newObj.material->pushUpdate("color", &newObj.color);
 

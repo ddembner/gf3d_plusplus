@@ -1,5 +1,5 @@
-#include "gf3d_camera.h"
 #include "gf3d_logger.h"
+#include "gf3d_camera.h"
 
 void Camera::setOrthographicProjection(f32 left, f32 right, f32 top, f32 bottom, f32 zNear, f32 zFar)
 {

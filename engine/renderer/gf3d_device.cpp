@@ -131,6 +131,7 @@ void Gf3dDevice::createLogicalDevice()
 	gf3d::vector<VkDeviceQueueCreateInfo> queueInfos;
 	gf3d::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
+	enabledDeviceFeatures.samplerAnisotropy = true;
 
 	queueIndices.graphics = findQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
 	VkDeviceQueueCreateInfo graphicsInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };

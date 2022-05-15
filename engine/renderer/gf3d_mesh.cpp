@@ -71,33 +71,17 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 		VMA_MEMORY_USAGE_GPU_ONLY);
 
 	//Copy from the cpu into the gpu
-	VkCommandBuffer cmd;
-	VkCommandBufferAllocateInfo cmdInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
-	cmdInfo.commandBufferCount = 1;
-	cmdInfo.commandPool = gf3dDevice.GetCommandPool();
-	cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	vkAllocateCommandBuffers(device, &cmdInfo, &cmd);
-
-	VkCommandBufferBeginInfo cmdBeginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-	cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	VkCommandBuffer cmd = nullptr;
 
 	VkBufferCopy copyBuffer = {};
 	copyBuffer.dstOffset = 0;
 	copyBuffer.srcOffset = 0;
 	copyBuffer.size = size;
 
-	vkBeginCommandBuffer(cmd, &cmdBeginInfo);
+	vulkanCommandBufferSingleUseBegin(&gf3dDevice, gf3dDevice.GetCommandPool(), &cmd);
 	vkCmdCopyBuffer(cmd, stagingBuffer.buffer, allocatedBuffer.buffer, 1, &copyBuffer);
-	vkEndCommandBuffer(cmd);
+	vulkanCommandBufferSingleUseEnd(&gf3dDevice, gf3dDevice.GetCommandPool(), &cmd, gf3dDevice.GetGraphicsQueue());
 
-	VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &cmd;
-	
-	vkQueueSubmit(gf3dDevice.GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(gf3dDevice.GetGraphicsQueue());
-
-	vkFreeCommandBuffers(device, gf3dDevice.GetCommandPool(), 1, &cmd);
 	vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
 	vertexCount = static_cast<u32>(vertices.size());

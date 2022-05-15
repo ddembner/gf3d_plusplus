@@ -51,8 +51,17 @@ void VulkanImage::createImageView(Gf3dDevice* device, VkFormat format, VkImageAs
 
 void VulkanImage::destroy(Gf3dDevice* device)
 {
-	vkDestroyImageView(device->GetDevice(), view, nullptr);
-	vmaDestroyImage(device->GetAllocator(), image, allocation);
+	if (view) {
+		vkDestroyImageView(device->GetDevice(), view, nullptr);
+		view = nullptr;
+	}
+	if (image) {
+		vmaDestroyImage(device->GetAllocator(), image, allocation);
+		image = nullptr;
+		allocation = nullptr;
+	}
+	width = 0;
+	height = 0;
 }
 
 void VulkanImage::transitionLayout(
@@ -97,4 +106,20 @@ void VulkanImage::transitionLayout(
 	}
 
 	vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, 0, 0, 0, 1, &imageBarrier);
+}
+
+void VulkanImage::copyImageFromBuffer(Gf3dDevice* gf3dDevice, VkBuffer buffer, VkCommandBuffer cmd)
+{
+	VkBufferImageCopy region = {};
+	region.imageExtent = { width, height, 1 };
+	region.bufferImageHeight = 0;
+	region.bufferRowLength = 0;
+	region.bufferOffset = 0;
+	
+	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.mipLevel = 0;
+	region.imageSubresource.baseArrayLayer = 0;
+	region.imageSubresource.layerCount = 1;
+	
+	vkCmdCopyBufferToImage(cmd, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 }

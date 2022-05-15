@@ -1,7 +1,7 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include <vk_mem_alloc.h>
 #include "defines.hpp"
+#include "vulkan_types.h"
 #include "gf3d_device.h"
 
 struct VulkanImage
@@ -36,4 +36,6 @@ struct VulkanImage
 		VkImageLayout oldLayout,
 		VkImageLayout newLayout
 	);
+
+	void copyImageFromBuffer(Gf3dDevice* gf3dDevice, VkBuffer buffer, VkCommandBuffer cmd);
 };

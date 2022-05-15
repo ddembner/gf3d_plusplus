@@ -26,6 +26,8 @@ namespace gf3d
 			return "New";
 		case memory_type::eVector:
 			return "Vector";
+		case memory_type::eTexture:
+			return "Texture";
 		default:
 			return "Not a memory type";
 		}
@@ -55,7 +57,7 @@ namespace gf3d
 
 			const char* typeAsString = memoryTypeAsString(static_cast<memory_type>(i));
 			f64 amount = 0.0;
-			char unit[4] = "xb\n";
+			char unit[3] = "xb";
 
 			if (gMemoryManager.memoryTracker[i] >= TO_GB(1)) {
 				amount = gMemoryManager.memoryTracker[i] / static_cast<f64>(TO_GB(1));

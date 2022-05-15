@@ -32,7 +32,9 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/gf3d_shader.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/gf3d_swapchain.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/gf3d_validations.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/renderer/vulkan_image.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/vulkan_functions.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/systems/texture_system.cpp
 )
 
 add_library("${LIB_NAME}" "${SOURCE_FILES}")

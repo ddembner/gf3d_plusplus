@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include "gf3d_device.h"
 #include <cassert>
 #include "vulkan_types.h"
 #define VK_CHECK(call)								\
@@ -14,3 +14,7 @@ VulkanBuffer createAllocatedBuffer(
 	VkBufferUsageFlags usage, 
 	VmaMemoryUsage memoryUsage
 );
+
+void vulkanCommandBufferSingleUseBegin(Gf3dDevice* device, VkCommandPool pool, VkCommandBuffer* cmd);
+
+void vulkanCommandBufferSingleUseEnd(Gf3dDevice* device, VkCommandPool pool, VkCommandBuffer* cmd, VkQueue queue);

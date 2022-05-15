@@ -14,6 +14,7 @@ set(gf3d_INCLUDE_PATHS
 	${CMAKE_SOURCE_DIR}/third_party/glm
 	${CMAKE_SOURCE_DIR}/third_party/vma/include
 	${CMAKE_SOURCE_DIR}/third_party/spdlog/include
+	${CMAKE_SOURCE_DIR}/third_party/stb/
 )
 
 add_subdirectory(third_party/glfw)
