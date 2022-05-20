@@ -5,7 +5,7 @@
 gf3d::LinearAllocator::~LinearAllocator()
 {
 	if (mPtr != nullptr) {
-		this->deallocate();
+		std::free(mPtr);
 	}
 }
 
@@ -19,7 +19,7 @@ void gf3d::LinearAllocator::init(const u64 totalSize)
 	mTotalSize = totalSize;
 }
 
-void* gf3d::LinearAllocator::allocate(const u64 size)
+void* gf3d::LinearAllocator::allocate(const u64 size, const u64 alignment)
 {
 	if (mPtr) {
 		if (mAllocated + size > mTotalSize) {
@@ -38,12 +38,9 @@ void* gf3d::LinearAllocator::allocate(const u64 size)
 	return nullptr;
 }
 
-void gf3d::LinearAllocator::deallocate()
+void gf3d::LinearAllocator::free(void* ptr)
 {
-	std::free(mPtr);
-	mPtr = nullptr;
-	mAllocated = 0;
-	mTotalSize = 0;
+	
 }
 
 void gf3d::LinearAllocator::reset()

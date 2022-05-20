@@ -1,6 +1,9 @@
 #include "gf3d_logger.h"
 #include "application.h"
 #include <spdlog/stopwatch.h>
+#include "memory/FreeListAllocator.h"
+
+static gf3d::FreeListAllocator dynamicAllocator;
 
 void Application::run()
 {	
@@ -15,6 +18,9 @@ void Application::run()
 	cleanup();
 }
 
+#define ALIGNMENT 8 // must be a power of 2
+#define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
+
 void Application::init()
 {
 	appTime.init();
@@ -26,6 +32,10 @@ void Application::init()
 	textureSystem.init(&gf3dDevice, 65536);
 	initScene();
 	LOGGER_INFO("Initialized engine successfully");
+
+	dynamicAllocator.init(TO_KB(1));
+	int* data = reinterpret_cast<int*>(dynamicAllocator.allocate(sizeof(int)));
+	dynamicAllocator.destroy();
 }
 
 void Application::update()

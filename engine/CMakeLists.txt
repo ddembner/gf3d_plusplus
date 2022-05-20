@@ -21,6 +21,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/core/gf3d_time.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/math/math_functions.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/math/trigonometric_functions.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/memory/FreeListAllocator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/memory/LinearAllocator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/platform/gf3d_window.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/gf3d_device.cpp

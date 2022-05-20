@@ -13,9 +13,9 @@ namespace gf3d
 		/// <param name="size"> The total size </param>
 		void init(const u64 totalSize) override;
 
-		void* allocate(const u64 size) override;
+		void* allocate(const u64 size, const u64 alignment = 8) override;
 
-		void deallocate() override;
+		void free(void* ptr) override;
 
 		/// <summary>
 		/// Sets the total memory allocated from this allocator to 0 and sets the memory contents to 0
