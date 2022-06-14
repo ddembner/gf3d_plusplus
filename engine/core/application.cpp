@@ -1,9 +1,7 @@
 #include "gf3d_logger.h"
 #include "application.h"
 #include <spdlog/stopwatch.h>
-#include "memory/FreeListAllocator.h"
-
-static gf3d::FreeListAllocator dynamicAllocator;
+#include "gf3d_memory.h"
 
 void Application::run()
 {	
@@ -18,24 +16,20 @@ void Application::run()
 	cleanup();
 }
 
-#define ALIGNMENT 8 // must be a power of 2
-#define ALIGN(size) (((size) + (ALIGNMENT-1)) & ~(ALIGNMENT-1))
-
 void Application::init()
 {
-	appTime.init();
+	gf3d::initDynamicMemorySystem(TO_GB(1));
 	Logger::init();
+
+	appTime.init();
 	window.init();
 	gf3dDevice.init(&window);
 	renderer.init(&window, &gf3dDevice);
 	materialSystem.init(&gf3dDevice, renderer.getSwapchainRenderPass());
 	textureSystem.init(&gf3dDevice, 65536);
+	textureSystem.getTexture("statue");
 	initScene();
 	LOGGER_INFO("Initialized engine successfully");
-
-	dynamicAllocator.init(TO_KB(1));
-	int* data = reinterpret_cast<int*>(dynamicAllocator.allocate(sizeof(int)));
-	dynamicAllocator.destroy();
 }
 
 void Application::update()
@@ -43,7 +37,7 @@ void Application::update()
 	isDonePlaying = window.windowClosed() || glfwGetKey(window.getWindow(), GLFW_KEY_ESCAPE);
 
 	const f32 camSpeed = 5.f;
-	const f32 camRotSpeed = 25.f;
+	const f32 camRotSpeed = 50.f;
 	gf3d::vec3 camRotation;
 
 	if (glfwGetKey(window.getWindow(), GLFW_KEY_W)) cam.transform.position += cam.transform.forward() * camSpeed * appTime.deltaTime();
@@ -119,12 +113,53 @@ void Application::initScene()
 	GameObject newObj;
 	newObj.mesh.vertices = {
 		// left face (white)
-	  {{-.5f, -.5f, .0f}, {.9f, .9f, .9f}},
-	  {{-.5f, .5f, .0f}, {.9f, .9f, .9f}},
-	  {{.5f, .5f, .0f}, {.9f, .9f, .9f}},
-	  {{-.5f, -.5f, .0f}, {.9f, .9f, .9f}},
-	  {{.5f, .5f, .0f}, {.9f, .9f, .9f}},
-	  {{.5f, -.5f, .0f}, {.9f, .9f, .9f}},
+	  {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+	  {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+	  {{.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+	  {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+	  {{.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+	  {{.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
+
+	  // right face (red)
+	  {{.5f, -.5f, -.5f}, {1.0f, .0f, .0f}},
+	  {{.5f, .5f, -.5f}, {1.0f, .0f, .0f}},
+	  {{.5f, .5f, .5f}, {1.0f, .0f, .0f}},
+	  {{.5f, -.5f, -.5f}, {1.0f, .0f, .0f}},
+	  {{.5f, .5f, .5f}, {1.0f, .0f, .0f}},
+	  {{.5f, -.5f, .5f}, {1.0f, .0f, .0f}},
+
+	  // top face (yellow)
+	  {{-.5f, .5f, -.5f}, {1.0f, 1.0f, .0f}},
+	  {{-.5f, .5f, .5f}, {1.0f, 1.0f, .0f}},
+	  {{.5f, .5f, .5f}, {1.0f, 1.0f, .0f}},
+	  {{-.5f, .5f, -.5f}, {1.0f, 1.0f, .0f}},
+	  {{.5f, .5f, .5f}, {1.0f, 1.0f, .0f}},
+	  {{.5f, .5f, -.5f}, {1.0f, 1.0f, .0f}},
+
+	  // left face (cyan)
+	  {{-.5f, -.5f, -.5f}, {.0f, 1.0f, 1.0f}},
+	  {{-.5f, -.5f, .5f}, {.0f, 1.0f, 1.0f}},
+	  {{-.5f, .5f, .5f}, {.0f, 1.0f, 1.0f}},
+	  {{-.5f, -.5f, -.5f}, {.0f, 1.0f, 1.0f}},
+	  {{-.5f, .5f, .5f}, {.0f, 1.0f, 1.0f}},
+	  {{-.5f, .5f, -.5f}, {.0f, 1.0f, 1.0f}},
+
+	  // back face (blue)
+	  {{-.5f, -.5f, .5f}, {.0f, .0f, 1.0f}},
+	  {{.5f, .5f, .5f}, {.0f, .0f, 1.0f}},
+	  {{-.5f, .5f, .5f}, {.0f, .0f, 1.0f}},
+	  {{-.5f, -.5f, .5f}, {.0f, .0f, 1.0f}},
+	  {{.5f, -.5f, .5f}, {.0f, .0f, 1.0f}},
+	  {{.5f, .5f, .5f}, {.0f, .0f, 1.0f}},
+
+	  // bottom face (green)
+	  {{-.5f, -.5f, -.5f}, {.0f, 1.0f, .0f}},
+	  {{.5f, -.5f, .5f}, {.0f, 1.0f, .0f}},
+	  {{-.5f, -.5f, .5f}, {.0f, 1.0f, .0f}},
+	  {{-.5f, -.5f, -.5f}, {.0f, 1.0f, .0f}},
+	  {{.5f, -.5f, -.5f}, {.0f, 1.0f, .0f}},
+	  {{.5f, -.5f, .5f}, {.0f, 1.0f, .0f}},
+	  
 	};
 	newObj.mesh.allocateMesh(gf3dDevice);
 	newObj.color = { 0.1f, 0, 1, 1 };

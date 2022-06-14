@@ -1,49 +1,40 @@
 #pragma once
-#include "Allocator.hpp"
+#include "defines.hpp"
 
 namespace gf3d
 {
-	class FreeListAllocator : public Allocator
+	class FreeListAllocator
 	{
-	public:
-		enum class PlacementPolicy
-		{
-			eFindFirst,
-			eFindBest
-		};
-	public:
-		FreeListAllocator(PlacementPolicy policy = PlacementPolicy::eFindFirst);
-
-		void init(const u64 totalSize) override;
-
-		void* allocate(const u64 size, const u64 alignment = 8) override;
-
-		void free(void* ptr) override;
-
-		void destroy();
-
 	private:
 		struct AllocationHeader
 		{
-			u64 blockSize;
-			u8 padding;
+			u64 blockSize = 0;
+			u64 padding = 0;
 		};
-
 		struct Node
 		{
-			u64 blockSize;
-			Node* next;
+			u64 blockSize = 0;
+			Node* next = nullptr;
 		};
 
+	public:
+		void init(u64 totalSize);
+		void destroy();
+		void* allocate(u64 size, u64 alignment = __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+		void free(void* ptr);
+
 	private:
-		Node* findNode(const u64 size, const u64 alignment);
-		Node* findFirstNode(const u64 size, const u64 alignment);
-		Node* findBestNode(const u64 size, const u64 alignment);
-		void coalescence(Node* previousNode, Node* freeNode);
+		Node* findNode(const u64 size, u64* padding, Node* previous, const u64 alignment);
+		void insertNode(Node* previous, Node* newNode);
+		void removeNode(Node* previous, Node* deleteNode);
+		u64 calculatePadding(const u64 address, const u64 alignment);
+		void coalescence(Node* previous, Node* freeNode);
+
 	private:
 		void* mData = nullptr;
 		Node* mHead = nullptr;
-		PlacementPolicy mPolicy;
+		u64 mTotalSize = 0;
+		u64 mUsed = 0;
 	};
 
 } //namespace gf3d

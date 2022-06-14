@@ -13,7 +13,7 @@ namespace gf3d
 		/// <param name="size"> The total size </param>
 		void init(const u64 totalSize) override;
 
-		void* allocate(const u64 size, const u64 alignment = 8) override;
+		void* allocate(const u64 size, const u64 alignment = __STDCPP_DEFAULT_NEW_ALIGNMENT__) override;
 
 		void free(void* ptr) override;
 
