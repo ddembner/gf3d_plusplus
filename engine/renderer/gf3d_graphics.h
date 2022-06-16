@@ -1,7 +1,7 @@
 #pragma once
-
 #include "core/gf3d_camera.h"
 #include "core/GameObject.h"
+#include "math/mat4.hpp"
 
 class Gf3dGraphics
 {
@@ -11,6 +11,7 @@ public:
 	void init(Gf3dWindow* const window, Gf3dDevice* device);
 	void cleanup();
 	VkRenderPass getSwapchainRenderPass() const { return swapchain.getRenderPass(); }
+
 private:
 	Swapchain swapchain;
 	gf3d::vector<VkCommandBuffer> commandBuffers;
@@ -37,14 +38,14 @@ private:
 
 	struct GPUCameraData
 	{
-		glm::mat4 viewMatrix;
-		glm::mat4 projectionMatrix;
-		glm::mat4 viewProjectionMatrix;
+		gf3d::mat4 viewMatrix;
+		gf3d::mat4 projectionMatrix;
+		gf3d::mat4 viewProjectionMatrix;
 	};
 
 	struct PerFrameData
 	{
-		AllocatedBuffer cameraBuffer;
+		VulkanBuffer cameraBuffer;
 		VkDescriptorSet globalSet;
 	};
 

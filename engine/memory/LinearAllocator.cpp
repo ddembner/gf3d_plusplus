@@ -1,24 +1,26 @@
 #include "LinearAllocator.hpp"
 #include "core/gf3d_logger.h"
+#include "core/gf3d_memory.h"
 
 gf3d::LinearAllocator::~LinearAllocator()
 {
 	if (mPtr != nullptr) {
-		this->deallocate();
+		delete mPtr;
+		mPtr = nullptr;
 	}
 }
 
 void gf3d::LinearAllocator::init(const u64 totalSize)
 {
 	if (mPtr != nullptr) {
-		std::free(mPtr);
+		delete mPtr;
 	}
 
-	mPtr = std::malloc(totalSize);
+	mPtr = ::operator new(totalSize);
 	mTotalSize = totalSize;
 }
 
-void* gf3d::LinearAllocator::allocate(const u64 size)
+void* gf3d::LinearAllocator::allocate(const u64 size, const u64 alignment)
 {
 	if (mPtr) {
 		if (mAllocated + size > mTotalSize) {
@@ -27,22 +29,27 @@ void* gf3d::LinearAllocator::allocate(const u64 size)
 			return nullptr;
 		}
 
-		void* allocation = ((u64*)mPtr) + mAllocated;
-		mAllocated += size;
+		u64 currentAddress = reinterpret_cast<u64>(mPtr) + mAllocated;
 
-		return allocation;
+		u64 padding = 0;
+
+		if (alignment != 0 && currentAddress % alignment != 0) {
+			padding = calculatePadding(currentAddress, alignment);
+		}
+
+		u64 allocation = reinterpret_cast<u64>(mPtr) + mAllocated + padding;
+		mAllocated += size + padding;
+
+		return reinterpret_cast<void*>(allocation);
 	}
 
 	LOGGER_ERROR("Allocator has not been initialized.");
 	return nullptr;
 }
 
-void gf3d::LinearAllocator::deallocate()
+void gf3d::LinearAllocator::free(void* ptr)
 {
-	std::free(mPtr);
-	mPtr = nullptr;
-	mAllocated = 0;
-	mTotalSize = 0;
+	
 }
 
 void gf3d::LinearAllocator::reset()

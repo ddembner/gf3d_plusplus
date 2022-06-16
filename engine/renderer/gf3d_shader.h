@@ -17,13 +17,13 @@ struct Uniform
 class Shader
 {
 public:
-	Shader(VkDevice _device, const std::string& pathToFile);
+	Shader(VkDevice _device, const char* pathToFile);
 	void destroy();
 	std::map<VkShaderStageFlagBits, VkShaderModule> getShaderModules() const { return shaderModules; }
 	gf3d::vector<VkPushConstantRange> getPushConstantRanges() const { return pushConstantRanges; }
 	u32 getPushDataSize();
 
-	Uniform getUniform(const std::string& name) const 
+	Uniform getUniform(const char* name) const 
 	{
 		auto it = uniforms.find(name);
 

@@ -2,7 +2,8 @@
 
 int main(int argc, char* argv[])
 {
-	Application app;
-	app.run();
+	Application* app = new Application();
+	app->run();
+	delete app;
 	return 0;
 }

@@ -10,7 +10,7 @@ public:
 	~MaterialSystem();
 	void init(Gf3dDevice* device, VkRenderPass renderpass);
 	void destroy();
-	Material* create(const std::string& shaderPath);
+	Material* create(const char* shaderPath);
 	Material* create(const std::string& vertPath, const std::string& fragPath);
 	Material* find(const std::string& name);
 private:

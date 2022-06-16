@@ -3,7 +3,7 @@
 #include "renderer/gf3d_graphics.h"
 #include "core/GameObject.h"
 #include "renderer/gf3d_material_system.h"
-#include <memory>
+#include "systems/texture_system.h"
 
 class Application : NonCopyable
 {
@@ -28,7 +28,8 @@ private:
 	Gf3dWindow window;
 	Gf3dDevice gf3dDevice;
 	Gf3dGraphics renderer;
-	std::unique_ptr<MaterialSystem> materialSystem;
+	MaterialSystem materialSystem;
+	gf3d::TextureSystem textureSystem;
 	gf3d::vector<GameObject> gameObjects;
 	Camera cam;
 	Time appTime;

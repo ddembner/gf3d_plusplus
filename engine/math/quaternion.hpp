@@ -189,17 +189,27 @@ namespace gf3d
 		{
 			mat4 mat = mat4();
 
-			mat._11 = 1.0f - 2.0f * y * y - 2.0f * z * z;
-			mat._12 = 2.0f * x * y - 2.0f * z * w;
-			mat._13 = 2.0f * x * z + 2.0f * y * w;
+			const f32 xx = x * x;
+			const f32 yy = y * y;
+			const f32 zz = z * z;
+			const f32 xy = x * y;
+			const f32 xz = x * z;
+			const f32 yz = y * z;
+			const f32 xw = x * w;
+			const f32 yw = y * w;
+			const f32 zw = z * w;
 
-			mat._21 = 2.0f * x * y + 2.0f * z * w;
-			mat._22 = 1.0f - 2.0f * x * x - 2.0f * z * z;
-			mat._23 = 2.0f * y * z - 2.0f * x * w;
+			mat._11 = 1.0f - 2.0f * yy - 2.0f * zz;
+			mat._12 = 2.0f * xy - 2.0f * zw;
+			mat._13 = 2.0f * xz + 2.0f * yw;
 
-			mat._31 = 2.0f * x * z - 2.0f * y * w;
-			mat._32 = 2.0f * y * z + 2.0f * x * w;
-			mat._33 = 1.0f - 2.0f * x * x - 2.0f * y * y;
+			mat._21 = 2.0f * xy + 2.0f * zw;
+			mat._22 = 1.0f - 2.0f * xx - 2.0f * zz;
+			mat._23 = 2.0f * yz - 2.0f * xw;
+
+			mat._31 = 2.0f * xz - 2.0f * yw;
+			mat._32 = 2.0f * yz + 2.0f * xw;
+			mat._33 = 1.0f - 2.0f * xx - 2.0f * yy;
 
 			return mat;
 		}

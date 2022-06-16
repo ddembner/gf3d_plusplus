@@ -24,7 +24,9 @@ public:
 	const VkQueue GetComputeQueue() { return computeQueue; }
 	const VkQueue GetTransferQueue() { return transferQueue; }
 	const VkCommandPool GetCommandPool() { return commandPool; }
-	const u32 GetQueueIndex (VkQueueFlags queueFlag);
+	const u32 GetGraphicsQueueIndex() { return queueIndices.graphics; }
+	const u32 GetComputeQueueIndex() { return queueIndices.compute; }
+	const u32 GetTransferQueueIndex() { return queueIndices.transfer; }
 private:
 	void createInstance();
 	void setupDebugCallback();
@@ -32,7 +34,7 @@ private:
 	void createLogicalDevice();
 	void createMemoryAllocator();
 	void createCommandPool();
-	u32 findQueueFamilyIndex(VkQueueFlags queueFlag);
+	u32 findQueueFamilyIndex(VkQueueFlags queueFlag, bool singleQueue = true);
 private:
 	VkInstance instance = 0;
 	VkDebugUtilsMessengerEXT callback = 0;

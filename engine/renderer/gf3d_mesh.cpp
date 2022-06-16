@@ -51,7 +51,11 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 	size_t size = vertices.size() * sizeof(Vertex);
 
 	//Create a buffer on the cpu
-	AllocatedBuffer stagingBuffer = createBuffer(allocator, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+	VulkanBuffer stagingBuffer = createAllocatedBuffer(
+		allocator, 
+		size, 
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
+		VMA_MEMORY_USAGE_CPU_ONLY);
 
 	//Put the vertex data into the buffer
 	void* data;
@@ -60,36 +64,24 @@ void Mesh::allocateMesh(Gf3dDevice& gf3dDevice)
 	vmaUnmapMemory(allocator, stagingBuffer.allocation);
 
 	//Create the buffer for the mesh on the gpu
-	allocatedBuffer = createBuffer(allocator, vertices.size() * sizeof(Vertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	allocatedBuffer = createAllocatedBuffer(
+		allocator, 
+		vertices.size() * sizeof(Vertex), 
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
+		VMA_MEMORY_USAGE_GPU_ONLY);
 
 	//Copy from the cpu into the gpu
-	VkCommandBuffer cmd;
-	VkCommandBufferAllocateInfo cmdInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
-	cmdInfo.commandBufferCount = 1;
-	cmdInfo.commandPool = gf3dDevice.GetCommandPool();
-	cmdInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	vkAllocateCommandBuffers(device, &cmdInfo, &cmd);
-
-	VkCommandBufferBeginInfo cmdBeginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
-	cmdBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	VkCommandBuffer cmd = nullptr;
 
 	VkBufferCopy copyBuffer = {};
 	copyBuffer.dstOffset = 0;
 	copyBuffer.srcOffset = 0;
 	copyBuffer.size = size;
 
-	vkBeginCommandBuffer(cmd, &cmdBeginInfo);
+	vulkanCommandBufferSingleUseBegin(&gf3dDevice, gf3dDevice.GetCommandPool(), &cmd);
 	vkCmdCopyBuffer(cmd, stagingBuffer.buffer, allocatedBuffer.buffer, 1, &copyBuffer);
-	vkEndCommandBuffer(cmd);
+	vulkanCommandBufferSingleUseEnd(&gf3dDevice, gf3dDevice.GetCommandPool(), &cmd, gf3dDevice.GetGraphicsQueue());
 
-	VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &cmd;
-	
-	vkQueueSubmit(gf3dDevice.GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(gf3dDevice.GetGraphicsQueue());
-
-	vkFreeCommandBuffers(device, gf3dDevice.GetCommandPool(), 1, &cmd);
 	vmaDestroyBuffer(allocator, stagingBuffer.buffer, stagingBuffer.allocation);
 
 	vertexCount = static_cast<u32>(vertices.size());

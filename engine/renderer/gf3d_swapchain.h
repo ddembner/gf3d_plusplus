@@ -1,6 +1,7 @@
 #pragma once
 #include "gf3d_device.h"
 #include "vulkan_types.h"
+#include "vulkan_image.h"
 #include "containers/vector.hpp"
 
 class Swapchain
@@ -43,6 +44,5 @@ private:
 
 	gf3d::vector<VkImage> swapchainImages;
 	gf3d::vector<VkImageView> swapchainImageViews;
-	AllocatedImage depthAllocatedImage;
-	VkImageView depthImageView;
+	VulkanImage depthAllocatedImage;
 };

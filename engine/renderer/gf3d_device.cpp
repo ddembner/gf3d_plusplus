@@ -35,21 +35,6 @@ void Gf3dDevice::cleanup()
 	vkDestroyInstance(instance, nullptr);
 }
 
-const u32 Gf3dDevice::GetQueueIndex(VkQueueFlags queueFlag)
-{
-	switch (queueFlag)
-	{
-	case VK_QUEUE_GRAPHICS_BIT:
-		return queueIndices.graphics;
-	case VK_QUEUE_COMPUTE_BIT:
-		return queueIndices.compute;
-	case VK_QUEUE_TRANSFER_BIT:
-		return queueIndices.transfer;
-	default:
-		return 0;
-	}
-}
-
 void Gf3dDevice::createInstance()
 {
 	VkApplicationInfo appInfo = {};
@@ -146,6 +131,7 @@ void Gf3dDevice::createLogicalDevice()
 	gf3d::vector<VkDeviceQueueCreateInfo> queueInfos;
 	gf3d::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	VkPhysicalDeviceFeatures enabledDeviceFeatures = {};
+	enabledDeviceFeatures.samplerAnisotropy = true;
 
 	queueIndices.graphics = findQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
 	VkDeviceQueueCreateInfo graphicsInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
@@ -154,7 +140,7 @@ void Gf3dDevice::createLogicalDevice()
 	graphicsInfo.queueFamilyIndex = queueIndices.graphics;
 	queueInfos.push_back(graphicsInfo);
 
-	queueIndices.compute = findQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
+	queueIndices.compute = findQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT, false);
 	if (queueIndices.graphics != queueIndices.compute) {
 		VkDeviceQueueCreateInfo computeInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
 		computeInfo.queueCount = 1;
@@ -163,7 +149,7 @@ void Gf3dDevice::createLogicalDevice()
 		queueInfos.push_back(computeInfo);
 	}
 
-	queueIndices.transfer = findQueueFamilyIndex(VK_QUEUE_TRANSFER_BIT);
+	queueIndices.transfer = findQueueFamilyIndex(VK_QUEUE_TRANSFER_BIT, false);
 	if (queueIndices.transfer != queueIndices.graphics && queueIndices.transfer != queueIndices.compute) {
 		VkDeviceQueueCreateInfo transferInfo = { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO };
 		transferInfo.queueCount = 1;
@@ -221,7 +207,7 @@ void Gf3dDevice::createCommandPool()
 	}
 }
 
-u32 Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
+u32 Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag, bool singleQueue)
 {
 	u32 propertyCount;
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &propertyCount, nullptr);
@@ -236,6 +222,12 @@ u32 Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 			VkBool32 presentSupport;
 			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
 			if (presentSupport) {
+				//Have compute and graphics queue be the same
+				if (singleQueue && queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT &&
+					queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+					return i;
+				}
+				//Have compute be its own queue
 				if (queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT &&
 					!(queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
 						return i;
@@ -251,6 +243,11 @@ u32 Gf3dDevice::findQueueFamilyIndex(VkQueueFlags queueFlag)
 	if (queueFlag & VK_QUEUE_TRANSFER_BIT) {
 
 		for (u32 i = 0; i < static_cast<u32>(queueFamilyProperties.size()); i++) {
+
+			if (singleQueue && queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT &&
+				queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+				return i;
+			}
 
 			if ((queueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT) && !(queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && !(queueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)) {
 				return i;

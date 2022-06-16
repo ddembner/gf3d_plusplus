@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include "gf3d_device.h"
 #include <cassert>
 #include "vulkan_types.h"
 #define VK_CHECK(call)								\
@@ -8,4 +8,13 @@
 		assert(result == VK_SUCCESS);		\
 	} while(0)
 
-AllocatedBuffer createBuffer(const VmaAllocator& allocator, size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+VulkanBuffer createAllocatedBuffer(
+	VmaAllocator allocator, 
+	size_t allocSize, 
+	VkBufferUsageFlags usage, 
+	VmaMemoryUsage memoryUsage
+);
+
+void vulkanCommandBufferSingleUseBegin(Gf3dDevice* device, VkCommandPool pool, VkCommandBuffer* cmd);
+
+void vulkanCommandBufferSingleUseEnd(Gf3dDevice* device, VkCommandPool pool, VkCommandBuffer* cmd, VkQueue queue);
