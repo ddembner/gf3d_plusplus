@@ -27,7 +27,6 @@ void Application::init()
 	renderer.init(&window, &gf3dDevice);
 	materialSystem.init(&gf3dDevice, renderer.getSwapchainRenderPass());
 	textureSystem.init(&gf3dDevice, 65536);
-	textureSystem.getTexture("statue");
 	initScene();
 	LOGGER_INFO("Initialized engine successfully");
 }

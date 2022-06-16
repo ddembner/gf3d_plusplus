@@ -154,7 +154,7 @@ void operator delete(void* data) noexcept
 	gf3d::free(data, *size, gf3d::memory_type::eNew);
 }
 
-void* operator new[](std::size_t size) noexcept
+void* operator new[](std::size_t size)
 {
 	void* data = gf3d::malloc(size, gf3d::memory_type::eNew);
 
