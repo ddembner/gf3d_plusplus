@@ -35,6 +35,7 @@ set(SOURCE_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/gf3d_validations.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/vulkan_image.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/renderer/vulkan_functions.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/systems/shader_system.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/systems/texture_system.cpp
 )
 
